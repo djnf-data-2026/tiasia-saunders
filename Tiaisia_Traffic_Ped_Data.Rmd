@@ -1,0 +1,188 @@
+---
+title: "Traffic and Pedestrian Data"
+author: "Wells"
+date: "2026-05-20"
+output: html_document
+---
+For Tiasia Saunders
+Memo from your newsroom:
+We shared some traffic stops data for you to work through during your training. I recommend that you check out the overall project that you'll be building on beforehand. The three key stories to read are the first piece about accountability, the second piece on the sheer volume and another about our methodology.
+
+The newest data will come out on July 1-ish but they can get started by analyzing past years, which will be structured like the upcoming year. We will have to put out a FOIA for 2024-2025 data but historical files can be downloaded from here to get acclimated. 
+
+Your data for 2021-2024 is here. I have loaded just the 2021 data
+https://drive.google.com/drive/folders/1hlInlBL37sb81Z91Umvc7faD2UMcvmKJ?usp=sharing
+
+
+Make sure to read about the file formats
+https://drive.google.com/drive/folders/1-u1a819hCVxjiIJfV9B3ygziXoO-Gyuz?usp=sharing
+
+
+More details from your newsroom are here:
+https://docs.google.com/document/d/1L-8W74jjrTPAHv7zDLeLNhmRRfwv233SQiJE5QOFY0k/edit?usp=sharing
+
+
+```{r include=FALSE}
+library(tidyverse)
+library(readxl)
+library(googlesheets4)
+library(googledrive)
+library(janitor)
+library(rio)
+library(data.table)
+library(googledrive)
+```
+
+# READ CAREFULLY
+# Import Data: READ CAREFULLY
+# READ CAREFULLY
+
+
+Data is coming from a shared Google Drive folder due to the large file sizes
+There is a two-step process:
+PART ONE: First, download the data to YOUR HARD DRIVE. YOU RUN THIS SEQUENCE ONCE. 
+PART TWO: Load into R. This is how you will load the data for future analysis.
+
+There are two files from the Chicago Police Department -- "CPD" are the .xlsx files -- and two from surrounding police departments, the .txt files
+
+One of these files -- traffic_CPD_21 -- is too large to push to GitHub unless you use the lfs (large file size) protocol. It is copied below if you want to try it. I don't recommend it.
+It's time consuming and I have provided an acceptable workaround.
+
+I would just keep the large data files on your GitHub repo folder on your hard drive. Don't try to push them to GitHub 
+
+# PART ONE - download the data to YOUR HARD DRIVE. YOU RUN THIS SEQUENCE ONCE. 
+```{r}
+#Enter '1' to start a new auth process or select a pre-authorized account.
+#1: Send me to the browser for a new auth process.
+#CPD - 2021 REDCATED Traffic Data
+#https://docs.google.com/spreadsheets/d/1xFOnp3Dx11JzH6h1UAPIMU8RVThFvIDh/edit?usp=sharing&ouid=102324743793755798467&rtpof=true&sd=true
+googledrive::drive_auth()
+drive_download(
+  as_id("1xFOnp3Dx11JzH6h1UAPIMU8RVThFvIDh"),  # from the share link
+  path = "../data/traffic_CPD_21.xlsx",
+  overwrite = TRUE
+)
+traffic_CPD_21 <- read_excel("../data/traffic_CPD_21.xlsx")|> 
+  clean_names()
+
+#CPD - 2021 REDACTED Pedestrian Data
+#https://docs.google.com/spreadsheets/d/1GrmIDziDBGn2e1fiXLKiDQCcZLIe6S90/edit?usp=sharing&ouid=102324743793755798467&rtpof=true&sd=true
+drive_download(
+  as_id("1GrmIDziDBGn2e1fiXLKiDQCcZLIe6S90"),  # from the share link
+  path = "../data/pedestrian_CPD_21.xlsx",
+  overwrite = TRUE
+)
+pedestrian_CPD_21 <- read_excel("../data/pedestrian_CPD_21.xlsx")|> 
+  clean_names()
+
+
+#2021 Traffic Data Redacted
+#https://drive.google.com/file/d/1q5D_MGMProIshXZV_h2RlIiZUsYU14hp/view?usp=sharing
+drive_download(
+  as_id("1q5D_MGMProIshXZV_h2RlIiZUsYU14hp"),  # from the share link
+  path = "../data/traffic_21.txt",
+  overwrite = TRUE
+)
+traffic_21 <- fread("../data/traffic_21.txt", sep = "~")|> 
+  clean_names()
+
+
+#2021 Pedestrian Data Redacted
+#https://drive.google.com/file/d/1sXRtyPLyE2HCKfZi2zQxb_z-fe0KFday/view?usp=sharing
+
+drive_download(
+  as_id("1sXRtyPLyE2HCKfZi2zQxb_z-fe0KFday"),  # from the share link
+  path = "../data/pedestrian_redacted_21.txt",
+  overwrite = TRUE
+)
+pedestrian_redacted_21 <- fread("../data/pedestrian_redacted_21.txt", sep = "~")|> 
+  clean_names()
+
+```
+
+
+# PART TWO: Load into R. This is how you will load the data for future analysis.
+```{r}
+
+traffic_CPD_21 <- read_excel("../data/traffic_CPD_21.xlsx")|> 
+  clean_names()
+pedestrian_CPD_21 <- read_excel("../data/pedestrian_CPD_21.xlsx")|> 
+  clean_names()
+traffic_21 <- fread("../data/traffic_21.txt", sep = "~")|> 
+  clean_names()
+pedestrian_redacted_21 <- fread("../data/pedestrian_redacted_21.txt", sep = "~")|> 
+  clean_names()
+
+```
+
+
+
+
+# Pokin around
+
+```{r}
+CDP_ped_stops <- pedestrian_CPD_21|> 
+  group_by(datestop) |> 
+  count() |> 
+  arrange(desc(n))
+
+head(CDP_ped_stops)
+#Most stops were on Oct 9, 364 stops
+
+```
+
+#average stops 
+```{r}
+CDP_ped_stops |> 
+  ungroup() |> 
+  summarize(mean(n))
+
+#Average day has 188 stops 
+```
+
+# Number of days above / below average
+```{r}
+CDP_ped_stops |> 
+  mutate(Context = case_when(
+         n > 187 ~ "more",
+         n < 187 ~ "less")) |> 
+  group_by(Context) |> 
+  count()
+
+#186 days had fewer than the average 187 stops and 177 days had more
+```
+
+
+```{r}
+traffic_21 |> 
+  group_by(agency_name) |> 
+  count() |> 
+  arrange(desc(n))
+
+#ILLINOIS STATE POLICE had the most traffic stops with	223643	
+```
+
+
+#LFS 
+Here are Claude instructions on how to push the 217 mb file into GitHiub using LFS.
+Again, I don't think it's necessary since we have the Google Drive workaround
+
+The 217MB file requires Git LFS. Since you're already setting it up, simplest to use LFS for all of them consistently.
+
+# One-time LFS install (if not already done)
+git lfs install
+
+# Clone the student's repo
+git clone https://github.com/YOUR-ORG/STUDENT-REPO-NAME.git
+cd STUDENT-REPO-NAME
+
+# Track large file types (adjust extensions to match your files)
+git lfs track "*.csv"
+git lfs track "*.txt"
+git add .gitattributes
+
+# Copy your files into this folder, then add them all
+git add file1_217mb.csv file2_61mb.csv file3_11mb.csv file4_752kb.csv
+
+git commit -m "Add traffic data files"
+git push origin main
