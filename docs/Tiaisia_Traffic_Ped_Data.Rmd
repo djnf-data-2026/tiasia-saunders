@@ -62,7 +62,7 @@ drive_download(
   path = "../data/traffic_CPD_21.xlsx",
   overwrite = TRUE
 )
-traffic_CPD_21 <- read_excel("./data/traffic_CPD_21.xlsx")|> 
+traffic_CPD_21 <- read_excel("../data/traffic_CPD_21.xlsx")|> 
   clean_names()
 
 #CPD - 2021 REDACTED Pedestrian Data
