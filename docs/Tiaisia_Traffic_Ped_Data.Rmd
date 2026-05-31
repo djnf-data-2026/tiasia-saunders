@@ -21,6 +21,9 @@ https://drive.google.com/drive/folders/1-u1a819hCVxjiIJfV9B3ygziXoO-Gyuz?usp=sha
 More details from your newsroom are here:
 https://docs.google.com/document/d/1L-8W74jjrTPAHv7zDLeLNhmRRfwv233SQiJE5QOFY0k/edit?usp=sharing
 
+```{r}
+install.packages("data.table")
+```
 
 ```{r include=FALSE}
 library(tidyverse)
@@ -98,6 +101,11 @@ drive_download(
 pedestrian_redacted_21 <- fread("../data/pedestrian_redacted_21.txt", sep = "~")|> 
   clean_names()
 
+```
+
+
+```{r}
+### load the 2022- 2024 data 
 ```
 
 
