@@ -62,7 +62,7 @@ First, create H1 headers
 
 ## Looking at wealth inequality in Charm City
 
-```{r}
+```{r eval=FALSE, include=TRUE}
 
 # You will write your code in chunks but not execute the data. Use {r eval=FALSE, include=TRUE} in the header so the page will render without running the actual code.
 income_vacancy %>% 
