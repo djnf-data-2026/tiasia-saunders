@@ -4,7 +4,8 @@ author: "Wells"
 date: "2026-05-20"
 output: html_document
 ---
-For Tiasia Saunders
+For Tiasia Saunders: 
+
 Memo from your newsroom:
 We shared some traffic stops data for you to work through during your training. I recommend that you check out the overall project that you'll be building on beforehand. The three key stories to read are the first piece about accountability, the second piece on the sheer volume and another about our methodology.
 
@@ -22,11 +23,12 @@ More details from your newsroom are here:
 https://docs.google.com/document/d/1L-8W74jjrTPAHv7zDLeLNhmRRfwv233SQiJE5QOFY0k/edit?usp=sharing
 
 ```{r}
-install.packages("data.table")
+install.packages("")
 ```
 
 ```{r include=FALSE}
 library(tidyverse)
+library(here)
 library(readxl)
 library(googlesheets4)
 library(googledrive)
@@ -101,12 +103,154 @@ drive_download(
 pedestrian_redacted_21 <- fread("../data/pedestrian_redacted_21.txt", sep = "~")|> 
   clean_names()
 
+
+```
+
+
+### Data Tables Definitions 
+
+- traffic_x: data of traffic stops happening under other agencies, other than Chicago police department
+- traffic_CPD_x: data of traffic stops happening under Chicago police department
+- pedestrian_redacted_x: data of pedestrian stops happening under other agencies, other than Chicago police department
+- pedestrian_CPD_x: data of pedestrian stops happening under Chicago police department
+
+```{r}
+### load the 2022- 2024 data 
+
+drive_download(
+  as_id("1GQAcNcBpyDpeH9Ge9IYB0lnefI637NAl"),  # from the share link
+  path = "../data/traffic_CPD_22.xlsx",
+  overwrite = TRUE
+)
+traffic_CPD_22 <- read_excel("../data/traffic_CPD_22.xlsx")|> 
+  clean_names()
+
+
+drive_download(
+  as_id("17beRQ5as-mECg-EgmUe999caWEDInMDI"),  # from the share link
+  path = "../data/pedestrian_CPD_22.xlsx",
+  overwrite = TRUE
+)
+pedestrian_CPD_22 <- read_excel("../data/pedestrian_CPD_22.xlsx")|> 
+  clean_names()
+
+drive_download(
+  as_id("17MCVZSBX67VKy-HwIVUOShA8_2gY7cHZ"),  # from the share link
+  path = "../data/traffic_22_pt1.txt",
+  overwrite = TRUE
+)
+traffic_22_pt1 <- fread("../data/traffic_22_pt1.txt", sep = "~")|> 
+  clean_names()
+
+drive_download( 
+  as_id("1xU-lzfk6k9yDfVsp7CzKSze_17kYpA04"),  # from the share link
+  path = "../data/traffic_22_pt2.txt",
+  overwrite = TRUE
+)
+traffic_22_pt2 <- fread("../data/traffic_22_pt2.txt", sep = "~")|> 
+  clean_names()
+
+drive_download(
+  as_id("1VTSg-4_RSOG8VVhpBBsrhWWzxcLIMXUB"),  # from the share link
+  path = "../data/pedestrian_redacted_22.txt",
+  overwrite = TRUE
+)
+pedestrian_redacted_22 <- fread("../data/pedestrian_redacted_22.txt", sep = "~")|> 
+  clean_names()
+
+
+```
+
+### 2023 Data 
+```{r}
+
+drive_download(
+  as_id("10yCnj0-AY86q2nSgctO7-GhT1sZhUU_y"),  # from the share link
+  path = "../data/traffic_CPD_23.xlsx",
+  overwrite = TRUE
+)
+traffic_CPD_23 <- read_excel("../data/traffic_CPD_23.xlsx")|> 
+  clean_names()
+
+drive_download(
+  as_id("1w6vnVrrQ3IzXMbl3wdk-tUsaHt2vWgfA"),
+  path = "/Users/tiasiasaunders/Desktop/code/tiasia-saunders/data/pedestrian_CPD_23.xlsx",
+  overwrite = TRUE
+)
+
+pedestrian_CPD_23 <- read_excel("../data/pedestrian_CPD_23.xlsx") |> 
+  clean_names()
+
+drive_download(
+  as_id("1MWRhVQLD7652Ln9TiJEOBphEVIabd4kJ"),  # from the share link
+  path = "../data/traffic_23.txt",
+  overwrite = TRUE
+)
+traffic_23 <- fread("../data/traffic_23.txt", sep = "~")|> 
+  clean_names()
+
+drive_download(
+  as_id("1qZaCB_YD0Q31RvmfyeVzjyP0aGqP_xZD"),  # from the share link
+  path = "../data/pedestrian_redacted_23.txt",
+  overwrite = TRUE
+)
+pedestrian_redacted_23 <- fread("../data/pedestrian_redacted_23.txt", sep = "~")|> 
+  clean_names()
+
+```
+
+
+### 2024 Data 
+
+```{r}
+
+
+drive_download(
+  as_id("1pqA4y9-Upgol5xWxfDvift43j24ZJZzI"),  # from the share link
+  path = "../data/traffic_CPD_24.xlsx",
+  overwrite = TRUE
+)
+traffic_CPD_24 <- read_excel("../data/traffic_CPD_24.xlsx")|> 
+  clean_names()
+
+drive_download(
+  as_id("1cqwJTHZnae5NbLdgQhVUNttHFnCkugMC"),  # from the share link
+  path = "../data/pedestrian_CPD_24.xlsx",
+  overwrite = TRUE
+)
+pedestrian_CPD_24 <- read_excel("../data/pedestrian_CPD_24.xlsx")|> 
+  clean_names()
+
+drive_download(
+  as_id("1N-GdlJqGQXsRqjW6xF8zTjVvdNuWu0g1"),  # from the share link
+  path = "../data/traffic_24.txt",
+  overwrite = TRUE
+)
+traffic_24 <- fread("../data/traffic_24.txt", sep = "~")|> 
+  clean_names()
+
+
+drive_download(
+  as_id("1nSGllC3zosxWIrh-8W_wvrPa-NWtvoOV"),  # from the share link
+  path = "../data/pedestrian_redacted_24.txt",
+  overwrite = TRUE
+)
+pedestrian_redacted_24 <- fread("../data/pedestrian_redacted_24.txt", sep = "~")|> 
+  clean_names()
+
+
+```
+
+```{r}
+setwd("/Users/tiasiasaunders/Desktop/code/tiasia-saunders/data")
 ```
 
 
 ```{r}
-### load the 2022- 2024 data 
+## setting working directory to root of project so I can pull in the data files 
+knitr::opts_knit$set(root.dir = "/Users/tiasiasaunders/Desktop/code/tiasia-saunders")
 ```
+
 
 
 # PART TWO: Load into R. This is how you will load the data for future analysis.
@@ -120,8 +264,35 @@ traffic_21 <- fread("../data/traffic_21.txt", sep = "~")|>
   clean_names()
 pedestrian_redacted_21 <- fread("../data/pedestrian_redacted_21.txt", sep = "~")|> 
   clean_names()
+traffic_CPD_22 <- read_excel("../data/traffic_CPD_22.xlsx") |> 
+  clean_names()
+pedestrian_CPD_22 <- read_excel("../data/pedestrian_CPD_22.xlsx") |> 
+  clean_names()
+traffic_22_pt1 <- fread("../data/traffic_22_pt1.txt") |> 
+  clean_names ()
+traffic_22_pt2 <- fread("../data/traffic_22_pt2.txt") |>
+  clean_names()
+pedestrian_redacted_22 <- fread("../data/pedestrian_redacted_22.txt") |> 
+  clean_names() 
+traffic_CPD_23 <- read_excel("../data/traffic_CPD_23.xlsx") |>
+  clean_names()
+pedestrian_CPD_23 <- read_excel("../data/pedestrian_CPD_23.xlsx") |>
+  clean_names() 
+traffic_23 <- fread("../data/traffic_23.txt") |>
+  clean_names()
+pedestrian_redacted_23 <- fread("../data/pedestrian_redacted_23.txt") |>
+  clean_names()
+traffic_CPD_24 <- read_excel("../data/traffic_CPD_24.xlsx") |>
+  clean_names()
+pedestrian_CPD_24 <- read_excel("../data/pedestrian_CPD_24.xlsx") |> 
+  clean_names() 
+traffic_24 <- fread("../data/traffic_24.txt") |>
+  clean_names()
+pedestrian_redacted_24 <- fread("../data/pedestrian_redacted_24.txt") |> 
+  clean_names()
 
 ```
+
 
 
 
@@ -169,6 +340,12 @@ traffic_21 |>
 
 #ILLINOIS STATE POLICE had the most traffic stops with	223643	
 ```
+
+### Basic Analysis 
+
+
+
+
 
 
 #LFS 
