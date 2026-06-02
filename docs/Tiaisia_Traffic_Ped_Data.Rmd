@@ -155,8 +155,9 @@ drive_download(
   path = "../data/traffic_CPD_21.xlsx",
   overwrite = TRUE
 )
-traffic_CPD_21 <- read_excel("../data/traffic_CPD_21.xlsx")|> 
-  clean_names()
+## commenting the below line out because it is too big to pass through to github
+##traffic_CPD_21 <- read_excel("../data/traffic_CPD_21.xlsx")|> 
+  ##clean_names()
 
 #CPD - 2021 REDACTED Pedestrian Data
 #https://docs.google.com/spreadsheets/d/1GrmIDziDBGn2e1fiXLKiDQCcZLIe6S90/edit?usp=sharing&ouid=102324743793755798467&rtpof=true&sd=true
@@ -196,7 +197,7 @@ pedestrian_redacted_21 <- fread("../data/pedestrian_redacted_21.txt", sep = "~")
 
 ### 2022 Data 
 
-```{r}
+```{r eval=FALSE, include=TRUE}
 ### load the 2022- 2024 data 
 
 drive_download(
@@ -247,7 +248,7 @@ pedestrian_redacted_22 <- fread("../data/pedestrian_redacted_22.txt", sep = "~")
 
 ### 2023 Data
 
-```{r}
+```{r eval=FALSE, include=TRUE}
 
 drive_download(
   as_id("10yCnj0-AY86q2nSgctO7-GhT1sZhUU_y"),  # from the share link
@@ -286,7 +287,7 @@ pedestrian_redacted_23 <- fread("../data/pedestrian_redacted_23.txt", sep = "~")
 
 ### 2024 Data
 
-```{r}
+```{r eval=FALSE, include=TRUE}
 
 
 drive_download(
@@ -334,17 +335,11 @@ setwd("/Users/tiasiasaunders/Desktop/code/tiasia-saunders/data")
 knitr::opts_knit$set(root.dir = "/Users/tiasiasaunders/Desktop/code/tiasia-saunders")
 ```
 
-```{r}
-getwd()
-```
 
-```{r}
-list.files("/Users/tiasiasaunders/Desktop/code/tiasia-saunders/data")
-```
 
 # PART TWO: Load into R. This is how you will load the data for future analysis.
 
-```{r}
+```{r eval=FALSE, include=TRUE}
 
 traffic_CPD_21 <- read_excel("../data/traffic_CPD_21.xlsx")|> 
   clean_names()
@@ -382,8 +377,9 @@ pedestrian_redacted_24 <- fread("../data/pedestrian_redacted_24.txt") |>
   clean_names()
 
 ```
-### Preliminary Basic Analysis 
 
+
+### Preliminary Basic Analysis 
 
 ```{r}
 pedestrian_CPD_21 |> 
@@ -409,15 +405,16 @@ agency_lookup <- traffic_21 |>
   distinct() 
 ```
 
-```{r}
+```{r eval=FALSE, include=TRUE}
+## commenting this out since I cant pass it through github 
 ## combining pt 1 and 2 of traffic_2022 data so it can be uniformed with the other datasets 
-traffic_22 <- bind_rows(
-  traffic_22_pt1,
-  traffic_22_pt2
-)
+## traffic_22 <- bind_rows(
+##  traffic_22_pt1,
+ ## traffic_22_pt2
+##)
 ```
 
-```{r}
+```{r eval=FALSE, include=TRUE}
 traffic_22 <- traffic_22 |> 
   left_join(
     agency_lookup |> select(agency_code, agency_name),
@@ -427,7 +424,7 @@ traffic_22 <- traffic_22 |>
 ```
 
 
-```{r}
+```{r eval=FALSE, include=TRUE}
 ## ensuring join worked correctly 
 traffic_22 |> 
   select(agency_code, agency_name)
@@ -435,7 +432,7 @@ traffic_22 |>
 ```
 
 
-```{r}
+```{r eval=FALSE, include=TRUE}
 traffic_22 |> 
   count(agency_name, agency_code) |> 
   arrange(desc(n))
@@ -443,7 +440,7 @@ traffic_22 |>
 
 - There are 792 other law enforcement agencies in the traffic_2022 data 
 
-```{r}
+```{r eval=FALSE, include=TRUE}
 traffic_23 |> 
   count(agency_name) |> 
   arrange(desc(n))
@@ -451,7 +448,7 @@ traffic_23 |>
 
 - There are 804 other law enforcement agencies in the traffic_2021 data 
 
-```{r}
+```{r eval=FALSE, include=TRUE}
 traffic_24 |> 
   count(agency_name) |> 
   arrange(desc(n))
@@ -461,14 +458,14 @@ traffic_24 |>
 
 Testing this part of my hypothesis: Additionally, I suspect that there is a racial disparity between the initial reasoning for the traffic stop and the potential search and overall conclusion of the stop (citation, written warning, or verbal warning) between minority and white drivers. 
 
-```{r}
+```{r eval=FALSE, include=TRUE}
 ## getting breakdown of reason for stop by race 
 traffic_21 |>
   count(driver_race, reason_for_stop,result_of_stop, sort = TRUE)
 ```
 
 
-```{r}
+```{r eval=FALSE, include=TRUE}
 traffic_21 |>
   count(driver_race, reason_for_stop) |>
   group_by(driver_race) |>
@@ -492,12 +489,9 @@ traffic_21 |>
 
 
 
-```{r}
-pedestrian_CPD_21 |> 
-  sum
-```
 
-```{r}
+
+```{r eval=FALSE, include=TRUE}
 pedestrian_CPD_21 |> 
   select(pedsex, pedrace, search_bey_pat, search_bey, search_bey_by) |> 
   count(pedrace) |> 
@@ -508,9 +502,7 @@ pedestrian_CPD_21 |>
 - So, in 2021 there were 48,044 Black pedestrain stops and 5,009 white pedestrain stops, and 14,611 Hispanic stops. 
 
 
-```{r}
 
-```
 
 
 
@@ -571,29 +563,3 @@ traffic_21 |>
 
 
 
-
-#LFS Here are Claude instructions on how to push the 217 mb file into
-GitHiub using LFS. Again, I don't think it's necessary since we have the
-Google Drive workaround
-
-The 217MB file requires Git LFS. Since you're already setting it up,
-simplest to use LFS for all of them consistently.
-
-# One-time LFS install (if not already done)
-
-git lfs install
-
-# Clone the student's repo
-
-git clone <https://github.com/YOUR-ORG/STUDENT-REPO-NAME.git> cd
-STUDENT-REPO-NAME
-
-# Track large file types (adjust extensions to match your files)
-
-git lfs track "*.csv" git lfs track "*.txt" git add .gitattributes
-
-# Copy your files into this folder, then add them all
-
-git add file1_217mb.csv file2_61mb.csv file3_11mb.csv file4_752kb.csv
-
-git commit -m "Add traffic data files" git push origin main
