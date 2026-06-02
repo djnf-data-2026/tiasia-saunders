@@ -7,6 +7,18 @@ editor_options:
   markdown: 
     wrap: 72
 ---
+**rsw comments:**
+
+Tiasia - There's quite a bit of work and thought that went into this proposal. Good to see the detailed explanation of the methodology.
+
+I think the project now could take one years' worth of data, then mutate the times for daylight vs night time. 
+
+I see you spelled out definitions of night and sunset, you'll also need a definition of sunrise.
+
+Here's another idea -- up to you if you want to follow it. You're probably safe calling nighttime from 10 p.m. to 4 a.m. and daytime from 6 am-5 pm irregardless of the season. You can refine that later to account for changing in the seasons but as a start that will be you in the ballpark.
+
+Once you've done that, then make your calculations on racial stops.
+
 
 
 - Pitch Story Memo (plan to update 06/02/2026 -- spent most of time on Monday figuring out methodology for cacluation of the veil of darkness)
@@ -30,6 +42,8 @@ Nighttime: 5 pm
 
 - Proposed Methodology: (How will I get the evidence needed to prove or disprove my hypothesis) 
 Benchmark: Still working on how to do this, but I need to figure out how to determine a ‘benchmark’ of how to evaluate whether the reason behind mostly black people getting stopped may be due to the high percentage of black people living in that said area ( I think to mitigate this, I will examine the data through the veil of darkness angle to determine potential racial bias) 
+
+**rsw comment
 - Veil of Darkness: Will be determining racial bias through looking at the two sets of time ranges, the day and the night, to examine whether there is an obvious decrease in the amount of Black or brown people who are stopped at night due to the lack of visibility 
 Suspicion Threshold: Will be looking at the resulting actions of stops after the initial traffic stop to determine whether there is a drastic disparity between how Black/brown versus white people are treated during a traffic stop 
 - Will be looking at whether police officers have sufficient or suspected reason to search for evidence, and whether the ‘hit rate’ (that the officers do find something illegal) for minorities is relatively lower than their white counterparts or around the same, to determine if the threshold is equal for both 
