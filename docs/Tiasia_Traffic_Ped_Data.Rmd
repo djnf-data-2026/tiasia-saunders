@@ -729,7 +729,7 @@ write.csv(
 
 - The CPD made traffic stops in a little over 5,000 (5,083) locations in 2024 
 
-```{r include=FALSE}
+```{r}
 ## looking at vehicle make and model, the ones most likely to be stopped 
 
 vehicle_make_race <- traffic_CPD_24 |>
