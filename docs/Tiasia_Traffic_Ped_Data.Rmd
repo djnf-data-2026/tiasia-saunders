@@ -136,9 +136,10 @@ library(tidytext)
 - traffic_2024: data of other law enforcement agencies happening under different agencies in Illinois 
 - traffic_CPD_2024: data of traffic stops happening under Chicago police department
 
-##### 2021 Data 
+
 
 ```{r eval=FALSE, include=FALSE}
+##### 2021 Data 
 #Enter '1' to start a new auth process or select a pre-authorized account.
 #1: Send me to the browser for a new auth process.
 #CPD - 2021 REDCATED Traffic Data
@@ -189,9 +190,10 @@ pedestrian_redacted_21 <- fread("../data/pedestrian_redacted_21.txt", sep = "~")
 ```
 
 
-##### 2022 Data 
 
 ```{r eval=FALSE, include=FALSE}
+##### 2022 Data 
+
 ### load the 2022- 2024 data 
 
 drive_download(
@@ -240,10 +242,9 @@ pedestrian_redacted_22 <- fread("../data/pedestrian_redacted_22.txt", sep = "~")
 
 ```
 
-### 2023 Data
 
 ```{r eval=FALSE, include=FALSE}
-
+##### 2023 Data
 drive_download(
   as_id("10yCnj0-AY86q2nSgctO7-GhT1sZhUU_y"),  # from the share link
   path = "../data/traffic_CPD_23.xlsx",
@@ -279,7 +280,7 @@ pedestrian_redacted_23 <- fread("../data/pedestrian_redacted_23.txt", sep = "~")
 
 ```
 
-##### 2024 Data
+#### 2024 Chicago + Law Enforcement Traffic Stop Data Analysis 
 
 - So, for the sake of my analysis, I am using 2024 Chicago Police Department and other Illinois law enforcement agencies. I am attempting to find racial disparities through the per capita of 100k people in total stops, reason for stop, and result of stop. Additionally, I am categorizing time frames (10 pm - 4 am = nighttime, 6 am - 5 pm = daytime) to examine the disparities in the data through the veil of darkness angle. 
 
@@ -320,7 +321,7 @@ pedestrian_redacted_24 <- fread("../data/pedestrian_redacted_24.txt", sep = "~")
 
 ```
 
-###### Loading Datasets 
+##### Loading Datasets 
 
 ```{r}
 dir.create("data", showWarnings = FALSE)
@@ -357,31 +358,12 @@ traffic_24 <- fread("data/traffic_24.txt", sep="~") |> clean_names()
 ```
 
 
-```{r eval=FALSE, include=TRUE}
-googledrive::drive_auth()
-drive_download(
-  as_id("1pqA4y9-Upgol5xWxfDvift43j24ZJZzI"),  # from the share link
-  path = "data/traffic_CPD_24.xlsx",
-  overwrite = TRUE
-)
-
-traffic_CPD_24 <- read_excel("data/traffic_CPD_24.xlsx")|> 
-  clean_names()
-
-drive_download(
-  as_id("1N-GdlJqGQXsRqjW6xF8zTjVvdNuWu0g1"),  # from the share link
-  path = "data/traffic_24.txt",
-  overwrite = TRUE
-)
-traffic_24 <- fread("data/traffic_24.txt", sep = "~")|> 
-  clean_names()
-```
-```{r}
+```{r eval=FALSE, include=FALSE}
 getwd()
 ```
 
 
-```{r eval=FALSE, include=TRUE}
+```{r eval=FALSE, include=FALSE}
 
 traffic_CPD_21 <- read_excel("../data/traffic_CPD_21.xlsx")|> 
   clean_names()
@@ -427,7 +409,7 @@ pedestrian_CPD_21 |>
   count() |> 
   arrange(desc(n))
 
-```
+
 
 ```{r eval=FALSE, include=FALSE}
 traffic_21 |> 
@@ -487,9 +469,10 @@ traffic_23 |>
 # - There are 804 other law enforcement agencies in the traffic_2021 data 
 ```
 
-##### Preliminary Basic Analysis 
+#### Preliminary Basic Analysis 
 
 - Redefining my columns by their associated meaning according to the traffic stop data dictionary, so I can have a better understanding of the data and be able to do more analysis on it.
+
 ```{r}
 # re coding the race and gender numerical values into what they stand for according to the traffic stop data dictionary 
 
@@ -532,8 +515,8 @@ traffic_CPD_24 <- traffic_CPD_24 |>
   )
 
   
-
 ```
+
 
 ```{r}
 
@@ -587,9 +570,6 @@ traffic_24$result_of_stop <- dplyr::recode(
 )
 ```
 
-```{r}
-(names(traffic_24))
-```
 
 ```{r}
 gender_CPD_24 <- traffic_CPD_24 |> 
@@ -730,9 +710,10 @@ ggplot(timeline_monthly, aes(x = month, y = n)) +
   )
 
 ```
-- So, I looked into an explanation as to why there was a steady decrease of traffic stops by the CPD in 2024, so once looking it up I found this article <a href = "https://boltsmag.org/chicago-police-secret-traffic-stops/"> which explained that there were 210,622 undocumented traffic stops in 2024, despite a 2003 law requiring them to document every traffic stop 
+
+- So, I looked into an explanation as to why there was a steady decrease of traffic stops by the CPD in 2024, so once looking it up I found this <a href="https://boltsmag.org/chicago-police-secret-traffic-stops/">article</a>, which explained that there were 210,622 undocumented traffic stops in 2024, despite a 2003 law requiring them to document every traffic stop. 
 - In addition, the Dexter Reed incident in which a 26-year old Black man died at the result of a shootout incident between him and policemen in late March of 2024, may have resulted in heavier scrutiny due to advocacy groups and civil rights lawsuits. 
-  - The incident had stemmed from a seatbelt violation traffic stop 
+  - The incident had stemmed from a seatbelt violation traffic stop.  
 
 ```{r}
 traffic_CPD_24 |> 
@@ -745,9 +726,10 @@ write.csv(
   row.names = FALSE
 )
 ```
-- The CPD made traffic stops in a little over 5,000 (5,083) locations in 2024. 
 
-```{r}
+- The CPD made traffic stops in a little over 5,000 (5,083) locations in 2024 
+
+```{r include=FALSE}
 ## looking at vehicle make and model, the ones most likely to be stopped 
 
 vehicle_make_race <- traffic_CPD_24 |>
@@ -761,20 +743,11 @@ vehicle_make_race <- traffic_CPD_24 |>
 
 vehicle_make_race
 ```
+
 ```{r}
-datatable(vehicle_make_race)
 DT::datatable(
   vehicle_make_race,
   caption = "Traffic stops by vehicle make and driver race",
-  rownames = FALSE,
-  options = list(
-    pageLength = 25,
-    scrollX = TRUE
-  )
-)
-
-DT::datatable(
-  vehicle_make_race,
   filter = "top",
   rownames = FALSE,
   options = list(
@@ -782,10 +755,10 @@ DT::datatable(
     scrollX = TRUE
   )
 )
-
 ```
-- So, we could just look at the top three Chevrolet cars have been stopped for Black and Hispanic the most, followed by white (its almost 10,000 less then their Black counterpart), and then Asian, which is only in the hundreds 
-- The highest for white people is with the Toyota model at 6,685 stops, but even then black people were stopped more often in these cars at 7,707 stops, and Hispanic were stopped the most with 10,584 stops 
+
+- So, we could just look at the top three Chevrolet cars have been stopped for Black and Hispanic the most, followed by white (its almost 10,000 less then their Black counterpart), and then Asian, which is only in the hundreds. 
+- The highest for white people is with the Toyota model at 6,685 stops, but even then black people were stopped more often in these cars at 7,707 stops, and Hispanic were stopped the most with 10,584 stops. 
 
 ```{r eval=FALSE, include=FALSE}
 ## looking at which demographic has reason for stop and then have to submit to drug search or dog search , ## looking at the hit rate of drug searches, and which race is more likely to have something found during a drug search
@@ -804,6 +777,7 @@ traffic_24 |>
   arrange(desc(n)) |> 
   distinct()
 ```
+
 - There are 786 other law enforcement agencies in the traffic_2024 data. 
 
 
@@ -885,6 +859,7 @@ ggplot(
   )
 
 ```
+
 - So, when I am looking at this bar chart of all the other police departments traffic stops, I notice the top two are white males with 583,079 stops and white females with 371,651, and followed by Hispanic males with 236,865 stops. At first glance, it looks like white people are being stopped more than their minority counterparts, but as I hypothesized, I believe this is due to the population size of white people being very big in the state of Illinois. So, I am now going to account for per capital calculations with both the CPD to ensure that minorities are the most likely to be stopped and see if it lies true for the other local law enforcement agencies. 
 
 ```{r}
@@ -983,14 +958,12 @@ ggplot(timeline_traffic_monthly, aes(x = month, y = n)) +
     )
   )
 ```
+
 - The decline in June could be related to the 200,000 undocumented traffic stops and on this day Chicago Police Superintendent announced at a press release the decrease in traffic stops. 
 
 ```{r}
 ### need to create the vehicle make table, will do this tomorrow 
 ```
-
-
-
 
 #### Per Capital Calculations to get a true reflection of the data, I need to account for population size when looking at the number of stops by race. 
 
@@ -1286,6 +1259,7 @@ ggplot(
     panel.grid.major.y = element_blank()
   )
 ```
+
 - Black drivers accounted for the largest share of Chicago traffic stops during both daytime (48.0%) and nighttime (41.0%) hours.
 - Hispanic drivers' share increased from 31.7% during the day to 37.0% at night.
 - White drivers accounted for 16.2% of daytime stops and 13.0% of nighttime stops.
