@@ -1,94 +1,276 @@
 ---
 title: "Illinois Traffic and Pedestrian Data Analysis"
 author: "Tiasia Saunders"
+<<<<<<< HEAD
 date: "2026-06-05"
+=======
+date: "2026-06/01 UPDATE THE DATE"
+>>>>>>> 07cec5ec98589619378975e8297321a52a2f1503
 output: html_document
 editor_options: 
   markdown: 
     wrap: 72
 ---
 
-### Chicago Police Department versus other Illinois Law Enforcement Agencies Correlation with the Veil of Darkness 
+### Chicago Police Department versus other Illinois Law Enforcement Agencies Correlation with the Veil of Darkness
 
+<<<<<<< HEAD
 #### Is Racial Bias in Traffic Stops a Chicago Problem or a Statewide Problem? 
 
 - Using four years of Illinois traffic stop data from 2021 to 2024, I want to examine whether racial disparities in traffic stops extend beyond the Chicago Police Department to suburban and downstate Illinois law enforcement agencies. While CPD has faced significant scrutiny, especially since the fatal shooting of Dexter Reed, a 26-year-old Black man who was shot and killed in 2024 by the Chicago Police Department during a shootout between him and officers, smaller departments across Illinois operate with far less oversight and have received almost no data-driven accountability reporting. I would like to measure the racial disparity angle through using the veil of darkness lens. 
+=======
+**Need a lead image or graphic.**
 
-- Veil of Darkness Explanation: 
+**emphasize your main findings on top and then go into the explanation
+of the project**
+>>>>>>> 07cec5ec98589619378975e8297321a52a2f1503
 
-  - It is a statistical methodology, created by Jeffrey Grogger and Greg Ridgeway in 2006, that is used to test for racial bias in traffic stops
-  - It compares daytime stops to nighttime stops, relying on the hypothesis that at nighttime, natural darkness masks a driver’s race, which prevents racially biased officers from profiling them 
-  - The theory: if racial profiling exists, there should be a higher percentage of minority drivers stopped during daylight hours when officers can easily identify race, compared to nighttime hours when the ‘veil of darkness’ conceals the person’s race 
-  - Daytime: 6 a.m. to 5 p.m. 
+- Pitch: Is Racial Bias in Traffic Stops a Chicago Problem or a
+  Statewide Problem?
+
+  - Using four years of Illinois traffic stop data from 2021 to 2024, I
+    want to examine whether racial disparities in traffic stops extend
+    beyond the Chicago Police Department to suburban and downstate
+    Illinois law enforcement agencies. While CPD **write Chicago Police
+    Dept. instead of CPD throughout** has faced significant scrutiny,
+    especially since the fatal shooting of Dexter Reed, a 26-year-old
+    Black man who was shot and killed in 2024 by the Chicago Police
+    Department during a shootout between him and officers, smaller
+    departments across Illinois operate with far less oversight and have
+    received almost no data-driven accountability reporting.
+  - By examining this through the veil of darkness lens, which controls
+    for visibility conditions to isolate racial bias in stop decisions,
+    across multiple Illinois agencies, I can determine whether this is a
+    Chicago-specific failure or a statewide structural problem. If
+    suburban departments, county sheriffs, and state police show the
+    same pattern as CPD, that fundamentally re-frames the conversation
+    around racial bias in Illinois policing and raises urgent questions
+    about what oversight, if any, exists for the departments that fly
+    under the radar.
+  - While racial disparities in policing have been documented
+    nationally, most public attention in Illinois focuses on the Chicago
+    Police Department. If similar patterns appear across suburban,
+    county, and state law enforcement agencies, it would suggest that
+    racial bias is not isolated to one department but may be embedded
+    throughout Illinois policing. This matters because many of these
+    agencies receive far less public scrutiny, media coverage, and
+    oversight despite conducting thousands of traffic stops each year.
+
+- Veil of Darkness Explanation:
+
+  - It is a statistical methodology, created by Jeffrey Grogger and Greg
+    Ridgeway in 2006, that is used to test for racial bias in traffic
+    stops **rsw comment: link to their study**
+  - It compares daytime stops to nighttime stops, relying on the
+    hypothesis that at nighttime, natural darkness masks a driver’s
+    race, which prevents racially biased officers from profiling them
+  - The theory: if racial profiling exists, there should be a higher
+    percentage of minority drivers stopped during daylight hours when
+    officers can easily identify race, compared to nighttime hours when
+    the ‘veil of darkness’ conceals the person’s race
+  - **rsw comment: Need to explain that these times are just estimates
+    you are using for a proof of concept and that you will nail down the
+    precise sunrise, sunset times using National Weather Service
+    historical data later**
+  - Daytime: 6 a.m. to 5 p.m.
   - Nighttime: 10 p.m. to 4 a.m.
   - Excluded Transition Hours: 4 a.m.–5:59 a.m. and 5 p.m.–9:59 p.m.
 
+- Proposed Methodology: (How will I get the evidence needed to prove or
+  disprove my hypothesis)
 
+<<<<<<< HEAD
 - Proposed Methodology: 
   - Will be looking at the racial breakdown of traffic stops across all Illinois law enforcement agencies, including CPD, to determine if there is a racial disparity in who gets stopped the most. 
   - Analysis will be done on traffic_24 (all other Illinois law enforcement agencies traffic enforcement data) and traffic_CPD_24 (Chicago Police Department traffic enforcement data) to determine if there is a racial disparity in both CPD and the other Illinois law enforcement agencies, and then comparing the two to see if there is a similar pattern in both data sets.
 - Veil of Darkness: Will be determining racial bias through looking at the two sets of time ranges, the day and the night, to examine whether there is an obvious decrease in the amount of Black or brown people who are stopped at night due to the lack of visibility 
 Suspicion Threshold: Will be looking at the resulting actions of stops after the initial traffic stop to determine whether there is a drastic disparity between how Black/brown versus white people are treated during a traffic stop 
+=======
+  - Will be looking at the racial breakdown of traffic stops across all
+    Illinois law enforcement agencies, including CPD, to determine if
+    there is a racial disparity in who gets stopped the most.
+  - So analysis will be done on ~~traffic_24 (~~all other Illinois law
+    enforcement agencies traffic enforcement data) and t~~raffic_CPD_24
+    (~~Chicago Police Department traffic enforcement data) to determine
+    if there is a racial disparity in both CPD and the other Illinois
+    law enforcement agencies, and then comparing the two to see if there
+    is a similar pattern in both data sets.
+>>>>>>> 07cec5ec98589619378975e8297321a52a2f1503
 
+- **RSW COMMENT: YOU ALREAD SAID THIS:** ~~Veil of Darkness: Will be
+  determining racial bias through looking at the two sets of time
+  ranges, the day and the night, to examine whether there is an obvious
+  decrease in the amount of Black or brown people who are stopped at
+  night due to the lack of visibility Suspicion Threshold: Will be
+  looking at the resulting actions of stops after the initial traffic
+  stop to determine whether there is a drastic disparity between how
+  Black/brown versus white people are treated during a traffic stop~~
 
+<<<<<<< HEAD
 - Data Process Workflow: 
  - So, I have downloaded the 16 (four per year from 2021-2024) datasets into my .rmd file and have begun preliminary analysis on it to see what I am working with 
   - For the sake of time, I will be performing the analysis on just the 2024 traffic data.
  - I have added the 2020 Census racial population makeup to my RMD.file to be able to calculate the per capita rates to determine which race is truly most impacted by traffic stops 
   - I plan to determine the racial discrimination through three factors: 
   - The veil of darkness angle 
+=======
+  - Will be looking at whether police officers have sufficient or
+    suspected reason to search for evidence, and whether the ‘hit rate’
+    (that the officers do find something illegal) for minorities is
+    relatively lower than their white counterparts or around the same,
+    to determine if the threshold is equal for both
+>>>>>>> 07cec5ec98589619378975e8297321a52a2f1503
 
-- Hypothesis: 
-  - I suspect that I will find a pattern within the broader Illinois as a whole, that most of the law enforcement agencies (including CPD) tend to stop Black or minority race people more often in the daytime than at night, due to being able to identify the race in the daytime. Additionally, I suspect that there is a racial disparity between the initial reasoning for the traffic stop and the potential search and overall conclusion of the stop (citation, written warning, or verbal warning) between minority and white drivers. 
+  - Will be examining racial disparities in the initial reason for the
+    stop, and then the resulting actions of the stop (citation, written
+    warning, verbal warning) to determine if there is a disparity there
+    as well
 
+<<<<<<< HEAD
 - Potential Problems with the Hypothesis/ Core Arguments: 
   - Due to the sake of time, I believe there could be a more efficient statistical workflow that could be done to ensure that the veil of darkness angle was robust and accurate. If I had more time, I would create a formula that accounted for Illinois's sunset and sunrise times for each day of the year 2024, to get the most accurate number. So, my interpretation with using the categorized time frames is vague and could be elaborated on more in the future. 
 
 - The Why: 
   - If racial disparities exist across Illinois agencies regardless of location or department size, it would suggest that concerns about biased policing extend far beyond Chicago and may require broader statewide accountability measures.
+=======
+- Data Process Workflow: **rsw comment: i tabbed these bullet points in
+  so you have a heading and sub points. this wasn't organized properly -
+  it was all subheadings**
+
+  - ~~So,~~ I have downloaded the 16 (four per year from 2021-2024)
+    datasets into my .rmd file and have begun preliminary analysis on it
+    to see what I am working with
+
+  - ~~For the sake of time, I will be performing the analysis~~ **To
+    start, I analyze** the 2024 traffic data. Might, look at pedestrian
+    due to curiosity if time permits.
+
+  - I have added the 2020 Census **(get the 2024 ACS Census data)**
+    l~~et me know if there is a better source that could be used for
+    this data)~~ racial population makeup to my RMD.file to be able to
+    calculate the per capita rates to determine which race is truly most
+    impacted by traffic stops
+
+    **rsw comment: There's a lot of repetition in this narrative.
+    Consolidate this and be more careful about your writing. It seems
+    rushed and unorganized**
+
+  - ~~I plan to determine the racial discrimination through three
+    factors:~~
+
+  - ~~The veil of darkness angle~~
+
+  - ~~Examining the breakdown of the driver’s race, reason for the stop,
+    and the result of the stop to determine if there are disparities
+    there~~
+
+  - ~~Examining the reason for stop and hit rates (whether officers find
+    something illegal during a search) for minorities versus white
+    people to determine if there is a disparity in the suspicion
+    threshold for minorities versus white people)~~
+
+- Hypothesis:
+
+  - I suspect that I will find a pattern within the broader Illinois as
+    a whole, that most of the law enforcement agencies (including CPD)
+    tend to stop Black or minority race people more often in the daytime
+    than at night, due to being able to identify the race in the
+    daytime. Additionally, I suspect that there is a racial disparity
+    between the initial reasoning for the traffic stop and the potential
+    search and overall conclusion of the stop (citation, written
+    warning, or verbal warning) between minority and white drivers.
+
+- Potential Problems with the Hypothesis/ Core Arguments:
+
+- Quick (two sentences) overview of what the story is about:
+
+- If racial disparities exist across Illinois agencies regardless of
+  location or department size, it would suggest that concerns about
+  biased policing extend far beyond Chicago and may require broader
+  statewide accountability measures.
+
+- The Why:
+
+  - If racial disparities exist across Illinois agencies regardless of
+    location or department size, it would suggest that concerns about
+    biased policing extend far beyond Chicago and may require broader
+    statewide accountability measures.
+>>>>>>> 07cec5ec98589619378975e8297321a52a2f1503
 
 - Target Audience:
+
   - Illinois residents and drivers
   - Communities disproportionately affected by traffic enforcement
-  - Police Department officials/ law enforcement officers 
+  - Police Department officials/ law enforcement officers
   - Policymakers and criminal justice reform advocates
   - Local government officials and police oversight bodies
 
-- Three Potential Interviewees: 
-  - A person impacted by racial discrimination during a traffic stop 
-  - Plan to look on social media for stories on TikTok, Reddit, or Instagram to be able to find an individual for this 
-  - A representative from the Illinois Department of Transportation or Illinois State Police familiar with statewide traffic stop reporting requirements.
-  - A civil rights attorney, policing researcher, or advocate who studies racial disparities in traffic enforcement.
+- Three Potential Interviewees:
 
+<<<<<<< HEAD
 - Data Origin/Records: 
   - I received the data from the Investigative Project on Race and Equity, and it includes data from 2021-2024. Each year has four data sets, two from the Chicago Police Department data (traffic and pedestrian data) and two from all other Illinois police departments' data (traffic and pedestrian data). 
   - I will be bringing in the 2020 Census Illinois population racial breakdown data to be able to calculate the per capita rates to be able to have a true reflection of who police traffic stops impact the most. 
   - I brought in 2020 Census Racial Demographic Breakdown data for the state of Illinois and Chicago 
     <a href = "https://dph.illinois.gov/content/dam/soi/en/web/idph/publications/idph/data-and-statistics/vital-statistics/illinois-population-data/County-Population_Race-Ethnicity_April2020.pdf"> Illinois Population Racial Data </a>
     <a href = "https://www.census.gov/quickfacts/fact/table/chicagocityillinois/POP010220#POP010220"> Chicago Population Racial Data </a>
+=======
+  - A person impacted by racial discrimination during a traffic stop
+  - Plan to look on social media for stories on TikTok, Reddit, or
+    Instagram to be able to find an individual for this
+  - A representative from the Illinois Department of Transportation or
+    Illinois State Police familiar with statewide traffic stop reporting
+    requirements.
+  - A civil rights attorney, policing researcher, or advocate who
+    studies racial disparities in traffic enforcement.
 
-- Visual Ideas: 
+- Data Records:
+
+  - I already received the data from the Investigative Project on Race
+    and Equity, and it includes data from 2021-2024. Each year has four
+    datasets, two from the Chicago Police Department data (traffic and
+    pedestrian data) and two from other Illinois police departments'
+    data (traffic and pedestrian data.
+  - I will be bringing in the 2020 Census Illinois population racial
+    breakdown data to be able to calculate the per capita rates to be
+    able to have a true reflection of who police traffic stops impact
+    the most.
+
+- Visual Ideas:
+>>>>>>> 07cec5ec98589619378975e8297321a52a2f1503
+
   - Statewide map showing racial disparities in stop rates by agency.
+<<<<<<< HEAD
   - Bar chart comparing racial composition of daytime versus nighttime stops.
   - Scatter-plot comparing stop disparities and search hit rates by department.
+=======
+  - Bar chart comparing racial composition of daytime versus nighttime
+    stops.
+  - Scatterplot comparing stop disparities and search hit rates by
+    department.
+>>>>>>> 07cec5ec98589619378975e8297321a52a2f1503
   - An interactive dashboard allowing readers to compare agencies.
   - Timeline showing trends in racial disparities from 2021 to 2024
 
-- Impact: 
-  - This project could reveal whether racial disparities in traffic stops are a problem across Illinois, not just within the Chicago Police Department. The findings could help inform conversations about police accountability and bring attention to departments that conduct thousands of traffic stops each year but rarely face public scrutiny.
+- Impact:
 
+  - This project could reveal whether racial disparities in traffic
+    stops are a problem across Illinois, not just within the Chicago
+    Police Department. The findings could help inform conversations
+    about police accountability and bring attention to departments that
+    conduct thousands of traffic stops each year but rarely face public
+    scrutiny.
 
-- Resources: 
-  - https://news.stanford.edu/stories/2020/05/veil-darkness-reduces-racial-bias-traffic-stops
-  - https://5harad.com/papers/100M-stops.pdf	
+- Resources:
 
+  - <https://news.stanford.edu/stories/2020/05/veil-darkness-reduces-racial-bias-traffic-stops>
+  - <https://5harad.com/papers/100M-stops.pdf>
 
-#### Loading Libraries 
+#### Loading Libraries
 
 ```{r setup, include=FALSE}
 knitr::opts_knit$set(root.dir = "/Users/tiasiasaunders/Desktop/code/tiasia-saunders")
 ```
-
 
 ```{r}
 library(tidyverse)
@@ -117,6 +299,7 @@ library(tidytext)
 
 ```
 
+<<<<<<< HEAD
 
 
 #### Data Tables Definitions
@@ -135,7 +318,25 @@ library(tidytext)
   - Data of traffic stops happening under Chicago police department, and it include fields such as: data, time of stop, stop duration (in minutes), officer name/badge number, name of driver, address, city, state, zip code, vehicle make, vehicle year, driver year of birth, driver race, driver gender, reason for stop, whether a search was conducted, whether drugs,drugs paraphernalia, alcohol, or other contraband were found during the search, and the result of the stop (citation, written warning, verbal warning). 
 - traffic_24:
   - Data of other law enforcement agencies happening under different agencies in Illinois, and it include fields such as: data, time of stop, stop duration (in minutes), officer name/badge number, name of driver, address, city, state, zip code, vehicle make, vehicle year, driver year of birth, driver race, driver gender, reason for stop, whether a search was conducted, whether drugs,drugs paraphernalia, alcohol, or other contraband were found during the search, and the result of the stop (citation, written warning, verbal warning). 
+=======
+##### Data Tables Definitions
 
+- traffic_x: data of traffic stops happening under other agencies, other
+  than Chicago police department
+- traffic_CPD_x: data of traffic stops happening under Chicago police
+  department
+- pedestrian_redacted_x: data of pedestrian stops happening under other
+  agencies, other than Chicago police department
+- pedestrian_CPD_x: data of pedestrian stops happening under Chicago
+  police department
+
+##### Data that I am using for this analysis:
+>>>>>>> 07cec5ec98589619378975e8297321a52a2f1503
+
+- traffic_2024: data of other law enforcement agencies happening under
+  different agencies in Illinois
+- traffic_CPD_2024: data of traffic stops happening under Chicago police
+  department
 
 ```{r eval=FALSE, include=FALSE}
 ##### 2021 Data 
@@ -239,7 +440,6 @@ pedestrian_redacted_22 <- fread("../data/pedestrian_redacted_22.txt", sep = "~")
 
 ```
 
-
 ```{r eval=FALSE, include=FALSE}
 ##### 2023 Data
 drive_download(
@@ -277,7 +477,21 @@ pedestrian_redacted_23 <- fread("../data/pedestrian_redacted_23.txt", sep = "~")
 
 ```
 
+<<<<<<< HEAD
 ```{r eval=FALSE, include=FALSE}
+=======
+#### 2024 Chicago + Law Enforcement Traffic Stop Data Analysis
+
+- So, for the sake of my analysis, I am using 2024 Chicago Police
+  Department and other Illinois law enforcement agencies. I am
+  attempting to find racial disparities through the per capita of 100k
+  people in total stops, reason for stop, and result of stop.
+  Additionally, I am categorizing time frames (10 pm - 4 am = nighttime,
+  6 am - 5 pm = daytime) to examine the disparities in the data through
+  the veil of darkness angle.
+
+```{r eval=FALSE, include=TRUE}
+>>>>>>> 07cec5ec98589619378975e8297321a52a2f1503
 googledrive::drive_auth()
 drive_download(
   as_id("1pqA4y9-Upgol5xWxfDvift43j24ZJZzI"),  # from the share link
@@ -314,9 +528,13 @@ pedestrian_redacted_24 <- fread("../data/pedestrian_redacted_24.txt", sep = "~")
 
 ```
 
+<<<<<<< HEAD
 #### 2024 Chicago + Other Law Enforcement Traffic Stop Data Analysis 
 
 ##### Loading Datasets 
+=======
+##### Loading Datasets
+>>>>>>> 07cec5ec98589619378975e8297321a52a2f1503
 
 ```{r eval=FALSE, include=FALSE}
 dir.create("data", showWarnings = FALSE)
@@ -358,6 +576,13 @@ census_2020_illinois <- read_excel("data/census_2020_illinois_data.xlsx") |>
   clean_names()
 ```
 
+<<<<<<< HEAD
+=======
+```{r eval=FALSE, include=FALSE}
+getwd()
+```
+
+>>>>>>> 07cec5ec98589619378975e8297321a52a2f1503
 ```{r eval=FALSE, include=FALSE}
 
 traffic_CPD_21 <- read_excel("../data/traffic_CPD_21.xlsx")|> 
@@ -404,6 +629,11 @@ pedestrian_CPD_21 |>
   count() |> 
   arrange(desc(n))
 
+<<<<<<< HEAD
+=======
+
+
+>>>>>>> 07cec5ec98589619378975e8297321a52a2f1503
 traffic_21 |> 
   count(agency_name, agency_code) |> 
   arrange(desc(n))
@@ -457,9 +687,16 @@ traffic_23 |>
 # - There are 804 other law enforcement agencies in the traffic_2021 data 
 ```
 
-#### Preliminary Basic Analysis 
+#### Preliminary Basic Analysis
 
+<<<<<<< HEAD
 - Redefining the columns by their associated meaning according to the traffic stop data dictionary 
+=======
+- Redefining my columns by their associated meaning according to the
+  traffic stop data dictionary, so I can have a better understanding of
+  the data and be able to do more analysis on it.
+
+>>>>>>> 07cec5ec98589619378975e8297321a52a2f1503
 ```{r}
 # re coding the race and gender numerical values into what they stand for according to the traffic stop data dictionary 
 
@@ -503,7 +740,6 @@ traffic_CPD_24 <- traffic_CPD_24 |>
 
   
 ```
-
 
 ```{r}
 # re coding the race and gender numerical values into what they stand for according to the traffic stop data dictionary, this one is formatted differently because the previous code chunk was stopping my html file from rendering, so I got this re-edited code from AI to be able to render the html file, but it is doing the same thing as the previous code chunk, just in a different format
@@ -925,11 +1161,24 @@ ggplot(
 
 ```
 
+<<<<<<< HEAD
 - In 2024, there were 206,148 men who were involved in a CPD traffic stop, while 86,591 women were stopped, and 4ll non-binary people were stopped. 
 - As for race, in descending order Black people were stopped 130,938 times, followed by Hispanic/ Latino with 101,891 stops, and then white people were stopped 43,304 times. 
 - When broken down by gender and race, it was found that the top three gender/racial demographics who were stopped by CPD in 2024 were Black men with 85,522 stops, Hispanic men with 76,917 stops, and Black women with 45,225 stops. 
   - These are just the raw counts, and I couldn't find Chicago gender/racial breakdown population data, so I would not be able to calculate the per capita rates for these demographics, but it is still important to note that the top three demographics stopped by the CPD are minority. 
 
+=======
+- In 2024, there were 206,148 men who were involved in a CPD traffic
+  stop, while 86,591 women were stopped, and 4ll non-binary people were
+  stopped.
+- As for race, in descending order Black people were stopped 130,938
+  times, followed by Hispanic/ Latino with 101,891 stops, and then white
+  people were stopped 43,304 times.
+- When broken down by gender and race, it was found that the top three
+  gender/racial demographics who were stopped by CPD in 2024 were Black
+  men with 85,522 stops, Hispanic men with 76,917 stops, and Black women
+  with 45,225 stops.
+>>>>>>> 07cec5ec98589619378975e8297321a52a2f1503
 
 ```{r}
 ## going to do code of datestop time and duration, then make graphic showing the timeline 
@@ -992,11 +1241,26 @@ c_timeline_plot <- ggplot(timeline_monthly, aes(x = month, y = n)) +
 
 ```
 
+<<<<<<< HEAD
 
 - So, I looked into an explanation as to why there was a steady decrease of traffic stops by the CPD in 2024, so once looking it up I found this <a href="https://boltsmag.org/chicago-police-secret-traffic-stops/">article</a>, which explained that there were 210,622 undocumented traffic stops in 2024, despite a 2003 law requiring them to document every traffic stop. 
 - In addition, the Dexter Reed incident in which a 26-year old Black man died at the result of a shootout incident between him and policemen in late March of 2024, may have resulted in heavier scrutiny due to advocacy groups and civil rights lawsuits. 
   - The incident had stemmed from a seatbelt violation traffic stop. 
   
+=======
+- So, I looked into an explanation as to why there was a steady decrease
+  of traffic stops by the CPD in 2024, so once looking it up I found
+  this
+  <a href="https://boltsmag.org/chicago-police-secret-traffic-stops/">article</a>,
+  which explained that there were 210,622 undocumented traffic stops in
+  2024, despite a 2003 law requiring them to document every traffic
+  stop.
+- In addition, the Dexter Reed incident in which a 26-year old Black man
+  died at the result of a shootout incident between him and policemen in
+  late March of 2024, may have resulted in heavier scrutiny due to
+  advocacy groups and civil rights lawsuits.
+  - The incident had stemmed from a seatbelt violation traffic stop.
+>>>>>>> 07cec5ec98589619378975e8297321a52a2f1503
 
 ```{r}
 
@@ -1030,7 +1294,8 @@ datatable(
 )
 ```
 
-- The CPD made traffic stops in a little over 5,000 (5,083) locations in 2024 
+- The CPD made traffic stops in a little over 5,000 (5,083) locations in
+  2024
 
 ```{r eval=FALSE, include=FALSE}
 traffic_CPD_24 <- traffic_CPD_24 |>
@@ -1170,6 +1435,9 @@ vehicle_make_race <- traffic_CPD_24 |>
 vehicle_make_race
 ```
 
+**sort this datatable descending by the most common vehicle and just
+display the first 10 entries**
+
 ```{r}
 DT::datatable(
   vehicle_make_race,
@@ -1183,8 +1451,13 @@ DT::datatable(
 )
 ```
 
-- So, we could just look at the top three Chevrolet cars have been stopped for Black and Hispanic the most, followed by white (its almost 10,000 less then their Black counterpart), and then Asian, which is only in the hundreds. 
-- The highest for white people is with the Toyota model at 6,685 stops, but even then black people were stopped more often in these cars at 7,707 stops, and Hispanic were stopped the most with 10,584 stops. 
+- So, we could just look at the top three Chevrolet cars have been
+  stopped for Black and Hispanic the most, followed by white (its almost
+  10,000 less then their Black counterpart), and then Asian, which is
+  only in the hundreds.
+- The highest for white people is with the Toyota model at 6,685 stops,
+  but even then black people were stopped more often in these cars at
+  7,707 stops, and Hispanic were stopped the most with 10,584 stops.
 
 ```{r include=FALSE}
 outcome_race <- traffic_CPD_24 |> 
@@ -1370,8 +1643,7 @@ p <- ggplot(
 ggplotly(p, tooltip = "text")
 ```
 
-
-#### Preliminary Data Analysis With the Other Illinois Law Enforcement Agencies for 2024 
+#### Preliminary Data Analysis With the Other Illinois Law Enforcement Agencies for 2024
 
 ```{r}
 agency_traffic <- traffic_24 |>
@@ -1385,6 +1657,7 @@ pivot_wider(
   )
 ```
 
+<<<<<<< HEAD
 - There are 786 other law enforcement agencies in the traffic_2024 data. 
 
 ```{r}
@@ -1400,6 +1673,9 @@ datatable(
   caption = "Illinois Traffic Stops by Agency and Race"
 )
 ```
+=======
+- There are 786 other law enforcement agencies in the traffic_2024 data.
+>>>>>>> 07cec5ec98589619378975e8297321a52a2f1503
 
 ```{r}
 gender_traffic_24 <- traffic_24 |> 
@@ -1422,7 +1698,17 @@ gender_race_traffic_24
 
 ```
 
+**the headline is cut off on the ggplot**
 
+<<<<<<< HEAD
+=======
+\*\***i think the main thing is to normalize this graphic and the CPD
+graphic by total demographic. we would expect a significant number of
+black people to be pulled over in Chicago because the city is 28% Black.
+out in the suburbs, probably few Black folks. let's try to address
+that**
+
+>>>>>>> 07cec5ec98589619378975e8297321a52a2f1503
 ```{r}
 ## creating the bar chart 
 
@@ -1479,8 +1765,21 @@ ggplot(
 
 ```
 
+<<<<<<< HEAD
 - So, when I am looking at this bar chart of all the other police departments traffic stops, I notice the top two are white males with 583,079 stops and white females with 371,651, and followed by Hispanic males with 236,865 stops. At first glance, it looks like white people are being stopped more than their minority counterparts, but as I hypothesized, I believe this is due to the population size of white people being very big in the state of Illinois. 
 - I am now going to account for racial per capita calculations to get a more robust picture of who is most likely to get stopped.  
+=======
+- So, when I am looking at this bar chart of all the other police
+  departments traffic stops, I notice the top two are white males with
+  583,079 stops and white females with 371,651, and followed by Hispanic
+  males with 236,865 stops. At first glance, it looks like white people
+  are being stopped more than their minority counterparts, but as I
+  hypothesized, I believe this is due to the population size of white
+  people being very big in the state of Illinois. So, I am now going to
+  account for per capital calculations with both the CPD to ensure that
+  minorities are the most likely to be stopped and see if it lies true
+  for the other local law enforcement agencies.
+>>>>>>> 07cec5ec98589619378975e8297321a52a2f1503
 
 ```{r}
 ## creating the timeline with annotations 
@@ -1579,27 +1878,142 @@ ggsave(
 )
 ```
 
+<<<<<<< HEAD
 
 - The decline in June could be related to the 200,000 undocumented traffic stops and on this day Chicago Police Superintendent announced at a press release the decrease in traffic stops. 
+=======
+- The decline in June could be related to the 200,000 undocumented
+  traffic stops and on this day Chicago Police Superintendent announced
+  at a press release the decrease in traffic stops.
+>>>>>>> 07cec5ec98589619378975e8297321a52a2f1503
 
 #### Per capita Calculations to get a true reflection of the data, I need to account for population size when looking at the number of stops by race. 
 
+<<<<<<< HEAD
 ```{r include=FALSE}
 census_2020_illinois <- census_2020_illinois |> 
   slice(1:6)
+=======
+#### Per Capital Calculations to get a true reflection of the data, I need to account for population size when looking at the number of stops by race.
+>>>>>>> 07cec5ec98589619378975e8297321a52a2f1503
 
 census_2020_illinois <- census_2020_illinois |>
   mutate(
+<<<<<<< HEAD
     race_and_hispanic_origin = recode(race_and_hispanic_origin,
       "American Indian" = "AIAN", 
       "Black or African American"= "Black"
+=======
+    stops_per_100k = round((total_stops / population_number) * 100000, 1)
+  ) |>
+  arrange(desc(stops_per_100k))
+
+per_capita_CPD_race
+
+```
+
+```{r}
+census_race <- census_race |>
+  mutate(
+    race = recode(race,
+      "Native Hawaiian or Other Pacific Islander" = "NHPI"
+    )
+  )
+
+traffic_24 <- traffic_24 |> 
+  mutate(
+    driver_race = recode(driver_race, 
+      "Native Hawaiian or Other Pacific Islander" = "NHPI"
+>>>>>>> 07cec5ec98589619378975e8297321a52a2f1503
     )
   )
 ```
 
+<<<<<<< HEAD
 
 ```{r}
 ## doing per capita for the other law enforcement agencies 
+=======
+```{r}
+unique(traffic_24$race)
+unique(census_race$race)
+```
+
+```{r}
+## making graph to highlight the per capita rate for CPD traffic stops 
+ per_capita_CPD_race <- per_capita_CPD_race |>
+  mutate(
+    highlight = if_else(
+      race %in% c("Black", "Hispanic", "White", "Asian"),
+      "Major group",
+      "Small population group"
+    )
+  )
+
+ggplot(
+  per_capita_CPD_race,
+  aes(
+    x = reorder(race, stops_per_100k),
+    y = stops_per_100k,
+    fill = highlight
+  )
+) +
+  geom_col() +
+
+  geom_text(
+    aes(label = comma(round(stops_per_100k))),
+    hjust = -0.1,
+    size = 3
+  ) +
+
+  coord_flip() +
+
+  scale_fill_manual(
+    values = c(
+      "Major group" = "#B22222",
+      "Small population group" = "gray70"
+    )
+  ) +
+
+  scale_y_continuous(
+    labels = comma,
+    expand = expansion(mult = c(0, .15))
+  ) +
+
+  labs(
+    title = "Black residents experienced the highest traffic stop rate by the\nChicago Police Department among Illinois' largest racial groups",
+    subtitle = "Traffic stops per 100,000 residents, 2024",
+    x = NULL,
+    y = "Stops per 100,000 residents",
+    caption = "Source: Illinois traffic stop data and 2020 Census population estimates.\n Native Hispanics or other Pacific Islander (NHPI) and American Indian (AIAN) rates are based on substantially smaller population counts."
+  ) +
+
+  theme_minimal() +
+  theme(
+    legend.position = "none",
+    plot.title = element_text(face = "bold"),
+  plot.caption = element_text(size = 4, color = "gray40", hjust = 1,   margin = margin(t = 5, r = 1, b = 0, l = 0)), 
+      
+  )
+
+```
+
+- **THIS HEADLINE IS CONFUSING BECAUSE THE BLACK RESIDENTS ARE THIRD ON
+  THE CHART AND YET IT SAYS THEY ARE THE LARGEST – EVEN THOUGH YOU'RE
+  QUALIFYING IF BY LARGEST RACIAL GROUP, THE WORDING CLASHES WITH THE
+  CHART, SO REVISE**
+- CPD traffic stop rates were highest among **STOP USING THESE ACRONYMS.
+  SPELL OUT Native Hispanics or other Pacific Islander NOT NHPI**
+  ~~NHPI~~ and American Indian residents, though those rates are based
+  on much smaller population counts. Among larger racial groups, Black
+  residents had the highest stop rate, with about 7,374 stops per
+  100,000 residents.
+  - ~~Should I take those out or just keep the grey to highlight the
+    point of the graph~~?
+
+```{r}
+## doing per capital for the other law enforcement agencies 
+>>>>>>> 07cec5ec98589619378975e8297321a52a2f1503
 per_capita_traffic_race <- traffic_24 |>
   count(race, name = "total_stops") |>
   left_join(census_2020_illinois, by = c("race" = "race_and_hispanic_origin")) |>
@@ -1614,6 +2028,7 @@ per_capita_traffic_race
 
 
 
+<<<<<<< HEAD
 - Illinois state traffic stop rates were highest among NHPI and American Indian residents, though those rates are based on much smaller population counts. Among larger racial groups, Black residents had the highest stop rate, with about 7,374 stops per 100,000 residents, compared with 580 per 100,000 white residents.
 
 ```{r}
@@ -1683,6 +2098,15 @@ search_race_illinois <- search_race_illinois |>
   )
 
 ```
+=======
+- Illinois state traffic stop rates were highest among NHPI and American
+  Indian residents, though those rates are based on much smaller
+  population counts. Among larger racial groups, Black residents had the
+  highest stop rate, with about 7,374 stops per 100,000 residents,
+  compared with 580 per 100,000 white residents.
+  - Should I take those out or just keep the grey to highlight the point
+    of the graph?
+>>>>>>> 07cec5ec98589619378975e8297321a52a2f1503
 
 ##### Veil of Darkness Element (Very Basic Level)
 
@@ -1786,10 +2210,18 @@ veil_race_CPD_24 <- traffic_CPD_24 |>
 
 ```
 
-- Black drivers accounted for the largest share of Chicago traffic stops during both daytime (48.0%) and nighttime (41.0%) hours.
-- Hispanic drivers' share increased from 31.7% during the day to 37.0% at night.
-- White drivers accounted for 16.2% of daytime stops and 13.0% of nighttime stops.
-- At first I was a little confused, but then I realized the racial distribution of stops in Chicago differs substantially from statewide Illinois traffic-stop patterns, where White drivers make up the majority of stops.
+- **DOESNT THAT CONTRADICT YOUR PREVIOUS CHART?** Black drivers
+  accounted for the largest share of Chicago traffic stops during both
+  daytime (48.0%) and nighttime (41.0%) hours.
+- Hispanic drivers' share increased from 31.7% during the day to 37.0%
+  at night.
+- White drivers accounted for 16.2% of daytime stops and 13.0% of
+  nighttime stops.
+- At first I was a little confused, but then I realized the racial
+  distribution of stops in Chicago differs substantially from statewide
+  Illinois traffic-stop patterns, where White drivers make up the
+  majority of stops.
+
 ```{r}
 ggsave(
   "traffic_stops.png",
@@ -1798,7 +2230,6 @@ ggsave(
   dpi = 300
 )
 ```
-
 
 ```{r}
 ## calculating the daytime/nighttime for other traffic data 
@@ -1831,7 +2262,6 @@ veil_race_traffic_24 <- traffic_24 |>
 veil_race_traffic_24
 ```
 
-
 ```{r}
 ## doing the same workflow for the general Illinois traffic stop data 
 traffic_24 <- traffic_24 |>
@@ -1844,8 +2274,6 @@ traffic_24 <- traffic_24 |>
     )
   )
 ```
-
-
 
 ```{r}
 ## making the graphic for that 
@@ -1899,6 +2327,7 @@ veil_race <- traffic_24 |>
 
 ```
 
+<<<<<<< HEAD
 - During the day, Black drivers account for 18.8 percent of stops and at night they account for 27.1 percent of stops 
   - That's an increase of 8.3 percentage points, which is a 44 percent increase in the share of stops that Black drivers account for at night compared to the day
 - On the other hand, white drivers fall from 58.1 percent of stops during the day to 46.8 percent at night 
@@ -1937,11 +2366,122 @@ veil_race <- traffic_24 |>
   
 
 
+=======
+- **label this as the illinois police departments data not the chicago
+  police**
+- During the day, Black drivers account for 18.8 percent of stops and at
+  night they account for 27.1 percent of stops
+  - That's an increase of 8.3 percentage points, which is a 44 percent
+    increase in the share of stops that Black drivers account for at
+    night compared to the day
+- On the other hand, white drivers fall from 58.1 percent of stops
+  during the day to 46.8 percent at night
+  - That's a decrease of 11.3 percentage points, which is a 19.5 percent
+    decrease in the share of stops that white drivers account for at
+    night compared to the day
+>>>>>>> 07cec5ec98589619378975e8297321a52a2f1503
 
+### Conclusion (thus far):
 
+- CPD Traffic stops by racial disparities breakdown:
+  - Black drivers represented the largest share of traffic stops during
+    both daytime and nighttime hours, accounting for 48.0% of stops
+    during the day and 41.0% at night, while Hispanic drivers' share
+    increased from 31.7% during the day to 37.0% at night, and White
+    drivers accounted for 16.2% of daytime stops and 13.0% of nighttime
+    stops.
+- Illinois Traffic stops by other law enforcement agencies:
+  - Black drivers represented a larger share of traffic stops during
+    nighttime hours than during daytime hours, increasing from 18.8% of
+    stops to 27.1%, while White drivers' share declined from 58.1% to
+    46.8%.
+- Per capital calculations:
+  - CPD traffic stop rates were highest among NHPI and American Indian
+    residents, though those rates are based on much smaller population
+    counts (should I take them out). Among larger racial groups, Black
+    residents had the highest stop rate, with about 7,374 stops per
+    100,000 residents, compared with 580 per 100,000 white residents.
+  - Illinois state traffic stop rates were highest among NHPI and
+    American Indian residents, though those rates are based on much
+    smaller population counts. Among larger racial groups, Black
+    residents had the highest stop rate, with about 7,374 stops per
+    100,000 residents, compared with 580 per 100,000 white residents.
+  - As for the general Illinois law enforcement agencies data, Among
+    larger racial groups, Black residents had the highest stop rate,
+    with about 7,374 stops per 100,000 residents, compared with 580 per
+    100,000 white residents.
+- Overall, I would say the veil of darkness element does seem to be
+  supported by the data, as there is a noticeable increase in the share
+  of stops that Black drivers account for at night compared to the day,
+  and a noticeable decrease in the share of stops that white drivers
+  account for at night compared to the day. However, I would say that
+  this is not a definitive conclusion, as there could be other factors
+  at play that are contributing to these trends, such as differences in
+  driving patterns or law enforcement practices during different times
+  of the day.
+- If I had the opportunity to expand on this project, I would definitely
+  to strengthen the veil of darkness angle.
+- Overall, I would say that the data does seem to support the idea that
+  there are racial disparities in traffic stops, and that these
+  disparities are more pronounced during nighttime hours, which is
+  consistent with the veil of darkness theory. However, I would also say
+  that there are likely other factors at play that are contributing to
+  these trends, and that further research would be needed to fully
+  understand the underlying causes of these disparities.
 
+### How I could expand on this:
 
+- I could create a more specific formula to account for actual sunset
+  and sunrise times throughout the year by connecting weather app data,
+  this would be more specific to the veil of darkness element and would
+  be more accurate than just categorizing it by hours, but I think for
+  the sake of this project and the time frame I have, this is sufficient
+  enough to get a general idea of the trends. Should I attempt to do
+  this?
+- I could also look into the hit rate of drug searches by race and see
+  if there are any disparities there, and then also look into the reason
+  for stop and see if there are any racial disparities in the reason for
+  stop and then also look at the hit rate of drug searches by reason for
+  stop and see if there are any disparities there as well.
 
+#### Next Steps (Before presentation):
 
+- I plan to make an interactive map showcasing the amount of stops at
+  different agencies locations and the racial breakdown of those stops,
+  and then also make a graphic showing the top 10 most common vehicle
+  makes that were stopped by CPD in 2024 and the racial breakdown of
+  those stops.
+- I will think of other potential graphics, but I think I'm good for the
+  most part
+- I will carefully look back through data analysis to ensure everything
+  is correct before transitioning to webpage
+- I plan to save these graphics (after looking back through code to make
+  sure its correct) and then start to build my webpage for presentation
+- I will be using Phoenix Code to create a html, css, and javascript
+  webpage for presentation on Saturday
+  - I want my end project to look really good so that I can add to
+    portfolio and also so that I can share the results with the IPORAE
+    members.
 
+##### Business Company Context and Financial Information:
 
+- Tempus AI is one of Chicago's most influential technology companies
+  and a key player in the growing field of artificial
+  intelligence-driven healthcare. Founded in Chicago, the company uses
+  AI and large-scale clinical and genomic data to help physicians make
+  more personalized treatment decisions, particularly in cancer care and
+  precision medicine.
+- For me as a journalist, Tempus is important to watch because it sits
+  at the center of several major reporting areas, including AI
+  innovation, healthcare, biotechnology, data privacy, and economic
+  development. As Chicago continues to emerge as a hub for health
+  technology and artificial intelligence, Tempus offers a window into
+  how these industries are shaping both the local economy and the future
+  of medicine.
+- Additionally, Tempus has been in the news for its rapid growth,
+  significant funding rounds, and high-profile partnerships with
+  healthcare providers and research institutions. Furthermore, its
+  first-quarter 2026 revenue, it reported 348.1 million in revenue,
+  which exceeded analyst estimates of 345.4 million and it increased by
+  36 percent from the same quarter a year prior. The company has raised
+  its full-year 2026 revenue forecast to between 1.59 - 1.60 billion.
