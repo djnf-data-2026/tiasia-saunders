@@ -1,5 +1,5 @@
 ---
-title: "Illinois Traffic and Pedestrian Data Analysis"
+title: "Illinois Traffic Data Analysis"
 author: "Tiasia Saunders"
 date: "2026-06-05"
 output: html_document
