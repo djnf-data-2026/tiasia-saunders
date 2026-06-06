@@ -1,7 +1,7 @@
 ---
-title: "Traffic and Pedestrian Data"
+title: "Illinois Traffic and Pedestrian Data Analysis"
 author: "Tiasia Saunders"
-date: "2026-06/01"
+date: "2026-06-05"
 output: html_document
 editor_options: 
   markdown: 
@@ -10,11 +10,9 @@ editor_options:
 
 ### Chicago Police Department versus other Illinois Law Enforcement Agencies Correlation with the Veil of Darkness 
 
-- Pitch: Is Racial Bias in Traffic Stops a Chicago Problem or a Statewide Problem? 
-  - Using four years of Illinois traffic stop data from 2021 to 2024, I want to examine      whether racial disparities in traffic stops extend beyond the Chicago Police Department to suburban and downstate Illinois law enforcement agencies. While CPD has faced significant scrutiny, especially since the fatal shooting of Dexter Reed, a 26-year-old Black man who was shot and killed in 2024 by the Chicago Police Department during a shootout between him and officers, smaller departments across Illinois operate with far less oversight and have received almost no data-driven accountability reporting. 
-  - By examining this through the veil of darkness lens, which controls for visibility conditions to isolate racial bias in stop decisions, across multiple Illinois agencies, I can determine whether this is a Chicago-specific failure or a statewide structural problem. If suburban departments, county sheriffs, and state police show the same pattern as CPD, that fundamentally re-frames the conversation around racial bias in Illinois policing and raises urgent questions about what oversight, if any, exists for the departments that fly under the radar. 
-  - While racial disparities in policing have been documented nationally, most public attention in Illinois focuses on the Chicago Police Department. If similar patterns appear across suburban, county, and state law enforcement agencies, it would suggest that racial bias is not isolated to one department but may be embedded throughout Illinois policing. This matters because many of these agencies receive far less public scrutiny, media coverage, and oversight despite conducting thousands of traffic stops each year.
+#### Is Racial Bias in Traffic Stops a Chicago Problem or a Statewide Problem? 
 
+- Using four years of Illinois traffic stop data from 2021 to 2024, I want to examine whether racial disparities in traffic stops extend beyond the Chicago Police Department to suburban and downstate Illinois law enforcement agencies. While CPD has faced significant scrutiny, especially since the fatal shooting of Dexter Reed, a 26-year-old Black man who was shot and killed in 2024 by the Chicago Police Department during a shootout between him and officers, smaller departments across Illinois operate with far less oversight and have received almost no data-driven accountability reporting. I would like to measure the racial disparity angle through using the veil of darkness lens. 
 
 - Veil of Darkness Explanation: 
 
@@ -23,37 +21,32 @@ editor_options:
   - The theory: if racial profiling exists, there should be a higher percentage of minority drivers stopped during daylight hours when officers can easily identify race, compared to nighttime hours when the ‘veil of darkness’ conceals the person’s race 
   - Daytime: 6 a.m. to 5 p.m. 
   - Nighttime: 10 p.m. to 4 a.m.
-  - Excluded transition hours: 4 a.m.–5:59 a.m. and 5 p.m.–9:59 p.m.
+  - Excluded Transition Hours: 4 a.m.–5:59 a.m. and 5 p.m.–9:59 p.m.
 
 
-- Proposed Methodology: (How will I get the evidence needed to prove or disprove my hypothesis)
+- Proposed Methodology: 
   - Will be looking at the racial breakdown of traffic stops across all Illinois law enforcement agencies, including CPD, to determine if there is a racial disparity in who gets stopped the most. 
-  - So analysis will be done on traffic_24 (all other Illinois law enforcement agencies traffic enforcement data) and traffic_CPD_24 (Chicago Police Department traffic enforcement data) to determine if there is a racial disparity in both CPD and the other Illinois law enforcement agencies, and then comparing the two to see if there is a similar pattern in both data sets.
+  - Analysis will be done on traffic_24 (all other Illinois law enforcement agencies traffic enforcement data) and traffic_CPD_24 (Chicago Police Department traffic enforcement data) to determine if there is a racial disparity in both CPD and the other Illinois law enforcement agencies, and then comparing the two to see if there is a similar pattern in both data sets.
 - Veil of Darkness: Will be determining racial bias through looking at the two sets of time ranges, the day and the night, to examine whether there is an obvious decrease in the amount of Black or brown people who are stopped at night due to the lack of visibility 
 Suspicion Threshold: Will be looking at the resulting actions of stops after the initial traffic stop to determine whether there is a drastic disparity between how Black/brown versus white people are treated during a traffic stop 
-- Will be looking at whether police officers have sufficient or suspected reason to search for evidence, and whether the ‘hit rate’ (that the officers do find something illegal) for minorities is relatively lower than their white counterparts or around the same, to determine if the threshold is equal for both 
-- Will be examining racial disparities in the initial reason for the stop, and then the resulting actions of the stop (citation, written warning, verbal warning) to determine if there is a disparity there as well
 
 
 - Data Process Workflow: 
  - So, I have downloaded the 16 (four per year from 2021-2024) datasets into my .rmd file and have begun preliminary analysis on it to see what I am working with 
-  - For the sake of time, I will be performing the analysis on just the 2024 traffic data. Might, look at pedestrian due to curiosity if time permits. 
- - I have added the 2020 Census  (let me know if there is a better source that could be used for this data) racial population makeup to my RMD.file to be able to calculate the per capita rates to determine which race is truly most impacted by traffic stops 
+  - For the sake of time, I will be performing the analysis on just the 2024 traffic data.
+ - I have added the 2020 Census racial population makeup to my RMD.file to be able to calculate the per capita rates to determine which race is truly most impacted by traffic stops 
   - I plan to determine the racial discrimination through three factors: 
   - The veil of darkness angle 
-  -  Examining the breakdown of the driver’s race, reason for the stop, and the result of the stop to determine if there are disparities there 
-  - Examining the reason for stop and hit rates (whether officers find something illegal during a search) for minorities versus white people to determine if there is a disparity in the suspicion threshold for minorities versus white people)
 
 - Hypothesis: 
   - I suspect that I will find a pattern within the broader Illinois as a whole, that most of the law enforcement agencies (including CPD) tend to stop Black or minority race people more often in the daytime than at night, due to being able to identify the race in the daytime. Additionally, I suspect that there is a racial disparity between the initial reasoning for the traffic stop and the potential search and overall conclusion of the stop (citation, written warning, or verbal warning) between minority and white drivers. 
 
 - Potential Problems with the Hypothesis/ Core Arguments: 
-
-- Quick (two sentences) overview of what the story is about:
-- If racial disparities exist across Illinois agencies regardless of location or department size, it would suggest that concerns about biased policing extend far beyond Chicago and may require broader statewide accountability measures.
+  - Due to the sake of time, I believe there could be a more efficient statistical workflow that could be done to ensure that the veil of darkness angle was robust and accurate. If I had more time, I would create a formula that accounted for Illinois's sunset and sunrise times for each day of the year 2024, to get the most accurate number. So, my interpretation with using the categorized time frames is vague and could be elaborated on more in the future. 
 
 - The Why: 
   - If racial disparities exist across Illinois agencies regardless of location or department size, it would suggest that concerns about biased policing extend far beyond Chicago and may require broader statewide accountability measures.
+
 - Target Audience:
   - Illinois residents and drivers
   - Communities disproportionately affected by traffic enforcement
@@ -67,14 +60,17 @@ Suspicion Threshold: Will be looking at the resulting actions of stops after the
   - A representative from the Illinois Department of Transportation or Illinois State Police familiar with statewide traffic stop reporting requirements.
   - A civil rights attorney, policing researcher, or advocate who studies racial disparities in traffic enforcement.
 
-- Data Records: 
-  - I already received the data from the Investigative Project on Race and Equity, and it includes data from 2021-2024. Each year has four datasets, two from the Chicago Police Department data (traffic and pedestrian data) and two from other Illinois police departments' data (traffic and pedestrian data. 
+- Data Origin/Records: 
+  - I received the data from the Investigative Project on Race and Equity, and it includes data from 2021-2024. Each year has four data sets, two from the Chicago Police Department data (traffic and pedestrian data) and two from all other Illinois police departments' data (traffic and pedestrian data). 
   - I will be bringing in the 2020 Census Illinois population racial breakdown data to be able to calculate the per capita rates to be able to have a true reflection of who police traffic stops impact the most. 
+  - I brought in 2020 Census Racial Demographic Breakdown data for the state of Illinois and Chicago 
+    <a href = "https://dph.illinois.gov/content/dam/soi/en/web/idph/publications/idph/data-and-statistics/vital-statistics/illinois-population-data/County-Population_Race-Ethnicity_April2020.pdf"> Illinois Population Racial Data </a>
+    <a href = "https://www.census.gov/quickfacts/fact/table/chicagocityillinois/POP010220#POP010220"> Chicago Population Racial Data </a>
 
 - Visual Ideas: 
   - Statewide map showing racial disparities in stop rates by agency.
   - Bar chart comparing racial composition of daytime versus nighttime stops.
-  - Scatterplot comparing stop disparities and search hit rates by department.
+  - Scatter-plot comparing stop disparities and search hit rates by department.
   - An interactive dashboard allowing readers to compare agencies.
   - Timeline showing trends in racial disparities from 2021 to 2024
 
@@ -115,15 +111,17 @@ library(dplyr)
 library(ggrepel)
 library(lubridate)
 library(readxl)
+library(htmlwidgets)
+library(plotly)
 library(tidytext)
 
 ```
 
 
 
-##### Data Tables Definitions
+#### Data Tables Definitions
 
-  -  traffic_x: data of traffic stops happening under other agencies,
+  -  traffic_x: data of traffic stops happening under other agencies
     other than Chicago police department
   - traffic_CPD_x: data of traffic stops happening under Chicago police
     department
@@ -132,10 +130,11 @@ library(tidytext)
   - pedestrian_CPD_x: data of pedestrian stops happening under Chicago
     police department
 
-##### Data that I am using for this analysis: 
-- traffic_2024: data of other law enforcement agencies happening under different agencies in Illinois 
-- traffic_CPD_2024: data of traffic stops happening under Chicago police department
-
+##### Data Description: 
+- traffic_CPD_24: 
+  - Data of traffic stops happening under Chicago police department, and it include fields such as: data, time of stop, stop duration (in minutes), officer name/badge number, name of driver, address, city, state, zip code, vehicle make, vehicle year, driver year of birth, driver race, driver gender, reason for stop, whether a search was conducted, whether drugs,drugs paraphernalia, alcohol, or other contraband were found during the search, and the result of the stop (citation, written warning, verbal warning). 
+- traffic_24:
+  - Data of other law enforcement agencies happening under different agencies in Illinois, and it include fields such as: data, time of stop, stop duration (in minutes), officer name/badge number, name of driver, address, city, state, zip code, vehicle make, vehicle year, driver year of birth, driver race, driver gender, reason for stop, whether a search was conducted, whether drugs,drugs paraphernalia, alcohol, or other contraband were found during the search, and the result of the stop (citation, written warning, verbal warning). 
 
 
 ```{r eval=FALSE, include=FALSE}
@@ -188,8 +187,6 @@ pedestrian_redacted_21 <- fread("../data/pedestrian_redacted_21.txt", sep = "~")
 
 
 ```
-
-
 
 ```{r eval=FALSE, include=FALSE}
 ##### 2022 Data 
@@ -280,11 +277,7 @@ pedestrian_redacted_23 <- fread("../data/pedestrian_redacted_23.txt", sep = "~")
 
 ```
 
-#### 2024 Chicago + Law Enforcement Traffic Stop Data Analysis 
-
-- So, for the sake of my analysis, I am using 2024 Chicago Police Department and other Illinois law enforcement agencies. I am attempting to find racial disparities through the per capita of 100k people in total stops, reason for stop, and result of stop. Additionally, I am categorizing time frames (10 pm - 4 am = nighttime, 6 am - 5 pm = daytime) to examine the disparities in the data through the veil of darkness angle. 
-
-```{r eval=FALSE, include=TRUE}
+```{r eval=FALSE, include=FALSE}
 googledrive::drive_auth()
 drive_download(
   as_id("1pqA4y9-Upgol5xWxfDvift43j24ZJZzI"),  # from the share link
@@ -321,13 +314,15 @@ pedestrian_redacted_24 <- fread("../data/pedestrian_redacted_24.txt", sep = "~")
 
 ```
 
+#### 2024 Chicago + Other Law Enforcement Traffic Stop Data Analysis 
+
 ##### Loading Datasets 
 
-```{r}
+```{r eval=FALSE, include=FALSE}
 dir.create("data", showWarnings = FALSE)
 ```
 
-```{r eval=FALSE, include=TRUE}
+```{r eval=FALSE, include=FALSE}
 googledrive::drive_auth()
 
 # ALWAYS create folder in working directory (not ../data)
@@ -350,18 +345,18 @@ drive_download(
 
 traffic_24 <- fread("data/traffic_24.txt", sep = "~") |> 
   clean_names()
+
+
 ```
 
 ```{r}
-traffic_CPD_24 <- read_excel("data/traffic_CPD_24.xlsx") |> clean_names()
-traffic_24 <- fread("data/traffic_24.txt", sep="~") |> clean_names()
+traffic_CPD_24 <- read_excel("data/traffic_CPD_24.xlsx") |> 
+  clean_names()
+traffic_24 <- fread("data/traffic_24.txt", sep="~") |> 
+  clean_names()
+census_2020_illinois <- read_excel("data/census_2020_illinois_data.xlsx") |>
+  clean_names()
 ```
-
-
-```{r eval=FALSE, include=FALSE}
-getwd()
-```
-
 
 ```{r eval=FALSE, include=FALSE}
 
@@ -396,12 +391,12 @@ pedestrian_CPD_24 <- read_excel("../data/pedestrian_CPD_24.xlsx") |>
   clean_names() 
 traffic_24 <- fread("../data/traffic_24.txt") |>
   clean_names()
-pedestrian_redacted_24 <- fread("../data/pedestrian_redacted_24.txt") |>   clean_names()
+pedestrian_redacted_24 <- fread("../data/pedestrian_redacted_24.txt") |>   
+  clean_names()
 census_2020_illinois <- read_excel("../data/census_2020_illinois_data.xlsx") |>
   clean_names()
 
 ```
-
 
 ```{r eval=FALSE, include=FALSE}
 pedestrian_CPD_21 |> 
@@ -409,16 +404,12 @@ pedestrian_CPD_21 |>
   count() |> 
   arrange(desc(n))
 
-
-
-```{r eval=FALSE, include=FALSE}
 traffic_21 |> 
   count(agency_name, agency_code) |> 
   arrange(desc(n))
 
 # - There are 786 other law enforcement agencies in the traffic_2021 data 
 ```
-
 
 ```{r eval=FALSE, include=FALSE}
 ## creating a df with agency_name and agency_code do I can add agency names to my pt 1 and pt 2 of traffic_2022 data 
@@ -445,7 +436,6 @@ traffic_22 <- traffic_22 |>
 
 ```
 
-
 ```{r eval=FALSE, include=FALSE}
 ## ensuring join worked correctly 
 traffic_22 |> 
@@ -453,14 +443,12 @@ traffic_22 |>
 
 ```
 
-
 ```{r eval=FALSE, include=FALSE}
 traffic_22 |> 
   count(agency_name, agency_code) |> 
   arrange(desc(n))
 # - There are 792 other law enforcement agencies in the traffic_2022 data 
 ```
-
 
 ```{r eval=FALSE, include=FALSE}
 traffic_23 |> 
@@ -471,8 +459,7 @@ traffic_23 |>
 
 #### Preliminary Basic Analysis 
 
-- Redefining my columns by their associated meaning according to the traffic stop data dictionary, so I can have a better understanding of the data and be able to do more analysis on it.
-
+- Redefining the columns by their associated meaning according to the traffic stop data dictionary 
 ```{r}
 # re coding the race and gender numerical values into what they stand for according to the traffic stop data dictionary 
 
@@ -519,11 +506,9 @@ traffic_CPD_24 <- traffic_CPD_24 |>
 
 
 ```{r}
+# re coding the race and gender numerical values into what they stand for according to the traffic stop data dictionary, this one is formatted differently because the previous code chunk was stopping my html file from rendering, so I got this re-edited code from AI to be able to render the html file, but it is doing the same thing as the previous code chunk, just in a different format
 
-# re coding the race and gender numerical values into what they stand for according to the traffic stop data dictionary 
-# re coding the race and gender numerical values into what they stand for according to the traffic stop data dictionary 
-
-traffic_24$driver_sex <- dplyr::recode(
+traffic_24$sex <- dplyr::recode(
   as.character(traffic_24[["driver_sex"]]),
   "1" = "Male",
   "2" = "Female",
@@ -531,7 +516,7 @@ traffic_24$driver_sex <- dplyr::recode(
   "9" = "Unknown"
 )
 
-traffic_24$driver_race <- dplyr::recode(
+traffic_24$race <- dplyr::recode(
   as.character(traffic_24[["driver_race"]]),
   "1" = "White",
   "2" = "Black",
@@ -570,28 +555,318 @@ traffic_24$result_of_stop <- dplyr::recode(
 )
 ```
 
-
 ```{r}
-gender_CPD_24 <- traffic_CPD_24 |> 
-  count(sex, race) |> 
-  arrange(desc(n))
-
-gender_CPD_24
-
-race_CPD_24 <- traffic_CPD_24 |> 
-  count(race) |> 
-  arrange(desc(n))
-
-race_CPD_24
-
 gender_race_CPD_24 <- traffic_CPD_24 |> 
   count(sex, race) |> 
   arrange(desc(n))
 
 gender_race_CPD_24
+
+## creating one for race so I can calculate for CPDS traffic stops by race per capita rate since the Census data doesn't have a gender breakdown
+race_CPD_24 <- traffic_CPD_24 |>
+  count(race) |> 
+  arrange(desc(n))
+
+race_CPD_24
+
 ```
 
 ```{r}
+## creating ggplot of solely race raw counts, so I can compare to the per capita 
+race_CPD_24 <- race_CPD_24 |> 
+  arrange(desc(n)) |> 
+  mutate(
+    highlight = if_else(row_number() <= 3, "Top 3", "Other"), 
+    group = paste(race, highlight)
+  )
+
+ggplot(
+  race_CPD_24, 
+  aes(
+    x = reorder(race, n), 
+     y = n,
+    fill = highlight
+    )
+) +
+  geom_col() +
+  
+  geom_text(
+    aes(label = comma(n)),
+    hjust = -0.1,
+    size = 3
+  ) +
+  
+  coord_flip() +
+  
+  scale_fill_manual(
+    values = c(
+      "Top 3" = "#B22222",
+      "Other" = "gray70"
+    )
+  ) +
+  
+  scale_y_continuous(
+    labels = comma,
+    expand = expansion(mult = c(0, .15))
+  ) +
+  
+  labs(
+    title = "Chicago Police Department Traffic stops by race",
+    subtitle = "Black and Hispanic drivers represented the largest number of recorded traffic stops",
+    x = NULL,
+    y = "Number of stops",
+    caption = "Source: Chicago Police Department\n These are the raw number counts. \n Graphic by Tiasia Saunders", 
+    plot_caption = 8
+  ) +
+  
+  theme_minimal() +
+  theme(
+    legend.position = "none",
+    plot.title = element_text(face = "bold"), 
+    plot.caption = element_text(size = 6)
+  )
+
+
+```
+
+- This graphic is the raw counts of CPD traffic stops and it shows that Black and Hispanic drivers represented the largest number of recorded traffic stops in 2024, with Black drivers being stopped 130,938 times and Hispanic drivers being stopped 101,891 times. White drivers were the third most stopped group with 43,304 stops. The other racial groups had significantly fewer stops compared to these three groups. 
+- This graphic does not account for the population size of each racial group in Chicago, so it does not provide insight into the per capita rates of traffic. 
+
+#### Per capita Calculations to get a true reflection of the data, I need to account for population size when looking at the number of stops by race. 
+
+```{r}
+### trying to bring in Chicago population data to be able to account for the per capita rates, will be able to do this for race and not gender since the census data doesn't include that 
+
+## bringing in Chicago population data to be able to calculate the per capita rates, changing from percentages to raw counts 
+
+chicago_demo <- tribble(
+  ~race, ~population_pct,
+  "White", 32.1,
+  "Black", 27.9,
+  "Hispanic", 29.7,
+  "Asian", 7.3, 
+  "AIAN", 1.1, 
+  "NHPI", 0.1
+)
+
+total_pop <- 2746388
+## so round is taking the results and rounding them to the nearest whole number so I won't have decimals in my new population column 
+chicago_demo_counts <- chicago_demo |> 
+  mutate(
+    population = round(total_pop * (population_pct / 100))
+  )
+
+chicago_demo_counts
+```
+
+```{r}
+## calculating for the per_capita rates of traffic stops by race in Chicago 
+
+## so first would join chicago_demo_counts to the race_CPD_24 by the column race, and then I would create a new column called per_capita_rate, which would be the number of stops 
+
+chicago_race_per_capita <- race_CPD_24 |> 
+  left_join(
+    chicago_demo_counts, 
+     by = "race"
+  ) |> 
+  mutate(
+    stops_per_100k = round((n / population) * 100000) 
+  ) |> 
+  
+arrange(desc(stops_per_100k)) |>
+
+## creating the columns that will be highlighted in the graphic 
+mutate(
+    highlight = ifelse(row_number() <= 3,
+                       "Top 3",
+                       "Other"))
+```
+
+```{r}
+## now graphing this 
+
+ggplot(
+  chicago_race_per_capita, 
+  
+  # reorder() sorts bars from highest to lowest
+  aes(
+    x = reorder(race, stops_per_100k),
+    y = stops_per_100k,
+    fill = highlight
+  )
+) +
+  
+  
+  geom_col() +
+  
+  geom_text(
+    aes(label = round(stops_per_100k, 1)),
+    hjust = -0.1,
+    size = 3
+  ) +
+  
+  
+  # flipping chart horizontally for easier reading
+  coord_flip() +
+  scale_fill_manual(
+    values = c(
+      "Top 3" = "#B22222",
+      "Other" = "gray70"
+    )
+  ) +
+  
+   scale_y_continuous(
+    labels = comma,
+    expand = expansion(mult = c(0, .15))
+  ) +
+  
+  
+  labs(
+    title = "Chicago Police Department Traffic Stops\n per 100,000 Residents by Race",
+    subtitle = "Chicago Police Department traffic stops",
+    x = "Race",
+    y = "Stops per 100,000 Residents",
+     caption = "Source: Chicago Police Department\n These are the raw number counts. \n Graphic by Tiasia Saunders", 
+    plot_caption = 8
+  ) +
+  guides(fill = "none") +
+  
+  theme_minimal() + 
+  theme(
+    legend.position = "none",
+    plot.title = element_text(face = "bold"), 
+    plot.caption = element_text(size = 6)
+  )
+
+## add a sub bar with the population percentage for each race, will do that in datawrapper  
+       
+```
+
+- When accounting for race population size, it shows me that Native Hawaiian and Pacific Islander (NHPI) drivers had the highest per capita rate of traffic stops in 2024, with 32,083 stops per 100,000 residents. Black drivers had the second highest per capita rate with 17,088 stops per 100,000 residents, followed by Hispanic drivers with 12,492 stops per 100,000 residents. White drivers had a significantly lower per capita rate of 4,912 stops per 100,000 residents. Asian drivers had the lowest per capita rate among the top three groups with 273 stops per 100,000 residents. American Indian drivers had a per capita rate of 200 stops per 100,000 residents.
+
+```{r}
+
+## perfecting the graph to showcase the per capita rates with the population percentage to not overstate or mislead 
+## ADDING POPULATION COMPARISON LINE
+
+plot_data <- chicago_race_per_capita |>
+  mutate(
+    pop_pct_scaled = population_pct * 500
+  ) |>
+  pivot_longer(
+    cols = c(stops_per_100k, pop_pct_scaled),
+    names_to = "metric",
+    values_to = "value"
+  )
+
+chicago_per_plot <- ggplot(
+  plot_data,
+  aes(
+    x = reorder(race, value),
+    y = value,
+    fill = metric
+  )
+) +
+  
+  geom_col(position = "dodge") +
+  
+  coord_flip() +
+  
+  scale_fill_manual(
+    values = c(
+      "stops_per_100k" = "#B22222",
+      "pop_pct_scaled" = "gray70"
+    ),
+    labels = c(
+      "Population % (scaled)",
+      "Stops per 100k"
+    )
+  ) +
+  
+  labs(
+    title = "CPD Traffic Stops per 100,000 Residents Compared to Population Share",
+    
+    subtitle = "NHPI has the highest per-capita stop rate, though the group represents only 0.1% of \nChicago's population. Among larger racial groups, \nBlack drivers have the highest per-capita stop rate.",
+    
+    x = "Race",
+    y = "Value",
+    
+    caption = "Population percentage scaled for visualization only.\nSource: Chicago Police Department and U.S. Census Bureau\nGraphic by Tiasia Saunders"
+  ) +
+  
+  guides(fill = "none") +
+  
+  theme_minimal() +
+  
+  theme(
+    legend.title = element_blank(),
+    plot.title = element_text(face = "bold", size = 20),
+    plot.caption = element_text(size = 6, hjust = 1)
+  )
+  
+```
+
+- I added a second bar to the graph to show the population percentage. 
+
+```{r eval=FALSE, include=FALSE}
+ggplot(
+  chicago_race_per_capita |> 
+    filter(race != "NHPI"), 
+  
+  # reorder() sorts bars from highest to lowest
+  aes(
+    x = reorder(race, stops_per_100k),
+    y = stops_per_100k,
+    fill = highlight
+  )
+) +
+  
+  geom_col() +
+  
+  geom_text(
+    aes(label = round(stops_per_100k, 1)),
+    hjust = -0.1,
+    size = 3
+  ) +
+  
+  # flipping chart horizontally for easier reading
+  coord_flip() +
+  
+  scale_fill_manual(
+    values = c(
+      "Top 3" = "#B22222",
+      "Other" = "gray70"
+    )
+  ) +
+  
+  scale_y_continuous(
+    labels = comma,
+    expand = expansion(mult = c(0, .15))
+  ) +
+  
+  labs(
+    title = "Chicago Police Department Traffic Stops\nper 100,000 Residents by Race",
+    subtitle = "Black drivers have the highest per-capita stop rate among comparable racial groups.\nNHPI excluded due to very small population size (0.1%), which can produce\n unstable rates.",
+    x = "Race",
+    y = "Stops per 100,000 Residents", 
+     caption = "Source: Chicago Police Department\n These are the raw number counts. \n Graphic by Tiasia Saunders", 
+    plot_caption = 8
+  ) +
+  
+  guides(fill = "none") +
+  
+  theme_minimal() + 
+  theme(
+    legend.position = "none",
+    plot.title = element_text(face = "bold"), 
+    plot.caption = element_text(size = 6)
+  )
+```
+
+
+```{r}
+
+## could not find gender and racial breakdown data for Chicago, so have to go with the raw counts instead 
 
 gender_race_CPD_24 <- gender_race_CPD_24 |>
   arrange(desc(n)) |>
@@ -632,22 +907,28 @@ ggplot(
   
   labs(
     title = "Chicago Police Department Traffic stops by race and sex",
-    subtitle = "Top three race-gender groups highlighted",
+    subtitle = "The top three racial demographics stopped by the CPD are minority races",
     x = NULL,
     y = "Number of stops",
-    caption = "Source: Chicago Police Department • Graphic by Tiasia Saunders"
+    caption = "Source: Chicago Police Department\n These are the raw number counts. \n Graphic by Tiasia Saunders", 
+    plot_caption = 8
   ) +
+    guides(fill = "none") +
   
   theme_minimal() +
   theme(
     legend.position = "none",
-    plot.title = element_text(face = "bold")
+    plot.title = element_text(face = "bold"), 
+    plot.caption = element_text(size = 6)
   )
+
+
 ```
 
 - In 2024, there were 206,148 men who were involved in a CPD traffic stop, while 86,591 women were stopped, and 4ll non-binary people were stopped. 
 - As for race, in descending order Black people were stopped 130,938 times, followed by Hispanic/ Latino with 101,891 stops, and then white people were stopped 43,304 times. 
 - When broken down by gender and race, it was found that the top three gender/racial demographics who were stopped by CPD in 2024 were Black men with 85,522 stops, Hispanic men with 76,917 stops, and Black women with 45,225 stops. 
+  - These are just the raw counts, and I couldn't find Chicago gender/racial breakdown population data, so I would not be able to calculate the per capita rates for these demographics, but it is still important to note that the top three demographics stopped by the CPD are minority. 
 
 
 ```{r}
@@ -658,7 +939,7 @@ timeline_monthly <- traffic_CPD_24 |>
 
 max_stops <- max(timeline_monthly$n)
 
-ggplot(timeline_monthly, aes(x = month, y = n)) +
+c_timeline_plot <- ggplot(timeline_monthly, aes(x = month, y = n)) +
   geom_line(linewidth = 1) +
   geom_point(size = 2) +
 
@@ -672,7 +953,7 @@ ggplot(timeline_monthly, aes(x = month, y = n)) +
     x = as.Date("2024-03-21"),
     y = max_stops * 0.9,
     label = "Dexter Reed fatal\nshooting incident",
-    size = 2
+    size = 7
   ) +
 
   geom_vline(
@@ -685,7 +966,7 @@ ggplot(timeline_monthly, aes(x = month, y = n)) +
     x = as.Date("2024-08-21"),
     y = max_stops * 0.75,
     label = "Injustice Watch investigation:\nNearly 200,000 undocumented arrests",
-    size = 2
+    size = 7
   ) +
 
   scale_x_date(
@@ -699,35 +980,180 @@ ggplot(timeline_monthly, aes(x = month, y = n)) +
     title = "Chicago Police Department traffic stops by month, 2024",
     x = NULL,
     y = "Number of stops",
-    caption = "Source: Chicago Police Department • Graphic by Tiasia Saunders"
+    caption = "Source: Chicago Police Department, WWTW News, Injustice Watch\nGraphic by Tiasia Saunders"
   ) +
   theme_minimal() +
   theme(
     panel.grid.minor = element_blank(),
     axis.text.x = element_text(angle = 45, hjust = 1),
-    plot.title = element_text(face = "bold"),
-    plot.caption = element_text(hjust = 1, size = 8, color = "gray40")
+    plot.title = element_text(face = "bold", size = 20),
+    plot.caption = element_text(hjust = 1, size = 6, color = "gray40")
   )
 
 ```
 
+
 - So, I looked into an explanation as to why there was a steady decrease of traffic stops by the CPD in 2024, so once looking it up I found this <a href="https://boltsmag.org/chicago-police-secret-traffic-stops/">article</a>, which explained that there were 210,622 undocumented traffic stops in 2024, despite a 2003 law requiring them to document every traffic stop. 
 - In addition, the Dexter Reed incident in which a 26-year old Black man died at the result of a shootout incident between him and policemen in late March of 2024, may have resulted in heavier scrutiny due to advocacy groups and civil rights lawsuits. 
-  - The incident had stemmed from a seatbelt violation traffic stop.  
+  - The incident had stemmed from a seatbelt violation traffic stop. 
+  
 
 ```{r}
-traffic_CPD_24 |> 
-  count(city_i) |> 
-  arrange(desc(n))
 
-write.csv(
-  traffic_CPD_24,
-  "traffic_CPD_24.csv",
-  row.names = FALSE
+traffic_CPD_24 <- traffic_CPD_24 |>
+  mutate(
+    city_i = str_remove_all(city_i, "[^A-Za-z ]"),
+    city_i = str_squish(city_i)
+  ) |>
+  filter(
+    !is.na(city_i),
+    city_i != ""
+  )
+```
+
+```{r}
+city_race_table <- traffic_CPD_24 |>
+  count(city_i, race) |>
+  pivot_wider(
+    names_from = race,
+    values_from = n,
+    values_fill = 0
+  ) 
+
+datatable(
+  city_race_table,
+  options = list(
+    pageLength = 10,
+    scrollX = TRUE
+  ),
+  caption = "Traffic stop counts by city and race"
 )
 ```
 
 - The CPD made traffic stops in a little over 5,000 (5,083) locations in 2024 
+
+```{r eval=FALSE, include=FALSE}
+traffic_CPD_24 <- traffic_CPD_24 |>
+  mutate(
+    date = as.Date(datestop)
+  )
+```
+
+
+```{r}
+## trying to see if mini bar charts would work 
+
+# Create monthly stop counts by race
+month_CPD_race_counts <- traffic_CPD_24 |>
+  
+  # Create month labels from date column
+  mutate(
+    month = lubridate::month(datestop, label = TRUE)
+  ) |>
+  
+  # Count stops by month and race
+  count(month, race, name = "stops") |>
+  
+  # Keep months in calendar order
+  mutate(
+    month = factor(
+      month,
+      levels = c(
+        "Jan", "Feb", "Mar", "Apr",
+        "May", "Jun", "Jul", "Aug",
+        "Sep", "Oct", "Nov", "Dec"
+      )
+    )
+  ) |>
+  
+  # Sort data nicely
+  arrange(race, month)
+
+# View table
+month_CPD_race_counts
+
+# Export for DataWrapper
+write.csv(
+  month_CPD_race_counts,
+  "month_race_counts.csv",
+  row.names = FALSE
+)
+```
+
+- Created this to be able to compare CPD traffic stops across race throughout each month.
+
+
+```{r}
+
+# make sure month is ordered + shortened properly
+month_CPD_race_counts <- month_CPD_race_counts |>
+  mutate(
+    month = factor(
+      month,
+      levels = c(
+        "Jan","Feb","Mar","Apr","May","Jun",
+        "Jul","Aug","Sep","Oct","Nov","Dec"
+      )
+    )
+  )
+
+p <- ggplot(
+  month_CPD_race_counts,
+  
+  aes(
+    x = month,
+    y = stops,
+    group = race,
+    color = race,
+    
+    text = paste(
+      "Race:", race,
+      "<br>Month:", month,
+      "<br>Stops:", comma(stops)
+    )
+  )
+) +
+  
+  geom_line(linewidth = 1) +
+  
+  geom_point(size = 2) +
+  
+  facet_wrap(
+    ~ race,
+    scales = "fixed",
+    ncol = 3   # makes panels smaller + more DataWrapper-like
+  ) +
+  
+  labs(
+    title = "CPD Monthly Traffic Stops by Race",
+    x = NULL,
+    y = "Number of Stops"
+  ) +
+  
+  theme_minimal(base_size = 11) +
+  
+  theme(
+    legend.position = "none",
+    
+    panel.grid.minor = element_blank(),
+    
+    strip.text = element_text(face = "bold"),
+    
+    axis.text.x = element_text(
+      angle = 45,
+      hjust = 1,
+      vjust = 1
+    ),
+    
+    plot.title = element_text(face = "bold")
+  )
+
+ggplotly(p, tooltip = "text")
+
+```
+
+- I wanted to take a look at the timeline throughout the year of traffic stops by race from the CPD. IT is clear that Black people were stopped more often, followed by American Indian people, and then white people. 
+
 
 ```{r}
 ## looking at vehicle make and model, the ones most likely to be stopped 
@@ -760,48 +1186,241 @@ DT::datatable(
 - So, we could just look at the top three Chevrolet cars have been stopped for Black and Hispanic the most, followed by white (its almost 10,000 less then their Black counterpart), and then Asian, which is only in the hundreds. 
 - The highest for white people is with the Toyota model at 6,685 stops, but even then black people were stopped more often in these cars at 7,707 stops, and Hispanic were stopped the most with 10,584 stops. 
 
-```{r eval=FALSE, include=FALSE}
-## looking at which demographic has reason for stop and then have to submit to drug search or dog search , ## looking at the hit rate of drug searches, and which race is more likely to have something found during a drug search
+```{r include=FALSE}
+outcome_race <- traffic_CPD_24 |> 
+  count(race, reason_for_stop) |> 
+  group_by(race) |> 
+  mutate(percent = n / sum(n) * 100)
 
-## holding off on this, will be examining it through the veil of darkness and the per capita caculations 
-##traffic_CPD_24 |>
-  ##count(race, reasonforstop, vehsrchcondby, vehdrugs)
+outcome_race <- outcome_race |>
+  filter(!is.na(reason_for_stop))
+```
+
+```{r}
+## was going to put this in presentation, but I prefer the heatmap 
+ggplot(outcome_race, aes(x = race, y = percent, fill = reason_for_stop)) +
+  
+  geom_col() +
+  
+  # add count labels inside stacked bars
+  geom_text(
+    aes(label = n),
+    position = position_stack(vjust = 0.5),
+    size = 3,
+    color = "white"
+  ) +
+  
+  labs(
+    title = "CPD Traffic Stop Reasons by Race",
+    x = "Race",
+    y = "Stop Counts",
+    fill = "Reason for Stop",
+    caption = "Source: Chicago Police Department \nGraphic by Tiasia Saunders"
+  ) +
+  
+  theme_minimal() + 
+  
+  theme(
+    panel.grid.minor = element_blank(),
+    axis.text.x = element_text(angle = 45, hjust = 1),
+    plot.title = element_text(face = "bold"),
+    plot.caption = element_text(hjust = 1, size = 6, color = "gray40"), 
+    plot.caption.position = "plot"
+  )
+```
+
+```{r}
+
+ ggplot(
+  outcome_race |> 
+    filter(!is.na(reason_for_stop)),
+  
+  aes(
+    x = reason_for_stop,
+    y = race,
+    fill = percent,
+    
+    # what shows on hover
+    text = paste(
+      "Race:", race,
+      "<br>Reason:", reason_for_stop,
+      "<br>Percent:", round(percent, 1), "%"
+    )
+  )
+) +
+  
+  geom_tile(color = "white") +
+  
+  scale_fill_gradient(low = "white", high = "#b22222") +
+  
+  
+  labs(
+    title = "CPD Traffic Stop Reasons by Race",
+    x = "Reason for Stop",
+    y = "Race",
+    fill = "Percent", 
+    caption = "Data from Chicago Police Department\n Graphic by Tiasia Saunders"
+  ) +
+  
+  theme_minimal(base_size = 12) +
+  
+  theme(
+    axis.text.x = element_text(angle = 45, hjust = 1),
+    panel.grid = element_blank(),
+    plot.title = element_text(face = "bold")
+  )
+ggplotly(p, tooltip = "text")
+
+```
+
+```{r}
+search_race <- traffic_CPD_24 |> 
+  group_by(race) |> 
+  summarise(
+    total_stops = n(),
+    searches = sum(vehsrchcond == TRUE, na.rm = TRUE),
+    search_rate = searches / total_stops * 100
+  )
+```
+
+```{r}
+search_race <- search_race |>
+  arrange(desc(search_rate)) |>
+  mutate(
+    highlight = if_else(row_number() <= 3, "Top 3", "Other")
+  )
+
+ ggplot(search_race, aes(
+  x = reorder(race, search_rate),
+  y = search_rate,
+  fill = highlight
+)) +
+  
+  geom_col() +
+  
+  coord_flip() +
+  
+  scale_fill_manual(
+    values = c(
+      "Top 3" = "#B22222",
+      "Other" = "gray70"
+    )
+  ) +
+  
+  guides(fill = "none") +  
+  
+  labs(
+    title = "Chicago Police Department Search Rates by Race After Traffic Stops",
+    x = "Race",
+    y = "Percent of stops with search",
+    caption = "Source: FOIA Request Results  • Graphic by Tiasia Saunders"
+  ) +
+  
+  theme_minimal() + 
+  theme(
+    panel.grid.minor = element_blank(),
+    axis.text.x = element_text(angle = 45, hjust = 1),
+    plot.title = element_text(face = "bold", size=20),
+    plot.caption = element_text(
+      hjust = 1,
+      size = 6,
+      color = "gray40"
+    ),
+    plot.caption.position = "plot"
+  )
+  
+```
+
+```{r}
+
+p <- ggplot(
+  chicago_race_per_capita |> 
+    filter(!is.na(stops_per_100k)),
+  
+  aes(
+    x = reorder(race, stops_per_100k),
+    y = stops_per_100k,
+    
+    # hover info
+    text = paste0(
+      "Race: ", race,
+      "<br>Per 100k stops: ", comma(round(stops_per_100k, 1)),
+      "<br>Population share: ", population_pct, "%"
+    )
+  )
+) +
+  
+  geom_point(size = 5, color = "#B22222") +
+  
+  coord_flip() +
+  
+  labs(
+    title = "CPD Traffic Stops per 100,000 Residents by Race",
+    x = "Race",
+    y = "Stops per 100,000 Residents"
+  ) +
+  
+  theme_minimal(base_size = 12) +
+  
+  theme(
+    panel.grid.minor = element_blank(),
+    plot.title = element_text(face = "bold")
+  )
+
+ggplotly(p, tooltip = "text")
 ```
 
 
 #### Preliminary Data Analysis With the Other Illinois Law Enforcement Agencies for 2024 
 
-```{r eval=FALSE, include=TRUE}
-traffic_24 |> 
-  count(agency_name) |> 
-  arrange(desc(n)) |> 
-  distinct()
+```{r}
+agency_traffic <- traffic_24 |>
+  count(agency_name, race, name = "total_stops") |>
+  arrange(desc(total_stops)) |>
+
+pivot_wider(
+    names_from = race,
+    values_from = total_stops,
+    values_fill = 0
+  )
 ```
 
 - There are 786 other law enforcement agencies in the traffic_2024 data. 
 
+```{r}
+## ADDING DT OF THE ABOVE DATA 
+
+datatable(
+  agency_traffic,
+  options = list(
+    pageLength = 10,
+    autoWidth = TRUE,
+    order = list(list(1, "desc"))
+  ),
+  caption = "Illinois Traffic Stops by Agency and Race"
+)
+```
 
 ```{r}
 gender_traffic_24 <- traffic_24 |> 
-  count(driver_sex, driver_race) |> 
+  count(sex, race) |> 
   arrange(desc(n))
 
 gender_traffic_24
 
 race_traffic_24 <- traffic_24 |> 
-  count(driver_race) |> 
+  count(race) |> 
   arrange(desc(n))
 
 race_traffic_24
 
 gender_race_traffic_24 <- traffic_24 |> 
-  count(driver_sex, driver_race) |> 
+  count(sex, race) |> 
   arrange(desc(n))
 
 gender_race_traffic_24
 
 ```
-
 
 
 ```{r}
@@ -811,7 +1430,7 @@ gender_race_traffic_24 <- gender_race_traffic_24 |>
   arrange(desc(n)) |>
   mutate(
     highlight = if_else(row_number() <= 3, "Top 3", "Other"),
-    group = paste(driver_sex, driver_race)
+    group = paste(sex, race)
   )
 
 ggplot(
@@ -860,10 +1479,12 @@ ggplot(
 
 ```
 
-- So, when I am looking at this bar chart of all the other police departments traffic stops, I notice the top two are white males with 583,079 stops and white females with 371,651, and followed by Hispanic males with 236,865 stops. At first glance, it looks like white people are being stopped more than their minority counterparts, but as I hypothesized, I believe this is due to the population size of white people being very big in the state of Illinois. So, I am now going to account for per capital calculations with both the CPD to ensure that minorities are the most likely to be stopped and see if it lies true for the other local law enforcement agencies. 
+- So, when I am looking at this bar chart of all the other police departments traffic stops, I notice the top two are white males with 583,079 stops and white females with 371,651, and followed by Hispanic males with 236,865 stops. At first glance, it looks like white people are being stopped more than their minority counterparts, but as I hypothesized, I believe this is due to the population size of white people being very big in the state of Illinois. 
+- I am now going to account for racial per capita calculations to get a more robust picture of who is most likely to get stopped.  
 
 ```{r}
 ## creating the timeline with annotations 
+
 
 timeline_traffic_monthly <- traffic_24 |>
   mutate(
@@ -875,7 +1496,7 @@ timeline_traffic_monthly <- traffic_24 |>
 
 max_stops <- max(timeline_traffic_monthly$n, na.rm = TRUE)
 
-ggplot(timeline_traffic_monthly, aes(x = month, y = n)) +
+traffic_timeline_plot <- ggplot(timeline_traffic_monthly, aes(x = month, y = n)) +
   
   geom_line(linewidth = 1) +
   geom_point(size = 2) +
@@ -891,7 +1512,7 @@ ggplot(timeline_traffic_monthly, aes(x = month, y = n)) +
     x = as.Date("2024-03-21"),
     y = max_stops * 0.90,
     label = "Dexter Reed fatal\nshooting incident",
-    size = 2
+    size = 7
   ) +
 
   geom_vline(
@@ -905,7 +1526,7 @@ ggplot(timeline_traffic_monthly, aes(x = month, y = n)) +
     x = as.Date("2024-06-14"),
     y = max_stops * 0.98,
     label = "Snelling reports decline\nin traffic stops",
-    size = 2,
+    size = 7,
     hjust = 0.5
   ) +
 
@@ -919,8 +1540,8 @@ ggplot(timeline_traffic_monthly, aes(x = month, y = n)) +
     "label",
     x = as.Date("2024-08-21"),
     y = max_stops * 0.75,
-    label = "Injustice Watch investigation/Bolts:\nNearly 200,000 undocumented arrests",
-    size = 2,
+    label = "Injustice Watch investigation:\n~200,000 undocumented arrests",
+    size = 7,
     hjust = 0.5
   ) +
 
@@ -934,7 +1555,7 @@ ggplot(timeline_traffic_monthly, aes(x = month, y = n)) +
   ) +
 
   labs(
-    title = "Illinois law enforcement traffic stops by month, 2024\n(excluding the Chicago Police Department)",
+    title = "Non-CPD Illinois law enforcement traffic stops by month, 2024",
     x = NULL,
     y = "Number of stops",
     caption = "Source: FOIA Request Results • Graphic by Tiasia Saunders"
@@ -944,150 +1565,44 @@ ggplot(timeline_traffic_monthly, aes(x = month, y = n)) +
 
   theme(
     panel.grid.minor = element_blank(),
-    axis.text.x = element_text(
-      angle = 45,
-      hjust = 1
-    ),
-    plot.title = element_text(
-      face = "bold"
-    ),
-    plot.caption = element_text(
-      hjust = 1,
-      size = 8,
-      color = "gray40"
-    )
+    axis.text.x = element_text(angle = 45, hjust = 1),
+    plot.title = element_text(face = "bold", size = 20),
+    plot.caption = element_text(size = 8, color = "gray40", hjust = 1)
   )
+
+ggsave(
+  filename = "traffic_timeline.png",
+  plot = p,
+  width = 10,
+  height = 6,
+  dpi = 300
+)
 ```
+
 
 - The decline in June could be related to the 200,000 undocumented traffic stops and on this day Chicago Police Superintendent announced at a press release the decrease in traffic stops. 
 
-```{r}
-### need to create the vehicle make table, will do this tomorrow 
-```
+#### Per capita Calculations to get a true reflection of the data, I need to account for population size when looking at the number of stops by race. 
 
-#### Per Capital Calculations to get a true reflection of the data, I need to account for population size when looking at the number of stops by race. 
+```{r include=FALSE}
+census_2020_illinois <- census_2020_illinois |> 
+  slice(1:6)
 
-```{r}
-##  REDO THIS CHUNK calculating for the per capital of total stops by race 
- census_race <- tibble(
-  race = c(
-    "White",
-    "Black",
-    "American Indian",
-    "Asian",
-    "NHPI",
-    "Hispanic"
-  ),
-  population_number = c(
-    7472751,
-    1775612,
-    16561,
-    747280,
-    2959,
-    2337410
-  )
-)
-
-per_capita_CPD_race <- traffic_CPD_24 |>
-  count(race, name = "total_stops") |>
-  left_join(census_race, by = "race") |>
+census_2020_illinois <- census_2020_illinois |>
   mutate(
-    stops_per_100k = round((total_stops / population_number) * 100000, 1)
-  ) |>
-  arrange(desc(stops_per_100k))
-
-per_capita_CPD_race
-
-```
-```{r}
-census_race <- census_race |>
-  mutate(
-    race = recode(race,
-      "Native Hawaiian or Other Pacific Islander" = "NHPI"
-    )
-  )
-
-traffic_24 <- traffic_24 |> 
-  mutate(
-    driver_race = recode(driver_race, 
-      "Native Hawaiian or Other Pacific Islander" = "NHPI"
+    race_and_hispanic_origin = recode(race_and_hispanic_origin,
+      "American Indian" = "AIAN", 
+      "Black or African American"= "Black"
     )
   )
 ```
 
-```{r}
-unique(traffic_24$race)
-unique(census_race$race)
-```
-
 
 ```{r}
-## making graph to highlight the per capita rate for CPD traffic stops 
- per_capita_CPD_race <- per_capita_CPD_race |>
-  mutate(
-    highlight = if_else(
-      race %in% c("Black", "Hispanic", "White", "Asian"),
-      "Major group",
-      "Small population group"
-    )
-  )
-
-ggplot(
-  per_capita_CPD_race,
-  aes(
-    x = reorder(race, stops_per_100k),
-    y = stops_per_100k,
-    fill = highlight
-  )
-) +
-  geom_col() +
-
-  geom_text(
-    aes(label = comma(round(stops_per_100k))),
-    hjust = -0.1,
-    size = 3
-  ) +
-
-  coord_flip() +
-
-  scale_fill_manual(
-    values = c(
-      "Major group" = "#B22222",
-      "Small population group" = "gray70"
-    )
-  ) +
-
-  scale_y_continuous(
-    labels = comma,
-    expand = expansion(mult = c(0, .15))
-  ) +
-
-  labs(
-    title = "Black residents experienced the highest traffic stop rate by the\nChicago Police Department among Illinois' largest racial groups",
-    subtitle = "Traffic stops per 100,000 residents, 2024",
-    x = NULL,
-    y = "Stops per 100,000 residents",
-    caption = "Source: Illinois traffic stop data and 2020 Census population estimates.\n Native Hispanics or other Pacific Islander (NHPI) and American Indian (AIAN) rates are based on substantially smaller population counts."
-  ) +
-
-  theme_minimal() +
-  theme(
-    legend.position = "none",
-    plot.title = element_text(face = "bold"),
-  plot.caption = element_text(size = 4, color = "gray40", hjust = 1,   margin = margin(t = 5, r = 1, b = 0, l = 0)), 
-      
-  )
-
-```
-
-- CPD traffic stop rates were highest among NHPI and American Indian residents, though those rates are based on much smaller population counts. Among larger racial groups, Black residents had the highest stop rate, with about 7,374 stops per 100,000 residents.
-  - Should I take those out or just keep the grey to highlight the point of the graph? 
-
-```{r}
-## doing per capital for the other law enforcement agencies 
+## doing per capita for the other law enforcement agencies 
 per_capita_traffic_race <- traffic_24 |>
-  count(driver_race, name = "total_stops") |>
-  left_join(census_race, by = c("driver_race" = "race")) |>
+  count(race, name = "total_stops") |>
+  left_join(census_2020_illinois, by = c("race" = "race_and_hispanic_origin")) |>
   mutate(
     stops_per_100k = round((total_stops / population_number) * 100000, 1)
   ) |>
@@ -1097,67 +1612,77 @@ per_capita_traffic_race
 
 ```
 
-```{r}
-## making graph for that 
-per_capita_traffic_race <- per_capita_traffic_race |>
-  mutate(
-    highlight = if_else(
-      driver_race %in% c("Black", "Hispanic", "White", "Asian"),
-      "Major group",
-      "Small population group"
-    )
-  )
 
-ggplot(
-  per_capita_traffic_race,
-  aes(
-    x = reorder(driver_race, stops_per_100k),
-    y = stops_per_100k,
-    fill = highlight
-  )
-) +
-  geom_col() +
-  geom_text(
-    aes(label = comma(round(stops_per_100k))),
-    hjust = -0.1,
-    size = 3
-  ) +
-  coord_flip() +
-  scale_fill_manual(
-    values = c(
-      "Major group" = "#B22222",
-      "Small population group" = "gray70"
-    )
-  ) +
-  scale_y_continuous(
-    labels = comma,
-    expand = expansion(mult = c(0, .15))
-  ) +
-  labs(
-    title = "Black residents had the highest stop rate among Illinois' largest racial groups",
-    subtitle = "Traffic stops per 100,000 residents, 2024",
-    x = NULL,
-    y = "Stops per 100,000 residents",
-    caption = "Source: Illinois traffic stop data and 2020 Census population estimates.\nNHPI and AIAN rates are based on substantially smaller population counts."
-  ) +
-  theme_minimal() +
-  theme(
-    legend.position = "none",
-    plot.title = element_text(face = "bold"),
-    plot.caption = element_text(
-      size = 6,
-      color = "gray40",
-      hjust = 1,
-      margin = margin(t = 5, r = 1, b = 0, l = 0)
-    )
-  )
-
-
-## go back ad fix subtitle figure out way to point out NHPI + American Indian, or suggest taking it out 
-```
 
 - Illinois state traffic stop rates were highest among NHPI and American Indian residents, though those rates are based on much smaller population counts. Among larger racial groups, Black residents had the highest stop rate, with about 7,374 stops per 100,000 residents, compared with 580 per 100,000 white residents.
-  - Should I take those out or just keep the grey to highlight the point of the graph? 
+
+```{r}
+per_capita_traffic_race <- per_capita_traffic_race |>
+  mutate(
+    population_pct = (population_number / sum(population_number)) * 100
+  )
+```
+
+
+
+
+```{r}
+search_race_illinois <- traffic_24 |> 
+  group_by(race) |> 
+  summarise(
+    total_stops = n(),
+    searches = sum(vehicle_search_conducted == TRUE, na.rm = TRUE),
+    search_rate = searches / total_stops * 100
+  )
+
+search_race_illinois <- search_race_illinois |>
+  arrange(desc(search_rate)) |>
+  mutate(
+    highlight = if_else(row_number() <= 3, "Top 3", "Other")
+  )
+```
+
+
+```{r}
+ ggplot(search_race_illinois, aes(
+  x = reorder(race, search_rate),
+  y = search_rate,
+  fill = highlight
+)) +
+
+  geom_col() +
+  coord_flip() +
+
+  scale_fill_manual(
+    values = c(
+      "Top 3" = "#B22222",
+      "Other" = "gray70"
+    )
+  ) +
+
+  guides(fill = "none") +
+
+  labs(
+    title = "Illinois Law Enforcement Search Rates by Race After Traffic Stops",
+    x = "Race",
+    y = "Percent of stops with search",
+    caption = "Source: FOIA Request Results (Illinois agencies) • Graphic by Tiasia Saunders"
+  ) +
+
+  theme_minimal() +
+  theme(
+    panel.grid.minor = element_blank(),
+    axis.text.x = element_text(angle = 45, hjust = 1),
+    plot.title = element_text(face = "bold", size=20),
+    plot.caption = element_text(
+      hjust = 1,
+      size = 6,
+      color = "gray40"
+    ),
+    plot.caption.position = "plot"
+  )
+
+```
 
 ##### Veil of Darkness Element (Very Basic Level)
 
@@ -1216,7 +1741,7 @@ veil_race_CPD_24 <- traffic_CPD_24 |>
   ) |>
   ungroup()
 
-ggplot(
+ ggplot(
   veil_race_CPD_24,
   aes(
     x = race_ordered,
@@ -1254,10 +1779,11 @@ ggplot(
   theme(
     legend.position = "none",
     strip.text = element_text(face = "bold", size = 12),
-    plot.title = element_text(face = "bold"),
+    plot.title = element_text(face = "bold", size=20),
     plot.caption = element_text(size = 7, color = "gray40", hjust = 1),
     panel.grid.major.y = element_blank()
   )
+
 ```
 
 - Black drivers accounted for the largest share of Chicago traffic stops during both daytime (48.0%) and nighttime (41.0%) hours.
@@ -1289,8 +1815,8 @@ traffic_24 <- traffic_24 |>
 
 traffic_24 <- traffic_24 |>
   mutate(
-    driver_race = recode(
-      driver_race,
+   race = recode(
+      race,
       "American Indian" = "AIAN"
     )
   )
@@ -1326,16 +1852,16 @@ traffic_24 <- traffic_24 |>
 
 veil_race <- traffic_24 |>
   filter(light_period != "Excluded transition hours") |>
-  count(light_period, driver_race) |>
+  count(light_period, race) |>
   group_by(light_period) |>
   mutate(
     percent = n / sum(n) * 100,
-    race_ordered = reorder_within(driver_race, percent, light_period),
-    highlight = if_else(driver_race %in% c("Black", "Hispanic"), "Highlight", "Other")
+    race_ordered = reorder_within(race, percent, light_period),
+    highlight = if_else(race %in% c("Black", "Hispanic"), "Highlight", "Other")
   ) |>
   ungroup()
 
-ggplot(veil_race, aes(x = race_ordered, y = percent, fill = highlight)) +
+ ggplot(veil_race, aes(x = race_ordered, y = percent, fill = highlight)) +
   geom_col() +
   geom_text(
     aes(label = paste0(round(percent, 1), "%")),
@@ -1366,10 +1892,11 @@ ggplot(veil_race, aes(x = race_ordered, y = percent, fill = highlight)) +
   theme(
     legend.position = "none",
     strip.text = element_text(face = "bold", size = 12),
-    plot.title = element_text(face = "bold"),
+    plot.title = element_text(face = "bold", size=20),
     plot.caption = element_text(size = 7, color = "gray40", hjust = 1),
     panel.grid.major.y = element_blank()
   )
+
 ```
 
 - During the day, Black drivers account for 18.8 percent of stops and at night they account for 27.1 percent of stops 
@@ -1384,9 +1911,9 @@ ggplot(veil_race, aes(x = race_ordered, y = percent, fill = highlight)) +
   - Black drivers represented the largest share of traffic stops during both daytime and nighttime hours, accounting for 48.0% of stops during the day and 41.0% at night, while Hispanic drivers' share increased from 31.7% during the day to 37.0% at night, and White drivers accounted for 16.2% of daytime stops and 13.0% of nighttime stops.
 - Illinois Traffic stops by other law enforcement agencies: 
    - Black drivers represented a larger share of traffic stops during nighttime hours than during daytime hours, increasing from 18.8% of stops to 27.1%, while White drivers' share declined from 58.1% to 46.8%.
-- Per capital calculations: 
-  - CPD traffic stop rates were highest among NHPI and American Indian residents, though those rates are based on much smaller population counts (should I take them out). Among larger racial groups, Black residents had the highest stop rate, with about 7,374 stops per 100,000 residents, compared with 580 per 100,000 white residents. 
-  - Illinois state traffic stop rates were highest among NHPI and American Indian residents, though those rates are based on much smaller population counts. Among larger racial groups, Black residents had the highest stop rate, with about 7,374 stops per 100,000 residents, compared with 580 per 100,000 white residents.
+- Per capita calculations: 
+  - CPD traffic stop rates were highest among NHPI and American Indian residents, though those rates are based on much smaller population counts. Among larger racial groups, Black residents had the highest stop rate, with about 7,374 stops per 100,000 residents, compared with 580 per 100,000 white residents. 
+  - --- REWRITE THIS PART Illinois state traffic stop rates were highest among NHPI and American Indian residents, though those rates are based on much smaller population counts. Among larger racial groups, Black residents had the highest stop rate, with about 7,374 stops per 100,000 residents, compared with 580 per 100,000 white residents.
   - As for the general Illinois law enforcement agencies data, Among larger racial groups, Black residents had the highest stop rate, with about 7,374 stops per 100,000 residents, compared with 580 per 100,000 white residents.
 - Overall, I would say the veil of darkness element does seem to be supported by the data, as there is a noticeable increase in the share of stops that Black drivers account for at night compared to the day, and a noticeable decrease in the share of stops that white drivers account for at night compared to the day. However, I would say that this is not a definitive conclusion, as there could be other factors at play that are contributing to these trends, such as differences in driving patterns or law enforcement practices during different times of the day.
 - If I had the opportunity to expand on this project, I would definitely to strengthen the veil of darkness angle. 
@@ -1408,11 +1935,6 @@ ggplot(veil_race, aes(x = race_ordered, y = percent, fill = highlight)) +
   - I want my end project to look really good so that I can add to portfolio and also so that I can share the results with the IPORAE members. 
   
   
-##### Business Company Context and Financial Information: 
-
-- Tempus AI is one of Chicago's most influential technology companies and a key player in the growing field of artificial intelligence-driven healthcare. Founded in Chicago, the company uses AI and large-scale clinical and genomic data to help physicians make more personalized treatment decisions, particularly in cancer care and precision medicine. 
-- For me as a journalist, Tempus is important to watch because it sits at the center of several major reporting areas, including AI innovation, healthcare, biotechnology, data privacy, and economic development. As Chicago continues to emerge as a hub for health technology and artificial intelligence, Tempus offers a window into how these industries are shaping both the local economy and the future of medicine.
-- Additionally, Tempus has been in the news for its rapid growth, significant funding rounds, and high-profile partnerships with healthcare providers and research institutions. Furthermore, its first-quarter 2026 revenue, it reported 348.1 million in revenue, which exceeded analyst estimates of 345.4 million and it increased by 36 percent from the same quarter a year prior. The company has raised its full-year 2026 revenue forecast to between 1.59 - 1.60 billion. 
 
 
 

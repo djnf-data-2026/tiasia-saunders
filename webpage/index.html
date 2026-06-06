@@ -1,0 +1,656 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+        <title>Traffic Stop Disparities Project</title>
+
+        <style>
+            body {
+                margin: 0;
+                padding: 0;
+                background-color: #b22222;
+                color: #fffdd0;
+                font-family: Arial, Helvetica, sans-serif;
+                line-height: 1.6;
+            }
+
+            /* HERO WITH VEIL */
+            .hero {
+                position: relative;
+                text-align: center;
+                padding: 120px 20px 80px;
+                overflow: hidden;
+            }
+
+            .veil {
+                position: absolute;
+                top: 0;
+                left: 0;
+                height: 100%;
+                width: 100%;
+                background: #fffdd0;
+                opacity: 0.85;
+                pointer-events: none;
+                transition: opacity 0.2s ease;
+                z-index: 2;
+            }
+
+            .hero h1,
+            .hero h2,
+            .hero h3 {
+                position: relative;
+                z-index: 3;
+            }
+
+            header {
+                padding: 60px 20px 20px 20px;
+                text-align: center;
+            }
+
+            h1 {
+                font-size: 2.2rem;
+                margin-bottom: 10px;
+            }
+
+            h2 {
+                font-weight: normal;
+                opacity: 0.9;
+            }
+
+            .container {
+                max-width: 900px;
+                margin: auto;
+                padding: 20px;
+            }
+
+            .section {
+                margin: 40px 0;
+            }
+
+            .card {
+                background: rgba(255, 245, 230, 0.1);
+                padding: 20px;
+                border-radius: 10px;
+                margin-top: 15px;
+            }
+            .chart {
+                width: 100% !important;
+                max-width: 1200px;
+                height: auto;
+                display: block;
+                margin: 0 auto;
+            }
+
+            iframe {
+                width: 100%;
+                height: 500px;
+                border: none;
+                border-radius: 10px;
+            }
+
+            footer {
+                text-align: center;
+                padding: 40px 20px;
+                font-size: 0.8rem;
+                opacity: 0.8;
+            }
+
+            button {
+                background: #f5f1e6;
+                color: #b22222;
+                border: none;
+                padding: 10px 15px;
+                border-radius: 5px;
+                cursor: pointer;
+                margin-top: 10px;
+            }
+
+            button:hover {
+                opacity: 0.8;
+            }
+
+            .slideshow-container {
+                position: relative;
+            }
+
+            .slide {
+                display: none;
+            }
+
+            .slide.active {
+                display: block;
+            }
+
+            .slide-frame {
+                width: 100%;
+                height: 700px;
+                border: none;
+                border-radius: 10px;
+                background: white;
+            }
+
+            .slide-buttons {
+                margin-top: 20px;
+                display: flex;
+                justify-content: center;
+                gap: 20px;
+            }
+        </style>
+    </head>
+
+    <body>
+        <!-- HERO SECTION (VEIL WORKING) -->
+        <div class="hero">
+            <div class="veil" id="veil"></div>
+
+            <h1>Chicago Police Department versus other Illinois Law Enforcement Agencies</h1>
+            <h2>Correlation with the Veil of Darkness</h2>
+            <h3>By: Tiasia Saunders</h3>
+        </div>
+
+        <div class="container">
+            <!-- OVERVIEW -->
+            <div class="section">
+                <h2>Overview</h2>
+                <div class="card">
+                    Using 2024 Chicago Police Department and other Illinois Law Enforcement traffic data, this project
+                    examines whether racial disparities extend beyond CPD into suburban and downstate agencies. While
+                    CPD has faced scrutiny, especially after the fatal shooting of Dexter Reed, smaller agencies operate
+                    with far less oversight and accountability reporting. This analysis uses a veil of darkness lens to
+                    explore potential racial disparities.
+                </div>
+            </div>
+
+            <!-- VEIL OF DARKNESS -->
+            <div class="section">
+                <h2>Veil of Darkness Explanation</h2>
+                <div class="card">
+                    <ul>
+                        <li>
+                            It is a statistical methodology created by Jeffrey Grogger and Greg Ridgeway (2006) to test
+                            for racial bias in traffic stops.
+                        </li>
+                        <li>
+                            It compares daytime vs nighttime stops, based on the idea that darkness masks driver race.
+                        </li>
+                        <li>
+                            If bias exists, minority drivers should be stopped more during daylight hours when race is
+                            visible.
+                        </li>
+                        <li>
+                            Time definitions:
+                            <ul>
+                                <li>Daytime: 6 a.m. – 5 p.m.</li>
+                                <li>Nighttime: 10 p.m. – 4 a.m.</li>
+                                <li>Transition hours excluded: 4–6 a.m. and 5–10 p.m.</li>
+                            </ul>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- HYPOTHESIS -->
+            <div class="section">
+                <h2>Hypothesis / Potential Problems</h2>
+                <div class="card">
+                    <ul>
+                        <li>
+                            I suspect racial disparities in stop patterns exist across Illinois agencies, not just CPD.
+                        </li>
+                        <li>Stops and searches may differ by race depending on visibility conditions.</li>
+                        <li>
+                            The veil of darkness method may be imperfect because it uses fixed time ranges instead of
+                            actual sunrise/sunset data.
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- DATA SOURCES -->
+            <div class="section">
+                <h2>Data Origin / Table Definitions</h2>
+                <div class="card">
+                    <ul>
+                        <li>
+                            Data comes from the Investigative Project on Race and Equity (2021–2024 traffic and
+                            pedestrian stops).
+                        </li>
+                        <li>Includes Chicago Police Department and other Illinois law enforcement agencies.</li>
+                        <li>Population data from the 2020 U.S. Census is used for per-capita calculations.</li>
+                        <li>
+                            Sources:
+                            <ul>
+                                <li>
+                                    <a
+                                        href="https://dph.illinois.gov/content/dam/soi/en/web/idph/publications/idph/data-and-statistics/vital-statistics/illinois-population-data/County-Population_Race-Ethnicity_April2020.pdf"
+                                        >Illinois Population Data</a
+                                    >
+                                </li>
+                                <li>
+                                    <a
+                                        href="https://www.census.gov/quickfacts/fact/table/chicagocityillinois/POP010220#POP010220"
+                                        >Chicago Population Data</a
+                                    >
+                                </li>
+                            </ul>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- WHY -->
+            <div class="section">
+                <h2>The Why</h2>
+                <div class="card">
+                    If disparities exist across all Illinois agencies, it suggests biased enforcement is not isolated to
+                    Chicago and may require statewide accountability reforms.
+                </div>
+            </div>
+
+            <div class="section">
+                <h2>Traffic Stop Timelines</h2>
+
+                <div class="card">
+                    <h3>Chicago Police Department Timeline</h3>
+                    <img src="cpd_timeline.png" style="width: 100%; height: auto; display: block" />
+
+                    <ul>
+                        <li>Tracks CPD traffic stops by month (2024)</li>
+                        <li>
+                            So, I looked into an explanation as to why there was a steady decrease of traffic stops by
+                            the CPD in 2024, so once looking it up I found this
+                            <a href="https://boltsmag.org/chicago-police-secret-traffic-stops/">article</a>, which
+                            explained that there were 210,622 undocumented traffic stops in 2024, despite a 2003 law
+                            requiring them to document every traffic stop.
+                        </li>
+                        <li>
+                            In addition, the Dexter Reed incident in which a 26-year old Black man died at the result of
+                            a shootout incident between him and policemen in late March of 2024, may have resulted in
+                            heavier scrutiny due to advocacy groups and civil rights lawsuits.
+                        </li>
+                        <li>The incident had stemmed from a seatbelt violation traffic stop.</li>
+                    </ul>
+
+                    <hr />
+
+                    <h3>Other Illinois Agencies Timeline</h3>
+                    <img src="traffic_timeline.png" style="width: 100%; height: auto; display: block" />
+
+                    <ul>
+                        <li>Tracks statewide law enforcement agency comparison</li>
+                        <li>There are 786 different law enforcement agencies in the data.</li>
+                        <li>
+                            The decline in June could be related to the 200,000 undocumented traffic stops and on this
+                            day Chicago Police Superintendent announced at a press release the decrease in traffic
+                            stops.
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="section">
+            <h2>Per-Capita Traffic Stop Analysis</h2>
+
+            <div class="card">
+                <div class="row">
+                    <!-- LEFT GRAPH -->
+                    <div class="col-md-6">
+                        <h3>Chicago Police Department</h3>
+
+                        <img
+                            src="chicago_per_capita.png"
+                            class="img-fluid"
+                            alt="Chicago Police Department per capita traffic stop rates by race" />
+
+                        <ul>
+                            <li>Shows stop rates adjusted for racial population size</li>
+                            <li>Helps identify disparities hidden by raw counts</li>
+                            <li>
+                                When accounting for race population size, it shows me that Native Hawaiian and Pacific
+                                Islander (NHPI) drivers had the highest per capita rate of traffic stops in 2024, with
+                                32,083 stops per 100,000 residents. Black drivers had the second highest per capita rate
+                                with 17,088 stops per 100,000 residents, followed by Hispanic drivers with 12,492 stops
+                                per 100,000 residents. White drivers had a significantly lower per capita rate of 4,912
+                                stops per 100,000 residents. Asian drivers had the lowest per capita rate among the top
+                                three groups with 273 stops per 100,000 residents. American Indian drivers had a per
+                                capita rate of 200 stops per 100,000 residents.
+                            </li>
+                            <li>
+                                Would like to note that the reason NHPI is so high is due to its small population size
+                                in Chicago.
+                            </li>
+                        </ul>
+                    </div>
+
+                    <!-- RIGHT GRAPH -->
+                    <div class="col-md-6">
+                        <h3>Other Illinois Law Enforcement Agencies</h3>
+
+                        <img
+                            src="traffic_per_capita.png"
+                            class="img-fluid"
+                            alt="Illinois law enforcement per capita traffic stop rates by race" />
+
+                        <ul>
+                            <li>Compares statewide traffic stop disparities</li>
+                            <li>
+                                Illinois state traffic stop rates were highest among NHPI and American Indian residents,
+                                though those rates are based on much smaller population counts. Among larger racial
+                                groups, Black residents had the highest stop rate, with about 7,374 stops per 100,000
+                                residents, compared with 580 per 100,000 white residents.
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>Interactive Traffic Analysis Graphics</h2>
+<div class="card">
+    <div class="slideshow-container">
+
+        <!-- SLIDE 1 -->
+        <div class="slide active">
+            <h3>Chicago Police Department Heatmap</h3>
+
+            <iframe
+                src="CPD_traffic_heatmap.html"
+                title="CPD Heatmap"
+                class="slide-frame"
+                style="width: 100%; height: 500px; border: none; border-radius: 10px">
+            </iframe>
+
+            <ul>
+                <li>License plate and registration violations were the most common reason for traffic stops.</li>
+                <li>NHPI drivers were the only group where moving violations were the largest category (40.2%).</li>
+                <li>Asian drivers had the highest proportion of equipment-related stops (37.8%).</li>
+                <li>Stop patterns vary across racial groups, suggesting uneven enforcement experiences.</li>
+            </ul>
+        </div>
+
+        <!-- SLIDE 2 -->
+        <div class="slide">
+            <h3>Illinois Law Enforcement Agencies Heatmap</h3>
+
+            <iframe
+                src="illinois_traffic_heatmap.html"
+                title="Illinois Heatmap"
+                class="slide-frame"
+                style="width: 100%; height: 500px; border: none; border-radius: 10px">
+            </iframe>
+
+            <ul>
+                <li>Moving violations dominate statewide stops across all racial groups.</li>
+                <li>Asian and AIAN drivers show the highest share of moving violation stops (~69%).</li>
+                <li>Black drivers have the highest share of registration-related stops (28.3%).</li>
+                <li>Statewide enforcement differs from Chicago, with stronger emphasis on moving violations.</li>
+            </ul>
+        </div>
+
+        <!-- SLIDE 3 -->
+        <div class="slide">
+            <h3>Chicago Search Rates</h3>
+
+            <img
+                src="chicago_search.png"
+                alt="Chicago Search Rates"
+                class="slide-frame"
+                style="width: 100%; height: 500px; border-radius: 10px" />
+
+            <ul>
+                <li>Black drivers had the highest search rate at 1.82% after stops.</li>
+                <li>Hispanic and NHPI drivers also appear in the top three search rates.</li>
+                <li>White and Asian drivers had the lowest search rates (below 0.3%).</li>
+                <li>Search disparities suggest uneven post-stop enforcement outcomes.</li>
+            </ul>
+        </div>
+
+        <!-- SLIDE 4 (NEW) -->
+        <div class="slide">
+            <h3>Illinois Search Rates</h3>
+
+            <img
+                src="illinois_plot.png"
+                alt="Illinois Search Rates"
+                class="slide-frame"
+                style="width: 100%; height: 500px; border-radius: 10px" />
+
+            <ul>
+
+<li>
+Black drivers experienced the highest search rate at 7.04%, more than double the rate of Hispanic and White drivers, indicating a significantly higher likelihood of searches following traffic stops.
+</li>
+
+<li>
+Hispanic (3.95%) and White (3.44%) drivers had similar search rates, though both were substantially lower than Black drivers in this dataset.
+</li>
+
+<li>
+NHPI drivers had a moderate search rate at 3.02%, but this is based on a much smaller total number of stops, which can make rates more sensitive to variation.
+</li>
+
+<li>
+Asian and American Indian drivers had the lowest search rates at 1.26% and 1.88% respectively, suggesting fewer searches following traffic stops compared to other racial groups.
+</li>
+
+</ul>
+        </div>
+
+        <!-- NAV BUTTONS -->
+        <div class="slide-buttons">
+            <button onclick="changeSlide(-1)">Previous</button>
+            <button onclick="changeSlide(1)">Next</button>
+        </div>
+
+    </div>
+</div>
+
+    <div class="section">
+    <h2>Veil of Darkness Analysis</h2>
+
+    <div class="card">
+        <div class="slideshow-container">
+
+            <!-- SLIDE 1 -->
+            <div class="slide active">
+                <h3>Veil of Darkness Method</h3>
+
+                <div class="card">
+                    <ul>
+                        <li>The Veil of Darkness test compares traffic stops during daylight vs nighttime conditions.</li>
+                        <li>It assumes darkness reduces visibility of driver race, lowering the ability to profile.</li>
+                        <li>Higher minority stop rates during daylight may suggest potential bias in stop decisions.</li>
+                        <li>This study applies the method across Illinois law enforcement agencies (2021–2024).</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- SLIDE 2 -->
+            <div class="slide">
+                <h3>Chicago Police Department Pattern</h3>
+
+                <img
+                    src="veil_CPD.png"
+                    alt="CPD Veil of Darkness Analysis"
+                    style="width: 100%; height: 500px; border-radius: 10px; object-fit: contain;" />
+
+                <ul>
+                    <li>CPD shows stronger daylight concentration of stops for minority drivers.</li>
+                    <li>Patterns suggest potential visibility-based disparities in stop decisions.</li>
+                    <li>Findings are consistent with prior scrutiny of CPD enforcement behavior.</li>
+                </ul>
+            </div>
+
+            <!-- SLIDE 3 -->
+            <div class="slide">
+                <h3>Illinois Agencies Pattern</h3>
+
+                <img
+                    src="veil_traffic.png"
+                    alt="Illinois Veil of Darkness Analysis"
+                    style="width: 100%; height: 500px; border-radius: 10px; object-fit: contain;" />
+
+                <ul>
+                    <li>Statewide agencies show similar but more distributed stop patterns.</li>
+                    <li>Disparities are present but vary more across departments than CPD alone.</li>
+                    <li>Suggests enforcement differences are not isolated to Chicago.</li>
+                </ul>
+            </div>
+
+            <!-- SLIDE 4 -->
+            <div class="slide">
+                <h3>Key Takeaway</h3>
+
+                <div class="card">
+                    <ul>
+                        <li>The Veil of Darkness comparison suggests racial disparities may be present across multiple Illinois jurisdictions.</li>
+                        <li>However, results are descriptive and depend on time-based assumptions rather than exact visibility conditions.</li>
+                        <li>Further refinement using sunrise/sunset data would strengthen the analysis.</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- BUTTONS -->
+            <div class="slide-buttons">
+                <button onclick="changeSlide(-1)">Previous</button>
+                <button onclick="changeSlide(1)">Next</button>
+            </div>
+
+        </div>
+    </div>
+</div>
+            
+   <div class="section">
+    <h2>Conclusion (Thus Far)</h2>
+
+    <div class="card">
+        <ul>
+
+            <li>
+                <strong>CPD Traffic Stops (Racial Breakdown):</strong>
+                Black drivers represented the largest share of traffic stops during both daytime and nighttime hours,
+                accounting for 48.0% of stops during the day and 41.0% at night. Hispanic drivers’ share increased from
+                31.7% during the day to 37.0% at night, while White drivers accounted for 16.2% of daytime stops and 13.0% at night.
+            </li>
+
+            <li>
+                <strong>Illinois Law Enforcement (Non-CPD Agencies):</strong>
+                Black drivers represented a larger share of traffic stops at night (27.1%) compared to daytime (18.8%),
+                while White drivers’ share declined from 58.1% during the day to 46.8% at night, suggesting a shift in stop composition after dark.
+            </li>
+
+            <li>
+                <strong>Per-Capita Calculations:</strong>
+                Across CPD data, NHPI and American Indian residents show the highest per-capita stop rates, though these figures are influenced by small population sizes.
+                Among larger racial groups, Black residents had the highest stop rate at approximately 7,374 stops per 100,000 residents,
+                compared to about 580 per 100,000 White residents.
+                <br><br>
+                In statewide Illinois law enforcement data, a similar pattern emerges, with Black residents again experiencing the highest stop rates among major racial groups.
+            </li>
+
+            <li>
+                <strong>Overall Interpretation:</strong>
+                The results provide partial support for the Veil of Darkness hypothesis.
+                There is a noticeable increase in the share of stops involving Black drivers at night and a decrease in the share involving White drivers,
+                suggesting potential visibility-related disparities.
+                However, these findings are not conclusive and may also reflect other factors such as driving patterns, policing strategies, or geographic differences.
+            </li>
+
+            <li>
+                <strong>Limitations:</strong>
+                This analysis relies on simplified time-based definitions of daylight and nighttime rather than precise sunrise and sunset data,
+                which may limit the accuracy of the Veil of Darkness measure.
+            </li>
+
+        </ul>
+    </div>
+</div>
+
+<div class="section">
+    <h2>How I Could Expand This Project</h2>
+
+    <div class="card">
+        <ul>
+
+            <li>
+                I could improve the Veil of Darkness methodology by incorporating actual sunrise and sunset times throughout the year
+                using weather or astronomical datasets, making the analysis more precise than fixed time blocks.
+            </li>
+
+            <li>
+                I could expand the analysis to include search hit rates by race and reason for stop, which would help determine
+                whether post-stop outcomes differ across racial groups.
+            </li>
+
+            <li>
+                I could also examine whether certain reasons for stops are disproportionately associated with searches or citations,
+                which would further clarify how enforcement decisions vary across racial groups.
+            </li>
+
+        </ul>
+    </div>
+</div>
+
+        <footer>Graphic by Tiasia Saunders • Traffic Stop Analysis Project</footer>
+
+        <!-- JS: VEIL + BUTTON -->
+        <script>
+            function showMessage() {
+                document.getElementById("message").innerText =
+                    "Per-capita rates reveal disparities that raw counts can hide.";
+            }
+
+            const veil = document.getElementById("veil");
+
+            window.addEventListener("scroll", () => {
+                const scrollY = window.scrollY;
+
+                let opacity = 0.85 - scrollY / 400;
+
+                if (opacity < 0) opacity = 0;
+                if (opacity > 0.85) opacity = 0.85;
+
+                veil.style.opacity = opacity;
+            });
+
+            let currentSlide = 0;
+
+            const slides = document.querySelectorAll(".slide");
+
+            function showSlide(index) {
+                slides.forEach((slide) => {
+                    slide.classList.remove("active");
+                });
+
+                if (index >= slides.length) {
+                    currentSlide = 0;
+                }
+
+                if (index < 0) {
+                    currentSlide = slides.length - 1;
+                }
+
+                slides[currentSlide].classList.add("active");
+            }
+
+            function changeSlide(direction) {
+                currentSlide += direction;
+
+                if (currentSlide >= slides.length) {
+                    currentSlide = 0;
+                }
+
+                if (currentSlide < 0) {
+                    currentSlide = slides.length - 1;
+                }
+
+                showSlide(currentSlide);
+            }
+
+            showSlide(currentSlide);
+        </script>
+    </body>
+</html>
