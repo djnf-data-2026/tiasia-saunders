@@ -683,6 +683,17 @@ mutate(
 ```
 
 ```{r}
+race_CPD_24 <- race_CPD_24 |>
+  mutate(
+    race = recode(
+      race,
+      "American Indian" = "AIAN"
+    )
+  ) 
+  
+```
+
+```{r}
 ## now graphing this 
 
 ggplot(
@@ -745,11 +756,10 @@ ggplot(
 - When accounting for race population size, it shows me that Native Hawaiian and Pacific Islander (NHPI) drivers had the highest per capita rate of traffic stops in 2024, with 32,083 stops per 100,000 residents. Black drivers had the second highest per capita rate with 17,088 stops per 100,000 residents, followed by Hispanic drivers with 12,492 stops per 100,000 residents. White drivers had a significantly lower per capita rate of 4,912 stops per 100,000 residents. Asian drivers had the lowest per capita rate among the top three groups with 273 stops per 100,000 residents. American Indian drivers had a per capita rate of 200 stops per 100,000 residents.
 
 ```{r}
-
 ## perfecting the graph to showcase the per capita rates with the population percentage to not overstate or mislead 
 ## ADDING POPULATION COMPARISON LINE
 
-plot_data <- chicago_race_per_capita |>
+chicago_per_plot <- chicago_race_per_capita |>
   mutate(
     pop_pct_scaled = population_pct * 500
   ) |>
@@ -760,7 +770,7 @@ plot_data <- chicago_race_per_capita |>
   )
 
 chicago_per_plot <- ggplot(
-  plot_data,
+  chicago_per_plot,
   aes(
     x = reorder(race, value),
     y = value,
@@ -786,83 +796,34 @@ chicago_per_plot <- ggplot(
   labs(
     title = "CPD Traffic Stops per 100,000 Residents Compared to Population Share",
     
-    subtitle = "NHPI has the highest per-capita stop rate, though the group represents only 0.1% of \nChicago's population. Among larger racial groups, \nBlack drivers have the highest per-capita stop rate.",
+    subtitle = "NHPI has the highest per-capita stop rate, though the group represents only 0.1% of Chicago's population. \nAmong larger racial groups, Black drivers have the highest per-capita stop rate.",
     
     x = "Race",
     y = "Value",
+    fill = "Key",
     
     caption = "Population percentage scaled for visualization only.\nSource: Chicago Police Department and U.S. Census Bureau\nGraphic by Tiasia Saunders"
   ) +
   
-  guides(fill = "none") +
   
   theme_minimal() +
   
   theme(
-    legend.title = element_blank(),
-    plot.title = element_text(face = "bold", size = 20),
-    plot.caption = element_text(size = 6, hjust = 1)
+  legend.position = "bottom",
+  legend.title = element_text(face = "bold"),
+
+  plot.title = element_text(face = "bold", size = 16),
+
+  plot.caption = element_text(
+    size = 6,
+    hjust = 1
   )
+)
+
+chicago_per_plot
   
 ```
-
-- I added a second bar to the graph to show the population percentage. 
-
-```{r eval=FALSE, include=FALSE}
-ggplot(
-  chicago_race_per_capita |> 
-    filter(race != "NHPI"), 
-  
-  # reorder() sorts bars from highest to lowest
-  aes(
-    x = reorder(race, stops_per_100k),
-    y = stops_per_100k,
-    fill = highlight
-  )
-) +
-  
-  geom_col() +
-  
-  geom_text(
-    aes(label = round(stops_per_100k, 1)),
-    hjust = -0.1,
-    size = 3
-  ) +
-  
-  # flipping chart horizontally for easier reading
-  coord_flip() +
-  
-  scale_fill_manual(
-    values = c(
-      "Top 3" = "#B22222",
-      "Other" = "gray70"
-    )
-  ) +
-  
-  scale_y_continuous(
-    labels = comma,
-    expand = expansion(mult = c(0, .15))
-  ) +
-  
-  labs(
-    title = "Chicago Police Department Traffic Stops\nper 100,000 Residents by Race",
-    subtitle = "Black drivers have the highest per-capita stop rate among comparable racial groups.\nNHPI excluded due to very small population size (0.1%), which can produce\n unstable rates.",
-    x = "Race",
-    y = "Stops per 100,000 Residents", 
-     caption = "Source: Chicago Police Department\n These are the raw number counts. \n Graphic by Tiasia Saunders", 
-    plot_caption = 8
-  ) +
-  
-  guides(fill = "none") +
-  
-  theme_minimal() + 
-  theme(
-    legend.position = "none",
-    plot.title = element_text(face = "bold"), 
-    plot.caption = element_text(size = 6)
-  )
-```
-
+- I added a line to account for the population size in the per capita graphic. 
 
 ```{r}
 
@@ -1612,8 +1573,6 @@ per_capita_traffic_race
 
 ```
 
-
-
 - Illinois state traffic stop rates were highest among NHPI and American Indian residents, though those rates are based on much smaller population counts. Among larger racial groups, Black residents had the highest stop rate, with about 7,374 stops per 100,000 residents, compared with 580 per 100,000 white residents.
 
 ```{r}
@@ -1621,8 +1580,100 @@ per_capita_traffic_race <- per_capita_traffic_race |>
   mutate(
     population_pct = (population_number / sum(population_number)) * 100
   )
+
+per_capita_traffic_race
 ```
 
+```{r}
+census_2020_illinois <- census_2020_illinois|>
+  mutate(
+    race_and_hispanic_origin = recode(
+      race_and_hispanic_origin,
+      "American Indian and Alaska Native" = "AIAN"
+    )
+  )
+
+```
+
+
+```{r}
+
+traffic_per_plot <- per_capita_traffic_race |>
+  mutate(
+    pop_pct_scaled = population_pct * 500
+  ) |>
+  pivot_longer(
+    cols = c(stops_per_100k, pop_pct_scaled),
+    names_to = "metric",
+    values_to = "value"
+  )
+
+traffic_per_plot <- ggplot(
+ traffic_per_plot,
+  aes(
+    x = reorder(race, value),
+    y = value,
+    fill = metric
+  )
+) +
+
+  geom_col(position = "dodge") +
+
+  coord_flip() +
+
+  scale_fill_manual(
+    values = c(
+      "stops_per_100k" = "#B22222",
+      "pop_pct_scaled" = "gray70"
+    ),
+    labels = c(
+      "Population % (scaled)",
+      "Stops per 100k"
+    )
+  ) +
+
+  labs(
+    title = "Illinois Traffic Stops per 100,000 Residents Compared to Population Share",
+
+    subtitle = "NHPI had the highest per-capita stop rate among racial groups.\nAmong larger populations, Black drivers experienced the highest stop rates.",
+
+    x = "Race",
+    y = "Value",
+    fill = "Key", 
+
+    caption = "Population percentage scaled for visualization only.\\nSource: Illinois traffic stop data and 2020 Census Bureau\\nGraphic by Tiasia Saunders"
+  ) +
+
+  theme_minimal() +
+ 
+  theme(
+  legend.position = "bottom",
+  legend.title = element_text(face = "bold"),
+
+  plot.title = element_text(face = "bold", size = 16),
+
+  plot.caption = element_text(
+    size = 6,
+    hjust = 1
+  )
+)
+
+
+traffic_per_plot
+
+```
+- 
+
+```{r}
+ggsave(
+  filename = "chicago_per_capita.png",
+  plot = chicago_per_plot,
+  width = 10,
+  height = 8,
+  dpi = 300,
+  bg = "white"
+)
+```
 
 
 ```{r}

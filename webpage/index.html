@@ -151,6 +151,21 @@
                 margin-right: auto; /* Distributes right spacing evenly */
                 width: 50%; /* Optional: Set a specific size if needed */
             }
+
+            figure {
+                display: flex;
+                flex-direction: column;
+                align-items: center; /* Centers the image and caption horizontally */
+                justify-content: center;
+            }
+
+            figcaption {
+                text-align: center; /* Centers the text inside the caption */
+                font-size: 0.85em; /* Makes the caption smaller (adjust as needed) */
+                max-width: 80%; /* Restricts the text width so it doesn't get too wide */
+                /* Optional: a softer color for the caption */
+                margin-top: 0.5em; /* Adds a little space between image and caption */
+            }
         </style>
     </head>
 
@@ -164,11 +179,16 @@
             <h3>By: Tiasia Saunders</h3>
         </div>
 
-        <img
-            src="traffic.png"
-            alt="Description of the traffic"
-            class="center-image"
-            style="width: 70%; height: auto; display: block; margin: auto" />
+        <figure>
+            <img
+                src="traffic.png"
+                alt="Description of the traffic"
+                class="center-image"
+                style="width: 70%; height: auto; display: block; margin: auto" />
+            <figcaption>
+                An illustrative image of a police officer monitoring traffic activity. Photo courtesy of Adobe Stock.
+            </figcaption>
+        </figure>
 
         <div class="container">
             <!-- OVERVIEW -->
@@ -235,7 +255,7 @@
                     <ul>
                         <li>
                             Data comes from the Investigative Project on Race and Equity (2021–2024 traffic and
-                            pedestrian stops).
+                            pedestrian stops data received through a FOIA request).
                         </li>
                         <li>Includes Chicago Police Department and other Illinois law enforcement agencies.</li>
                         <li>Population data from the 2020 U.S. Census is used for per-capita calculations.</li>
@@ -325,22 +345,25 @@
                             alt="Chicago Police Department per capita traffic stop rates by race" />
 
                         <ul>
-                            <li>Shows stop rates adjusted for racial population size</li>
-                            <li>Helps identify disparities hidden by raw counts</li>
+                            <li>
+                                Shows stop rates adjusted for racial population size which helps identify disparities
+                                hidden by raw counts
+                            </li>
+
                             <li>
                                 When accounting for race population size, it shows me that Native Hawaiian and Pacific
                                 Islander (NHPI) drivers had the highest per capita rate of traffic stops in 2024, with
-                                32,083 stops per 100,000 residents. Black drivers had the second highest per capita rate
-                                with 17,088 stops per 100,000 residents, followed by Hispanic drivers with 12,492 stops
-                                per 100,000 residents. White drivers had a significantly lower per capita rate of 4,912
-                                stops per 100,000 residents. Asian drivers had the lowest per capita rate among the top
-                                three groups with 273 stops per 100,000 residents. American Indian drivers had a per
-                                capita rate of 200 stops per 100,000 residents.
+                                32,083 stops per 100,000 residents, but this is mainly due to the small NHPI population
+                                size.
                             </li>
+
                             <li>
-                                Would like to note that the reason NHPI is so high is due to its small population size
-                                in Chicago.
+                                Black drivers had the second highest per capita rate with 17,088 stops per 100,000
+                                residents, followed by Hispanic drivers with 12,492 stops per 100,000 residents.
                             </li>
+                            <li>White drivers had the lowest per capita rate of 4,912 stops per 100,000 residents.</li>
+                            <li>Asian drivers had a per capita rate of with 7,052 per 100,000 residents.</li>
+                            <li>American Indian drivers had a per capita rate of 6,610 stops per 100,000 residents.</li>
                         </ul>
                     </div>
 
@@ -354,12 +377,18 @@
                             alt="Illinois law enforcement per capita traffic stop rates by race" />
 
                         <ul>
-                            <li>Compares statewide traffic stop disparities</li>
+                            <li>Compares statewide traffic stop of hundreds of law enforcement agencies</li>
                             <li>
                                 Illinois state traffic stop rates were highest among NHPI and American Indian residents,
-                                though those rates are based on much smaller population counts. Among larger racial
-                                groups, Black residents had the highest stop rate, with about 7,374 stops per 100,000
-                                residents, compared with 580 per 100,000 white residents.
+                                though those rates are based on much smaller population counts.
+                            </li>
+                            <li>
+                                Among larger racial groups, Black residents had the highest stop rate, with about 21,373
+                                stops per 100,000 residents, compared with 12,779 per 100,000 white residents.
+                            </li>
+                            <li>
+                                Following that, Hispanic residents made up 12,779 stops per 100,000 reesidents, while
+                                Asian had the lowest per capita with 9,415 traffic stops of 100,000 residents.
                             </li>
                         </ul>
                     </div>
@@ -463,7 +492,7 @@
         </div>
 
         <div class="section">
-            <h2>Veil of Darkness Analysis</h2>
+            <h2 class="text-center">Veil of Darkness Analysis</h2>
 
             <div class="card">
                 <div class="row">
@@ -480,12 +509,18 @@
                         <ul>
                             <li>
                                 Black drivers accounted for the largest share of Chicago traffic stops during both
-                                daytime (48.0%) and nighttime (41.0%) hours.
+                                daytime (48.0%) and nighttime (41.0%) hours. Additionally, it followed the suspected
+                                pattern of veil of darkness through the traffic stop percentage dropping by 7% at
+                                nighttime.
                             </li>
 
                             <li>Hispanic drivers' share increased from 31.7% during the day to 37.0% at night.</li>
 
-                            <li>White drivers accounted for 16.2% of daytime stops and 13.0% of nighttime stops.</li>
+                            <li>
+                                White drivers accounted for 16.2% of daytime stops and 13.0% of nighttime stops, which
+                                follows a veil of darkness lens through police not recoginizing the drivers race at
+                                nighttime, but it descreased by 3.2%.
+                            </li>
 
                             <li>
                                 The racial distribution of stops in Chicago differs substantially from statewide
@@ -506,8 +541,38 @@
 
                         <ul>
                             <li>Statewide agencies show similar but more distributed stop patterns.</li>
-                            <li>Disparities exist but vary more across departments than CPD.</li>
-                            <li>Suggests enforcement differences are not isolated to Chicago.</li>
+
+                            <li>
+                                Black drivers accounted for 18.8% of daytime traffic stops but 27.1% of nighttime stops,
+                                representing an increase of 8.3 percentage points (about a 44% increase in stop share at
+                                night).
+                            </li>
+
+                            <li>
+                                White drivers accounted for 58.1% of daytime stops but dropped to 46.8% at night,
+                                representing an 11.3 percentage point decrease (about a 19.5% decline in stop share
+                                after dark).
+                            </li>
+
+                            <li>
+                                Hispanic drivers also saw an increase in stop share, rising from 18.4% during daytime
+                                hours to 20.8% at night, while Asian, AIAN, and NHPI stop shares remained relatively
+                                stable across lighting conditions.
+                            </li>
+
+                            <li>
+                                These findings do not align neatly with the traditional Veil of Darkness expectation
+                                that minority drivers would account for a smaller share of stops when visibility is
+                                reduced. Instead, Black and Hispanic drivers represented a larger share of nighttime
+                                stops, suggesting that other factors beyond driver visibility may influence statewide
+                                traffic stop patterns.
+                            </li>
+
+                            <li>
+                                Because this analysis uses fixed daytime and nighttime categories rather than actual
+                                sunrise and sunset times, these results should be interpreted cautiously and viewed as
+                                descriptive rather than causal evidence against or for the Veil of Darkness framework.
+                            </li>
                         </ul>
                     </div>
                 </div>
@@ -574,18 +639,20 @@
                         Across CPD data, NHPI and American Indian residents show the highest per-capita stop rates,
                         though these figures are influenced by small population sizes. Among larger racial groups, Black
                         residents had the highest stop rate at approximately 7,374 stops per 100,000 residents, compared
-                        to about 580 per 100,000 White residents.
-                        In statewide Illinois law enforcement data, a similar pattern emerges, with Black residents
-                        again experiencing the highest stop rates among major racial groups.
+                        to about 580 per 100,000 White residents. In statewide Illinois law enforcement data, a similar
+                        pattern emerges, with Black residents again experiencing the highest stop rates among major
+                        racial groups.
                     </li>
 
                     <li>
                         <strong>Overall Interpretation:</strong>
-                        The results provide partial support for the Veil of Darkness hypothesis. There is a noticeable
-                        increase in the share of stops involving Black drivers at night and a decrease in the share
-                        involving White drivers, suggesting potential visibility-related disparities. However, these
-                        findings are not conclusive and may also reflect other factors such as driving patterns,
-                        policing strategies, or geographic differences.
+                        The results provide partial support for the Veil of Darkness hypothesis. While the CPD data
+                        analysis highlights the decrease in Black drivers arrest rate at nighttime, the Illinois
+                        statewide data highlights an increase in the traffic stops. There is a noticeable increase in
+                        the share of stops involving Black drivers at night and a decrease in the share involving White
+                        drivers, suggesting potential visibility-related disparities. However, these findings are not
+                        conclusive and may also reflect other factors such as driving patterns, policing strategies, or
+                        geographic differences.
                     </li>
 
                     <li>
@@ -618,6 +685,8 @@
                         searches or citations, which would further clarify how enforcement decisions vary across racial
                         groups.
                     </li>
+
+                    <li>I could look at traffic stops through a georgraphic lens, car type, and additional factors.</li>
                 </ul>
             </div>
         </div>
