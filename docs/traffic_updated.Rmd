@@ -119,7 +119,6 @@ traffic_CPD_24 <- traffic_CPD_24 |>
 
 ```
 
-
 Input into line 121 after knitting 
 ```{r}
 agency_counts <- traffic_24 %>%
@@ -506,8 +505,6 @@ ggplot(chi_race_vod_top5, aes(x = race)) +
   )
 
 ```
-
-
 
 
 #### Collar County Analysis 
