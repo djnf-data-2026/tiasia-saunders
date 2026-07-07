@@ -114,10 +114,16 @@ library(readxl)
 library(htmlwidgets)
 library(plotly)
 library(tidytext)
-
+library(suncalc)
+library(tidygeocoder)
+library(splines)
+library(stringr)
+library(zipcodeR)
+library(lutz)
+library(tabulapdf)
+library(pdftables)
+library(hms)
 ```
-
-
 
 #### Data Tables Definitions
 
@@ -137,183 +143,6 @@ library(tidytext)
   - Data of other law enforcement agencies happening under different agencies in Illinois, and it include fields such as: data, time of stop, stop duration (in minutes), officer name/badge number, name of driver, address, city, state, zip code, vehicle make, vehicle year, driver year of birth, driver race, driver gender, reason for stop, whether a search was conducted, whether drugs,drugs paraphernalia, alcohol, or other contraband were found during the search, and the result of the stop (citation, written warning, verbal warning). 
 
 
-```{r eval=FALSE, include=FALSE}
-##### 2021 Data 
-#Enter '1' to start a new auth process or select a pre-authorized account.
-#1: Send me to the browser for a new auth process.
-#CPD - 2021 REDCATED Traffic Data
-#https://docs.google.com/spreadsheets/d/1xFOnp3Dx11JzH6h1UAPIMU8RVThFvIDh/edit?usp=sharing&ouid=102324743793755798467&rtpof=true&sd=true
-googledrive::drive_auth()
-drive_download(
-  as_id("1xFOnp3Dx11JzH6h1UAPIMU8RVThFvIDh"),  # from the share link
-  path = "../data/traffic_CPD_21.xlsx",
-  overwrite = TRUE
-)
-## commenting the below line out because it is too big to pass through to github
-##traffic_CPD_21 <- read_excel("../data/traffic_CPD_21.xlsx")|> 
-  ##clean_names()
-
-#CPD - 2021 REDACTED Pedestrian Data
-#https://docs.google.com/spreadsheets/d/1GrmIDziDBGn2e1fiXLKiDQCcZLIe6S90/edit?usp=sharing&ouid=102324743793755798467&rtpof=true&sd=true
-drive_download(
-  as_id("1GrmIDziDBGn2e1fiXLKiDQCcZLIe6S90"),  # from the share link
-  path = "../data/pedestrian_CPD_21.xlsx",
-  overwrite = TRUE
-)
-pedestrian_CPD_21 <- read_excel("../data/pedestrian_CPD_21.xlsx")|> 
-  clean_names()
-
-#2021 Traffic Data Redacted
-#https://drive.google.com/file/d/1q5D_MGMProIshXZV_h2RlIiZUsYU14hp/view?usp=sharing
-drive_download(
-  as_id("1q5D_MGMProIshXZV_h2RlIiZUsYU14hp"),  # from the share link
-  path = "../data/traffic_21.txt",
-  overwrite = TRUE
-)
-traffic_21 <- fread("../data/traffic_21.txt", sep = "~")|> 
-  clean_names()
-
-
-#2021 Pedestrian Data Redacted
-#https://drive.google.com/file/d/1sXRtyPLyE2HCKfZi2zQxb_z-fe0KFday/view?usp=sharing
-
-drive_download(
-  as_id("1sXRtyPLyE2HCKfZi2zQxb_z-fe0KFday"),  # from the share link
-  path = "../data/pedestrian_redacted_21.txt",
-  overwrite = TRUE
-)
-pedestrian_redacted_21 <- fread("../data/pedestrian_redacted_21.txt", sep = "~")|> 
-  clean_names()
-
-
-```
-
-```{r eval=FALSE, include=FALSE}
-##### 2022 Data 
-
-### load the 2022- 2024 data 
-
-drive_download(
-  as_id("1GQAcNcBpyDpeH9Ge9IYB0lnefI637NAl"),  # from the share link
-  path = "../data/traffic_CPD_22.xlsx",
-  overwrite = TRUE
-)
-traffic_CPD_22 <- read_excel("../data/traffic_CPD_22.xlsx")|> 
-  clean_names()
-
-
-drive_download(
-  as_id("17beRQ5as-mECg-EgmUe999caWEDInMDI"),  # from the share link
-  path = "../data/pedestrian_CPD_22.xlsx",
-  overwrite = TRUE
-)
-pedestrian_CPD_22 <- read_excel("../data/pedestrian_CPD_22.xlsx")|> 
-  clean_names()
-
-
-# https://drive.google.com/file/d/17MCVZSBX67VKy-HwIVUOShA8_2gY7cHZ/view?usp=drive_link
-drive_download(
-  as_id(""),  # from the share link
-  path = "../data/traffic_22_pt1.txt",
-  overwrite = TRUE
-)
-traffic_22_pt1 <- fread("../data/traffic_22_pt1.txt", sep = "~")|> 
-  clean_names()
-
-drive_download( 
-  as_id("1xU-lzfk6k9yDfVsp7CzKSze_17kYpA04"),  # from the share link
-  path = "../data/traffic_22_pt2.txt",
-  overwrite = TRUE
-)
-traffic_22_pt2 <- fread("../data/traffic_22_pt2.txt", sep = "~")|> 
-  clean_names()
-
-drive_download(
-  as_id("1VTSg-4_RSOG8VVhpBBsrhWWzxcLIMXUB"),  # from the share link
-  path = "../data/pedestrian_redacted_22.txt",
-  overwrite = TRUE
-)
-pedestrian_redacted_22 <- fread("../data/pedestrian_redacted_22.txt", sep = "~")|> 
-  clean_names()
-
-
-```
-
-
-```{r eval=FALSE, include=FALSE}
-##### 2023 Data
-drive_download(
-  as_id("10yCnj0-AY86q2nSgctO7-GhT1sZhUU_y"),  # from the share link
-  path = "../data/traffic_CPD_23.xlsx",
-  overwrite = TRUE
-)
-traffic_CPD_23 <- read_excel("../data/traffic_CPD_23.xlsx")|> 
-  clean_names()
-
-drive_download(
-  as_id("1w6vnVrrQ3IzXMbl3wdk-tUsaHt2vWgfA"),
-  path = "/Users/tiasiasaunders/Desktop/code/tiasia-saunders/data/pedestrian_CPD_23.xlsx",
-  overwrite = TRUE
-)
-
-pedestrian_CPD_23 <- read_excel("../data/pedestrian_CPD_23.xlsx") |> 
-  clean_names()
-
-drive_download(
-  as_id("1MWRhVQLD7652Ln9TiJEOBphEVIabd4kJ"),  # from the share link
-  path = "../data/traffic_23.txt",
-  overwrite = TRUE
-)
-traffic_23 <- fread("../data/traffic_23.txt", sep = "~")|> 
-  clean_names()
-
-drive_download(
-  as_id("1qZaCB_YD0Q31RvmfyeVzjyP0aGqP_xZD"),  # from the share link
-  path = "../data/pedestrian_redacted_23.txt",
-  overwrite = TRUE
-)
-pedestrian_redacted_23 <- fread("../data/pedestrian_redacted_23.txt", sep = "~")|> 
-  clean_names()
-
-```
-
-```{r eval=FALSE, include=FALSE}
-googledrive::drive_auth()
-drive_download(
-  as_id("1pqA4y9-Upgol5xWxfDvift43j24ZJZzI"),  # from the share link
-  path = "../data/traffic_CPD_24.xlsx",
-  overwrite = TRUE
-)
-traffic_CPD_24 <- read_excel("../data/traffic_CPD_24.xlsx")|> 
-  clean_names()
-
-drive_download(
-  as_id("1cqwJTHZnae5NbLdgQhVUNttHFnCkugMC"),  # from the share link
-  path = "../data/pedestrian_CPD_24.xlsx",
-  overwrite = TRUE
-)
-pedestrian_CPD_24 <- read_excel("../data/pedestrian_CPD_24.xlsx")|> 
-  clean_names()
-
-drive_download(
-  as_id("1N-GdlJqGQXsRqjW6xF8zTjVvdNuWu0g1"),  # from the share link
-  path = "../data/traffic_24.txt",
-  overwrite = TRUE
-)
-traffic_24 <- fread("../data/traffic_24.txt", sep = "~")|> 
-  clean_names()
-
-drive_download(
-  as_id("1nSGllC3zosxWIrh-8W_wvrPa-NWtvoOV"),  # from the share link
-  path = "../data/pedestrian_redacted_24.txt",
-  overwrite = TRUE
-)
-pedestrian_redacted_24 <- fread("../data/pedestrian_redacted_24.txt", sep = "~")|> 
-  clean_names()
-
-
-```
-
 #### 2024 Chicago + Other Law Enforcement Traffic Stop Data Analysis 
 
 ##### Loading Datasets 
@@ -322,7 +151,7 @@ pedestrian_redacted_24 <- fread("../data/pedestrian_redacted_24.txt", sep = "~")
 dir.create("data", showWarnings = FALSE)
 ```
 
-```{r eval=FALSE, include=FALSE}
+```{r include=FALSE}
 googledrive::drive_auth()
 
 # ALWAYS create folder in working directory (not ../data)
@@ -350,6 +179,7 @@ traffic_24 <- fread("data/traffic_24.txt", sep = "~") |>
 ```
 
 ```{r}
+## bringing in the traffic and census data 
 traffic_CPD_24 <- read_excel("data/traffic_CPD_24.xlsx") |> 
   clean_names()
 traffic_24 <- fread("data/traffic_24.txt", sep="~") |> 
@@ -358,104 +188,45 @@ census_2020_illinois <- read_excel("data/census_2020_illinois_data.xlsx") |>
   clean_names()
 ```
 
-```{r eval=FALSE, include=FALSE}
 
-traffic_CPD_21 <- read_excel("../data/traffic_CPD_21.xlsx")|> 
-  clean_names()
-pedestrian_CPD_21 <- read_excel("../data/pedestrian_CPD_21.xlsx")|> 
-  clean_names()
-traffic_21 <- fread("../data/traffic_21.txt", sep = "~")|> 
-  clean_names()
-pedestrian_redacted_21 <- fread("../data/pedestrian_redacted_21.txt", sep = "~")|> 
-  clean_names()
-traffic_CPD_22 <- read_excel("../data/traffic_CPD_22.xlsx") |> 
-  clean_names()
-pedestrian_CPD_22 <- read_excel("../data/pedestrian_CPD_22.xlsx") |> 
-  clean_names()
-traffic_22_pt1 <- fread("../data/traffic_22_pt1.txt") |> 
-  clean_names ()
-traffic_22_pt2 <- fread("../data/traffic_22_pt2.txt") |>
-  clean_names()
-pedestrian_redacted_22 <- fread("../data/pedestrian_redacted_22.txt") |>   clean_names() 
-traffic_CPD_23 <- read_excel("../data/traffic_CPD_23.xlsx") |>
-  clean_names()
-pedestrian_CPD_23 <- read_excel("../data/pedestrian_CPD_23.xlsx") |>
-  clean_names() 
-traffic_23 <- fread("../data/traffic_23.txt") |>
-  clean_names()
-pedestrian_redacted_23 <- fread("../data/pedestrian_redacted_23.txt") |>
-  clean_names()
-traffic_CPD_24 <- read_excel("../data/traffic_CPD_24.xlsx") |>
-  clean_names()
-pedestrian_CPD_24 <- read_excel("../data/pedestrian_CPD_24.xlsx") |> 
-  clean_names() 
-traffic_24 <- fread("../data/traffic_24.txt") |>
-  clean_names()
-pedestrian_redacted_24 <- fread("../data/pedestrian_redacted_24.txt") |>   
-  clean_names()
-census_2020_illinois <- read_excel("../data/census_2020_illinois_data.xlsx") |>
-  clean_names()
+```{r}
+## wasnt able to view the traffic_24 data, so i ran the next three code chunks to identify the problem column and fix it 
+char_cols <- names(traffic_24)[sapply(traffic_24, is.character)]
 
+for (col in char_cols) {
+  cat("Checking:", col, "\n")
+  print(try(nchar(traffic_24[[col]]), silent = TRUE))
+}
 ```
 
-```{r eval=FALSE, include=FALSE}
-pedestrian_CPD_21 |> 
-  group_by(datestop) |> 
-  count() |> 
-  arrange(desc(n))
-
-traffic_21 |> 
-  count(agency_name, agency_code) |> 
-  arrange(desc(n))
-
-# - There are 786 other law enforcement agencies in the traffic_2021 data 
-```
-
-```{r eval=FALSE, include=FALSE}
-## creating a df with agency_name and agency_code do I can add agency names to my pt 1 and pt 2 of traffic_2022 data 
-agency_lookup <- traffic_21 |> 
-  select(agency_name, agency_code) |>
-  distinct() 
-```
-
-```{r eval=FALSE, include=FALSE}
-## commenting this out since I cant pass it through github 
-## combining pt 1 and 2 of traffic_2022 data so it can be uniformed with the other datasets 
-## traffic_22 <- bind_rows(
-##  traffic_22_pt1,
- ## traffic_22_pt2
-##)
-```
-
-```{r eval=FALSE, include=FALSE}
-traffic_22 <- traffic_22 |> 
-  left_join(
-    agency_lookup |> select(agency_code, agency_name),
-    by = "agency_code"
+```{r}
+traffic_24$beat_location_of_stop <-
+  iconv(
+    traffic_24$beat_location_of_stop,
+    from = "",
+    to = "UTF-8",
+    sub = ""
   )
+```
+
+```{r}
+nchar(traffic_24$beat_location_of_stop)
+```
+
+```{r}
+## cleaning up the data, figure this out later 
+traffic_24 <- traffic_24 |>
+  mutate(across(where(is.character), str_trim))
+
+CPD_24 <- CPD_24 |>
+  mutate(across(where(is.character), str_trim))
 
 ```
 
-```{r eval=FALSE, include=FALSE}
-## ensuring join worked correctly 
-traffic_22 |> 
-  select(agency_code, agency_name)
-
+```{r}
+head(traffic_24$beat_location_of_stop)
 ```
 
-```{r eval=FALSE, include=FALSE}
-traffic_22 |> 
-  count(agency_name, agency_code) |> 
-  arrange(desc(n))
-# - There are 792 other law enforcement agencies in the traffic_2022 data 
-```
-
-```{r eval=FALSE, include=FALSE}
-traffic_23 |> 
-  count(agency_name) |> 
-  arrange(desc(n))
-# - There are 804 other law enforcement agencies in the traffic_2021 data 
-```
 
 #### Preliminary Basic Analysis 
 
@@ -553,6 +324,68 @@ traffic_24$result_of_stop <- dplyr::recode(
   "2" = "Written Warning",
   "3" = "Verbal Warning (stop card)"
 )
+
+```
+
+
+```{r}
+## first seperating time and day into two columns, calculating for the intertwilight period 
+
+data$Date <- format(lubridate::mdy_hm(data$DateTime)) 
+data$Date <- as.Date(data$Date)            
+data$Time <- format(lubridate::mdy_hm(data$DateTime), "%H:%M:%S") 
+
+```
+
+
+```{r}
+## convering zip columns from characters to numbers 
+
+traffic_24 <- traffic_24 |> 
+  mutate(zip = as.numeric(zip)) 
+
+traffic_CPD_24 <- traffic_CPD_24 |> 
+  mutate(zip = as.numeric(zipcode))
+## joining zip code data to both traffic datasets 
+traffic_24 <- traffic_24 |>
+  left_join(
+    illinois_county_zip_codes,
+    by = "zip"
+  )
+
+traffic_CPD_24 <- traffic_CPD_24 |> 
+  left_join( 
+    illinois_county_zip_codes, 
+   by = c("zipcode" = "zip")
+  )
+```
+
+```{r}
+traffic_CPD_24 |> 
+  select(timestop, stop_time) %>%
+  head()
+
+```
+
+```{r}
+## converting traffic_24 time column to posixct 
+traffic_24 <- traffic_24 %>%
+  mutate(
+    time_of_stop = as.POSIXct(
+      paste("1899-12-31", time_of_stop),
+      format = "%Y-%m-%d %H:%M:%S",
+      tz = "UTC"
+    )
+  )
+```
+
+```{r}
+## reformatting the time columns to hours and minutes, in military time 
+traffic_CPD_24 <- traffic_CPD_24 |> 
+  mutate(stop_time = format(timestop, "%H:%M:%S"))
+
+traffic_24 <- traffic_24 |> 
+  mutate(stop_time = format(time_of_stop, "%H:%M:%S"))
 ```
 
 ```{r}
@@ -1331,6 +1164,167 @@ p <- ggplot(
 ggplotly(p, tooltip = "text")
 ```
 
+### Analysis of the Collar Counties in Chicago 
+```{r}
+## bringing in county level data 
+illinois_county <- read_csv("data/illinois_county_data.csv") |> 
+  clean_names()
+illinois_county_zip_codes <- read_csv("data/illinois_zip_codes.csv") |> 
+  clean_names()
+county_population <- read_csv("data/county_population.csv") |> 
+  clean_names()
+hispanic_county_population <- read_csv("data/hispanic_race_county_data.csv") |> 
+  clean_names()
+
+```
+
+```{r}
+traffic_CPD_24 %>%
+  distinct(race) %>%
+  arrange(race)
+```
+
+```{r}
+collar_counties <- c(
+  "DuPage County",
+  "Kane County",
+  "Lake County",
+  "McHenry County",
+  "Will County",
+  "Cook County"
+)
+
+collar_traffic_CPD <- traffic_CPD_24 |> 
+  filter(county %in% collar_counties)
+
+collar_traffic_CPD |> 
+  count(county, sort = TRUE)
+
+collar_race_counts <- collar_traffic_CPD |> 
+  count(county, race)
+
+
+collar_race_counts
+
+```
+
+```{r}
+## convering the table format 
+county_population <- county_population |> 
+  pivot_longer(
+    cols = -name, 
+    names_to = "race",
+    values_to = "population"
+  ) 
+
+hispanic_county_population <- hispanic_county_population |> 
+  pivot_longer(
+    cols = -name, 
+    names_to = "race", 
+    values_to = "population"
+  )
+
+```
+
+```{r}
+hispanic_county_population <- hispanic_county_population |> 
+  filter(race == "hispanic_or_latino_of_any_race") |> 
+  mutate(race = "Hispanic") |> 
+  select(name, race, population)
+
+ hispanic_county_population <- hispanic_county_population |> 
+    rename(county = name)
+
+```
+
+
+```{r}
+## renaming race columns so i can join with the collar_race counts table 
+county_population <- county_population |> 
+  mutate(
+    race = recode(
+      race,
+      "white_one_race" = "White",
+      "black_or_african_american_one_race" = "Black",
+      "american_indian_and_alaska_native_one_race" = "American Indian",
+      "asian_one_race" = "Asian",
+      "native_hawaiian_and_other_pacific_islander_one_race" = "NHPI"
+    ),
+    county = name
+  ) %>%
+  select(county, race, population)
+```
+
+```{r}
+## joining hispanic data to other races county data 
+county_population <- bind_rows(
+  county_population,
+  hispanic_county_population
+)
+```
+
+```{r}
+## joining county race population data with the collar race counts 
+
+collar_race_counts <- collar_race_counts |> 
+  left_join(
+    county_population,
+    by = c("county", "race")
+  )
+```
+
+```{r}
+county_race_counts <- collar_race_counts |> 
+  select(-name)
+```
+
+```{r}
+collar_race_counts <- collar_race_counts |> 
+  mutate(
+    stops_per_100k = (n / population) * 100000
+  )
+```
+
+```{r}
+ggplot(collar_race_counts,
+       aes(
+         x = reorder(race, stops_per_100k),
+         y = stops_per_100k,
+         fill = race
+       )) +
+  geom_col(show.legend = FALSE) +
+  facet_wrap(~ county, scales = "free_y") +
+  coord_flip() +
+  labs(
+    title = "CPD Traffic Stops in Collar Counties per 100,000 Residents by Race",
+    subtitle = "Illinois Collar Counties",
+    x = "Race",
+    y = "Stops per 100,000 residents"
+  ) +
+  theme_minimal()
+
+ggsave(
+  filename = "cpd_collar.png",
+  width = 10,
+  height = 6,
+  dpi = 300
+)
+```
+
+- Across all Illinois collar counties, Black drivers consistently experience the highest per-capita traffic stop rates, exceeding White drivers by a wide margin in every county.
+- Hispanic drivers also face elevated stop rates compared to White drivers in most counties, though the magnitude of the disparity is smaller than for Black drivers.
+- White drivers have the lowest per-capita traffic stop rates across all collar counties, suggesting uneven enforcement exposure by race.
+- The largest disparities appear in Cook County, where Black drivers are stopped at more than six times the rate of White drivers.
+- While patterns are broadly consistent across counties, the intensity of disparities varies, with some suburban counties (like DuPage and Will) showing particularly high relative differences for Black drivers.
+- Asian drivers generally experience lower stop rates than Black and Hispanic drivers, but higher than White drivers in several counties, indicating more moderate variation across groups.
+- Native Hawaiian and Pacific Islander rates appear extremely high in some counties, but these results are unstable due to very small population sizes and should be interpreted cautiously.
+
+
+
+[ do a general county per_capita breakdown by race ]
+
+[ try to see if we can account for chicago in parts]
+
 
 #### Preliminary Data Analysis With the Other Illinois Law Enforcement Agencies for 2024 
 
@@ -1347,6 +1341,184 @@ pivot_wider(
 ```
 
 - There are 786 other law enforcement agencies in the traffic_2024 data. 
+
+
+```{r}
+collar_counties <- c(
+  "DuPage County",
+  "Kane County",
+  "Lake County",
+  "McHenry County",
+  "Will County",
+  "Cook County"
+)
+
+collar_traffic <- traffic_24 |> 
+  filter(county %in% collar_counties)
+
+collar_traffic |> 
+  count(county, sort = TRUE)
+
+traffic_collar_race_counts <- collar_traffic |> 
+  count(county, race)
+
+
+traffic_collar_race_counts
+
+```
+
+```{r}
+## joining county race population data with the collar race counts 
+
+traffic_collar_race_counts <- traffic_collar_race_counts |> 
+  left_join(
+    county_population,
+    by = c("county", "race")
+  )
+```
+
+```{r}
+county_race_counts <- collar_race_counts |> 
+  select(-name )
+```
+
+```{r}
+traffic_collar_race_counts <- traffic_collar_race_counts |> 
+  mutate(
+    stops_per_100k = (n / population) * 100000
+  )
+```
+
+```{r}
+ggplot(traffic_collar_race_counts,
+       aes(
+         x = reorder(race, stops_per_100k),
+         y = stops_per_100k,
+         fill = race
+       )) +
+  geom_col(show.legend = FALSE) +
+  facet_wrap(~ county, scales = "free_y") +
+  coord_flip() +
+  labs(
+    title = "Illinois Law Enforcement Traffic Stops in Collar Counties per 100,000 Residents by Race",
+    subtitle = "Illinois Collar Counties",
+    x = "Race",
+    y = "Stops per 100,000 residents"
+  ) +
+  theme_minimal()
+
+ggsave(
+  filename = "illinois_collar.png",
+  width = 10,
+  height = 6,
+  dpi = 300
+)
+```
+- Across all five collar counties, Black drivers consistently experience the highest per-capita traffic stop rates, exceeding White drivers in every county by large margins.
+- The largest disparities appear in DuPage, Kane, and Will counties, where Black drivers are stopped at roughly 3–4 times the rate of White drivers (and even higher in some cases).
+- Hispanic drivers also face substantially elevated stop rates compared to White drivers across all counties, though generally lower than Black drivers.
+- In every collar county, White drivers have the lowest traffic stop rates per 100,000 residents, indicating a consistent racial pattern across jurisdictions.
+- Asian drivers show moderate stop rates, typically higher than White drivers but lower than Black and Hispanic drivers in most counties.
+- Several counties (especially DuPage, Kane, and Will) show very high disparity gaps between Black and White drivers, suggesting the most pronounced racial differences outside Cook County.
+- Native Hawaiian and Pacific Islander rates appear extremely high in multiple counties, but these figures are unstable and likely inflated due to very small population sizes, making them less reliable for interpretation.
+
+```{r}
+collar_agency_race_counts <- collar_traffic |> 
+  count(agency_name, race, name = "traffic_stops") |> 
+  arrange(desc(traffic_stops))
+
+```
+
+```{r}
+collar_county_race_stops <- collar_traffic |> 
+  count(county, agency_name, race, name = "traffic_stops")
+```
+
+```{r}
+collar_county_race_stops <- collar_county_race_stops %>%
+  left_join(county_population, by = c("county", "race")) %>%
+  mutate(stops_per_100k = traffic_stops / population * 100000)
+
+collar_county_race_stops <- collar_county_race_stops %>%
+  filter(race != "NHPI")
+
+top_rates <- collar_county_race_stops %>%
+  arrange(desc(stops_per_100k)) %>%
+  slice_head(n = 10)
+```
+
+```{r}
+p <- ggplot(top_rates, aes(
+  x = reorder(race, stops_per_100k),
+  y = stops_per_100k,
+  fill = county
+)) +
+  geom_col() +
+  coord_flip() +
+  facet_wrap(~ county, scales = "free_y") +
+  labs(
+    title = "Top Traffic Stop Rates by Race in Collar Counties",
+    x = "Race",
+    y = "Stops per 100k"
+  ) +
+  theme_minimal()
+
+p
+
+ggsave(
+  filename = "top_collar_agencies.png",
+  plot = p, 
+  width = 10,
+  height = 6,
+  dpi = 300) 
+```
+
+```{r}
+agency_share <- collar_traffic %>%
+  count(county, agency_name, name = "traffic_stops") %>%
+  group_by(county) %>%
+  mutate(share = traffic_stops / sum(traffic_stops))
+
+top_agencies <- agency_share %>%
+  group_by(agency_name) %>%
+  summarise(total = sum(traffic_stops)) %>%
+  slice_max(total, n = 8) %>%
+  pull(agency_name)
+
+agency_share_top <- agency_share %>%
+  filter(agency_name %in% top_agencies)
+```
+
+```{r}
+
+ggplot(agency_share_top, aes(
+  x = county,
+  y = share,
+  fill = agency_name
+)) +
+  geom_col(position = "fill") +
+  coord_flip() +
+  labs(
+    title = "Share of Traffic Stops by Agency in Collar Counties",
+    x = "County",
+    y = "Share of Stops",
+    fill = "Agency"
+  ) +
+  theme_minimal() +
+  
+  ggsave(
+  filename = "traffic_agencies_collar.png",
+  width = 10,
+  height = 6,
+  dpi = 300
+)
+```
+- Traffic enforcement in Illinois collar counties is highly fragmented across multiple agencies, including municipal police, county sheriffs, and the Illinois State Police rather than being dominated by a single actor.
+- The Illinois State Police consistently appears across all counties, indicating that highway and interstate corridors are a major and continuous source of traffic stops regionwide.
+- Several suburban municipal police departments (such as Aurora, Bolingbrook, Naperville, Schaumburg, and Wheeling) contribute meaningful but uneven shares of stops, with their influence varying significantly by county.
+- Some counties show agency concentration, where one or two departments account for a large portion of stops, while others (like Cook County) show a more distributed enforcement structure across many agencies.
+- Overall, traffic enforcement in collar counties is driven more by overlapping jurisdictions and transportation corridors than by clear county-based policing boundaries.
+
 
 ```{r}
 ## ADDING DT OF THE ABOVE DATA 
@@ -1819,7 +1991,7 @@ veil_race_CPD_24 <- traffic_CPD_24 |>
     expand = expansion(mult = c(0, 0.15))
   ) +
   labs(
-    title = "Racial breakdown of CPD traffic stops during\n daylight and nighttime hours",
+    title = "Racial breakdown of CPD traffic stops during daylight and nighttime hours",
     subtitle = "Daytime includes 6 a.m.– 5 p.m.; nighttime includes 10 p.m.– 4 a.m.",
     x = NULL,
     y = "Share of stops",
@@ -1835,17 +2007,6 @@ veil_race_CPD_24 <- traffic_CPD_24 |>
   )
 
 ```
-
-
-```{r}
-ggsave(
-  "traffic_stops.png",
-  width = 8,
-  height = 6,
-  dpi = 300
-)
-```
-
 
 ```{r}
 ## calculating the daytime/nighttime for other traffic data 
@@ -1958,6 +2119,352 @@ veil_race <- traffic_24 |>
 ```
 
 
+### Veil of Darkness (More Refined Version)
+
+#### CPD Traffic Stops analysis (starting with traffic stops that happened in Chicago)- doing vod analysis by location 
+
+```{r}
+## adding long and lat to traffic_24 and traffic_CPD_24 
+zip_lookup <- zipcodeR::zip_code_db %>%
+  select(zipcode, lat, lng)
+
+traffic_24 <- traffic_24 |> 
+  mutate(zip = sprintf("%05s", zip)) |>    # keeps leading zeros
+  left_join(zip_lookup, by = c("zip" = "zipcode"))
+
+
+
+```
+
+```{r}
+packageVersion("zipcodeR")
+```
+
+- So, ran into major issue when trying to do the entire traffic_24 dataset, so I'm going to look at it through just traffic_stops in Chicago to see if the workflow works 
+
+```{r}
+## looking at top 5 cities, that I will do further analysis on 
+traffic_CPD_24 %>%
+  filter(!is.na(city_i)) %>%
+  count(city_i, sort = TRUE) %>%
+  slice_head(n = 5)
+```
+
+```{r}
+## using CPD data for stops that happened in chicago for the year 2024, starting with CPD since its just one agency and its easier to work with 
+chicago_stops <- traffic_CPD_24 |> 
+  filter(city_i == "CHICAGO")
+```
+
+
+```{r}
+## adding lat and lng coordinates to data 
+data(zip_code_db)
+
+zip_lookup_CPD <- zip_code_db |>
+  dplyr::select(
+    zip = zipcode,
+    lat = lat,
+    lng = lng
+  )
+
+chicago_stops <- chicago_stops |>
+  mutate(zip = sprintf("%05s", zipcode)) |>
+  left_join(zip_lookup_CPD, by = "zip")
+
+chicago_stops <- chicago_stops |>
+  mutate(zipcode = sprintf("%05s", zipcode)) |> 
+  left_join(zip_lookup, by = c("zipcode" = "zipcode"))
+```
+
+```{r}
+# standardizing the data 
+chicago_stops <- chicago_stops %>%
+  rename(
+    lat = lat.x,
+    lon = lng.y
+  )
+
+```
+
+```{r}
+chicago_stops <- chicago_stops %>%
+  mutate(
+    timestop = hms::as_hms(timestop)
+  ) %>%
+  rename(date = datestop)
+
+chicago_stops <- chicago_stops %>%
+  mutate(date = as.Date(date))
+```
+
+```{r}
+## corrected version to eliminate the minutes all being the same for each row 
+
+chicago_center_lat <- 41.8781
+chicago_center_lng <- -87.6298
+
+chicago_tz <- lutz::tz_lookup_coords(
+  chicago_center_lat,
+  chicago_center_lng,
+  warn = FALSE
+)
+
+time_to_minute <- function(time) {
+  time <- as.character(time)
+  hms_time <- hms::as_hms(time)
+  hour(hms_time) * 60 + minute(hms_time)
+}
+
+sunset_times <- chicago_stops %>%
+  mutate(
+    lat = chicago_center_lat,
+    lon = chicago_center_lng
+  ) %>%
+  select(date, lat, lon) %>%
+  distinct() %>%
+  getSunlightTimes(
+    data = .,
+    keep = c("dawn", "sunrise", "sunset", "dusk"),
+    tz = chicago_tz
+  ) %>%
+  mutate_at(vars(dawn, sunrise, sunset, dusk),
+            ~format(., "%H:%M:%S")) %>%
+  mutate(
+    sunset_minute = time_to_minute(sunset),
+    dusk_minute = time_to_minute(dusk),
+    dawn_minute = time_to_minute(dawn),
+    sunrise_minute = time_to_minute(sunrise),
+    date = ymd(str_sub(date, 1, 10))
+  ) %>%
+  select(date, dawn, sunrise, sunset, dusk, ends_with("minute"))
+```
+
+
+so my timestop column is like this how do i remove the data looking thing and just keep the time 
+
+```{r}
+sunset_times |> 
+  filter(dusk == min(dusk) | dusk == max(dusk) | dawn == min(dawn) | dawn == max(dawn))
+```
+
+```{r}
+sunset_times %>%
+  summarise(
+    min_sunset_minute = min(sunset_minute, na.rm = TRUE),
+    max_dusk_minute   = max(dusk_minute, na.rm = TRUE)
+  )
+```
+- So Chicago's intertwilight period is 4:20 pm - 9:05 pm 
+
+```{r}
+chi_VODstops <- 
+chicago_stops %>% 
+left_join(
+sunset_times,
+by = "date"
+) %>% 
+mutate(
+minute = time_to_minute(timestop),
+minutes_after_dark = minute - dusk_minute,
+is_dark = minute > dusk_minute | minute < dawn_minute,
+min_dusk_minute = min(dusk_minute),
+max_dusk_minute = max(dusk_minute),
+is_black = race == "Black"
+) %>% 
+filter(
+# Filter to get only the intertwilight period
+  ###Skipping this part
+#minute >= min_dusk_minute,
+minute <= max_dusk_minute,
+# Remove ambigous period between sunset and dusk
+!(minute > sunset_minute & minute < dusk_minute)
+)
+```
+
+```{r}
+chi_VODstops <- chi_VODstops|> 
+  filter(timestop > hm("16:20"), timestop < hm("21:05"))
+
+#so instead of accounting for it by data i think i want to follow the standfords project in using the window of time for the intertwilight period 
+
+```
+
+```{r}
+chi_VODstops <- chi_VODstops|> 
+  left_join(sunset_times, by = "date")
+```
+
+
+```{r}
+chi_VODstops <- chi_VODstops|> 
+  mutate(
+    minute = hour(timestop) * 60 + minute(timestop)
+  )
+
+chi_VODstops %>%
+  filter(
+    minute > sunset_minute,
+    minute < dusk_minute
+  )
+
+```
+
+```{r}
+StopsByYearInDarkness <- chi_VODstops %>%
+filter(is_dark) %>% 
+mutate(year = year(date)) %>% 
+group_by(year,race) %>% 
+summarize(Total =n()) %>% 
+spread(race, Total) %>% 
+mutate(sunshine = "Darkness")
+
+StopsByYearInDaylight <- chi_VODstops %>%
+filter(!is_dark) %>% 
+mutate(year = year(date)) %>% 
+group_by(year,race) %>% 
+summarize(Total =n()) %>% 
+spread(race, Total)%>% 
+mutate(sunshine = "Daylight")
+
+```
+```{r}
+TwilightTable <- rbind(StopsByYearInDarkness, StopsByYearInDaylight) %>% 
+  group_by(year)
+  #View(TwilightTable)
+```
+
+
+```{r}
+TwilightTable <- TwilightTable %>% 
+  mutate(others = `NHPI`+`American Indian`, total_stopped = `Black` +`White`+`NHPI`+`American Indian`, `Hispanic`, `Asian`) %>% 
+  group_by(year) %>%
+  mutate(black_percentage=`Black`/total_stopped, white_percentage= `White`/total_stopped, nhpi_pct = `NHPI`/total_stopped, american_indian = `American Indian`/total_stopped, hispanic_pct = `Hispanic`/ total_stopped, asian_pct = `Asian`/total_stopped)
+  datatable(TwilightTable)
+```
+- [ will write insights about cpd traffic arrests that happened in chicago]
+
+```{r}
+model_data <- chi_VODstops %>%
+  select(is_black, is_dark, date) %>%
+  mutate(
+    is_black = as.numeric(is_black),
+    is_dark = as.numeric(is_dark)
+  ) %>%
+  na.omit()
+
+glm(is_black ~ is_dark, data = model_data, family = binomial())
+```
+
+```{r}
+date_time_chi <- chi_VODstops |> 
+  select(date,timestop, is_dark, minute)
+
+#write_csv(date_time_chi, "date_time_chi.csv")
+
+```
+
+
+```{r}
+date_time_chi |> 
+  count(is_dark)
+# format year - month - date 
+```
+
+
+
+#### Traffic 2024 Refinied VOD Analysis 
+
+```{r}
+data(zip_code_db)
+
+zip_lookup_tr <- zip_code_db |>
+  dplyr::select(
+    zip = zipcode,
+    lat = lat,
+    lng = lng
+  )
+
+traffic_24 <- traffic_24 |>
+  mutate(zip = sprintf("%05s", zip)) |>
+  left_join(zip_lookup_tr, by = "zip")
+
+traffic_24 <- traffic_24 |>
+  mutate(zipcode = sprintf("%05s", zip)) |> 
+  left_join(zip_lookup, by = c("zip" = "zipcode"))
+```
+
+```{r}
+traffic_24 <- traffic_24 %>%
+  mutate(date = as.Date(date))
+```
+
+
+```{r}
+traffic_24 <- traffic_24 %>%
+  #rename(date = date_of_stop) 
+ # rename(lon = lng.x)
+  rename(lat = lat.x)
+
+tr_sunset_times <- traffic_24 %>%
+  select(date, lat, lon) %>%
+  distinct() %>%
+  getSunlightTimes(
+    data = .,
+    keep = c("dawn", "sunrise", "sunset", "dusk"),
+    tz = "America/Chicago"
+  ) |> 
+
+ mutate_at(vars(dawn, sunrise, sunset, dusk),
+            ~format(., "%H:%M:%S")) %>%
+  mutate(
+    sunset_minute = time_to_minute(sunset),
+    dusk_minute = time_to_minute(dusk),
+    dawn_minute = time_to_minute(dawn),
+    sunrise_minute = time_to_minute(sunrise),
+    date = ymd(str_sub(date, 1, 10))
+  ) %>%
+  select(date, dawn, sunrise, sunset, dusk, ends_with("minute"))
+
+```
+```{r}
+tr_sunset_times <- tr_sunset_times %>%
+  group_by(date) %>%
+  summarise(
+    sunrise_minute = first(sunrise_minute),
+    sunset_minute  = first(sunset_minute),
+    .groups = "drop"
+  )
+```
+
+```{r}
+traffic_vod <- traffic_24 %>%
+  left_join(tr_sunset_times, by = "date")
+```
+
+```{r}
+traffic_vod <- traffic_vod %>%
+  mutate(
+    stop_time = lubridate::ymd_hms(time_of_stop, quiet = TRUE),
+    stop_minute = lubridate::hour(stop_time) * 60 +
+                  lubridate::minute(stop_time)
+  )
+```
+
+```{r}
+traffic_vod <- traffic_vod %>%
+  mutate(
+    is_dark = case_when(
+      stop_minute >= (sunset_minute + 30) ~ 1,
+      stop_minute <= (sunrise_minute - 30) ~ 1,
+      TRUE ~ 0
+    )
+  )
+```
+
+
+
+
 - During the day, Black drivers account for 18.8 percent of stops and at night they account for 27.1 percent of stops 
   - That's an increase of 8.3 percentage points, which is a 44 percent increase in the share of stops that Black drivers account for at night compared to the day
 - On the other hand, white drivers fall from 58.1 percent of stops during the day to 46.8 percent at night 
@@ -1995,6 +2502,15 @@ veil_race <- traffic_24 |>
   
   
 
+```{r}
+traffic_24 <- traffic_24 %>%
+  mutate(
+    date_of_stop = as.Date(date_of_stop),
+    time_of_stop = lubridate::ymd_hms(time_of_stop, quiet = TRUE),
+    stop_minute = lubridate::hour(time_of_stop) * 60 +
+                  lubridate::minute(time_of_stop)
+  )
+```
 
 
 

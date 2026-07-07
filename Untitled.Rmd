@@ -1,0 +1,58 @@
+---
+title: "data practice"
+author: "Tiasia Saunders"
+date: "2025-01-11"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r cars}
+summary(cars)
+```
+
+```{r}
+library(tidyverse)
+library(lubridate)
+library(dplyr)
+
+umd_courses <- read_rds("data/umd_courses.rds")
+```
+
+### Which department has the highest mean (average) number of seats for its classes? You need to show the department with the highest average first. Which one is the most surprising/interesting to you?
+
+```{r}
+umd_courses |> 
+  group_by(department) |> 
+  summarise (mean_seats = mean(seats)) |>
+  arrange(desc(mean_seats))
+
+```
+
+### Find out the greatest number of times any individual class has been offered in our dataset. You must show the greatest number of classes first.
+
+```{r}
+
+umd_courses |> 
+  group_by(id) |> 
+  summarise(count = n()) |>
+  arrange(desc(count))
+
+```
+
+### Count the number of courses for each instructor and department. Which instructor has taught the most?
+
+```{r}
+umd_courses |> 
+  group_by(instructors, department) |>
+  summarise(count_classes = n()) |> 
+  arrange(desc(count_classes))
+```
