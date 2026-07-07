@@ -1,7 +1,7 @@
 ---
 title: "Collar County Analysis"
 author: "Tiasia Saunders"
-date: "2025-01-11"
+date: "2025-07-02"
 output: html_document
 ---
 
@@ -118,6 +118,395 @@ traffic_CPD_24 <- traffic_CPD_24 |>
     ))
 
 ```
+
+
+Input into line 121 after knitting 
+```{r}
+agency_counts <- traffic_24 %>%
+  group_by(agency_name) %>%
+  summarise(
+    total_stops = n(),
+    .groups = "drop"
+  ) %>%
+  arrange(desc(total_stops))
+```
+
+```{r}
+head(traffic_24)
+```
+
+```{r}
+traffic_24 <- traffic_24 %>%
+  mutate(
+    datetime = as.POSIXct(
+      paste(date_of_stop, time_of_stop),
+      format = "%Y-%m-%d %H:%M",
+      tz = "America/Chicago"
+    )
+  ) 
+ 
+```
+
+```{r}
+traffic_24 <- traffic_24 |> 
+  mutate(date = as.Date(date_of_stop))
+  #rename(date = date_of_stop)
+
+```
+
+```{r}
+date_tbl <- traffic_24 %>%
+  distinct(date)
+```
+
+```{r}
+
+il_lat <- 39.8283
+il_lon <- -89.2460
+
+sun_times <- getSunlightTimes(
+  date = date_tbl$date,
+  lat = il_lat,
+  lon = il_lon,
+  tz = "America/Chicago"
+)
+```
+
+```{r}
+traffic_24 <- traffic_24 %>%
+  left_join(sun_times, by = "date")
+```
+
+```{r}
+sun_times <- sun_times %>%
+  mutate(
+      sunrise_time = format(sunrise, "%H:%M"),
+    sunset_time  = format(sunset, "%H:%M"), 
+    dawn_time = format(dawn, "%H:%M"), 
+    dusk_time = format(dusk, "%H:%M")
+  )
+```
+
+```{r}
+traffic_24 <- traffic_24 %>%
+  mutate(
+    vod = ifelse(datetime >= sunrise & datetime <= sunset, 1, 0)
+  )
+```
+
+
+```{r}
+## verifying the vod results 
+traffic_24 <- traffic_24 %>%
+  mutate(
+    match = ifelse(is.na(vod) | is.na(vod_check), NA, vod == vod_check)
+  )
+```
+
+```{r}
+## verifying the vod results 
+mean(traffic_24$match, na.rm = TRUE)
+```
+
+```{r}
+traffic_24 |> 
+  select(time_of_stop, sunrise.x, sunset.x, vod)
+```
+
+```{r}
+vod_summary <- traffic_24 %>%
+  group_by(agency_name, race, vod) %>%
+  summarise(stops = n(), .groups = "drop")
+```
+
+```{r}
+vod_wide <- vod_summary %>%
+  tidyr::pivot_wider(
+    names_from = vod,
+    values_from = stops,
+    values_fill = 0
+  ) %>%
+  mutate(
+    day = `1`,
+    night = `0`,
+    night_share = night / (day + night)
+  )
+```
+
+```{r}
+top5_agencies <- traffic_24 %>%
+  group_by(agency_name) %>%
+  summarise(
+    total_stops = n(),
+    .groups = "drop"
+  ) %>%
+  arrange(desc(total_stops)) %>%
+  slice_head(n = 5)
+```
+
+```{r}
+traffic_top5 <- traffic_24 %>%
+  filter(agency_name %in% top5_agencies$agency_name)
+```
+
+```{r}
+race_vod_top5 <- traffic_top5 %>%
+  group_by(agency_name, race, vod) %>%
+  summarise(stops = n(), .groups = "drop") %>%
+  tidyr::pivot_wider(
+    names_from = vod,
+    values_from = stops,
+    values_fill = 0
+  ) %>%
+  mutate(
+    day = `1`,
+    night = `0`,
+    total = day + night,
+    night_share = night / total,
+    day_share = day / total
+  )
+```
+
+
+```{r}
+ggplot(race_vod_top5, aes(x = race)) +
+  geom_col(aes(y = day), fill = "grey70") +
+  geom_col(aes(y = night), fill = "#B22222") +
+  facet_wrap(~agency_name) +
+  coord_flip() +
+  labs(
+    title = "Day vs Night Stops by Race (Top 5 Agencies)",
+    x = "Race",
+    y = "Number of Stops"
+  )
+
+ggsave( filename = "top5_day_night.png",
+  width = 10,
+  height = 6,
+  dpi = 300)
+```
+
+```{r}
+race_vod_top5
+```
+
+- So looking at the top 5 agencies:  
+  - Illinois State Police Black traffic stops decrease from day (34700) to (33312)
+  - For ISP white people traffic stops decrease from (93880) to (51063)
+  - For ISP hispanic people traffic stops decrease from (17180) to (12193)
+  
+  - For Bolingbrook police Black traffic stops decrease from (3220) to (3068)
+  - for white people traffic stops decrease from (3306) to (2205)
+  - For Hispanich people it decreases from (3226) to (2799)
+  
+  - For Cook County Sheriff Black traffic stops increased from (7152) to (8856)
+  - For white people traffic stops it decreased from (10540) to (8204)
+  - For hispanic people traffic stops it increased from (8123) to (8400)
+  
+  - For Schamburg Police Black traffic stops decreased from (1302) to (1222)
+  - For white people traffic stops it decreased from (7188) to (3535) 
+  - For hispanic people it decreased from (3478) to (2858)
+  
+  - For Palatine Police Black people stops decreased from (774) to (620)
+  - For white people traffic stops it decreased from (8406) to (2719)
+  - For hispanic people it decreased from (3376) to (1947)
+  
+  
+
+```{r}
+top_agencies <- vod_wide %>%
+  group_by(agency_name) %>%
+  summarise(
+    total_stops = sum(day + night, na.rm = TRUE),
+    day = sum(day, na.rm = TRUE),
+    night = sum(night, na.rm = TRUE),
+    .groups = "drop"
+  ) %>%
+  arrange(desc(total_stops)) %>%
+  slice_head(n = 5)
+```
+
+```{r}
+race_top5 <- race_vod %>%
+  filter(agency_name %in% top_agencies$agency_name)
+```
+
+```{r}
+ggplot(race_top5, aes(x = race, y = night_share)) +
+  geom_col() +
+  facet_wrap(~agency_name) +
+  coord_flip() +
+  labs(
+    title = "VoD (Night Share) by Race — Top 5 Agencies by Stop Volume",
+    x = "Race",
+    y = "Night Share"
+  )
+```
+
+
+### CPD VoD Analysis 
+
+```{r}
+## looking at top 5 cities, that I will do further analysis on 
+traffic_CPD_24 %>%
+  filter(!is.na(city_i)) %>%
+  count(city_i, sort = TRUE) %>%
+  slice_head(n = 5)
+```
+```{r}
+traffic_CPD_24 <- traffic_CPD_24 |>
+  mutate(
+    date = as.Date(datestop)
+  )
+
+```
+
+```{r}
+## using CPD data for stops that happened in chicago for the year 2024, starting with CPD since its just one agency and its easier to work with 
+chicago_stops <- traffic_CPD_24 |> 
+  filter(city_i == "CHICAGO")
+```
+
+
+```{r}
+chicago_stops <- chicago_stops |>
+  mutate(
+    time = format(timestop, "%H:%M:%S"),
+    datetime = as.POSIXct(
+      paste(datestop, time),
+      format = "%Y-%m-%d %H:%M:%S",
+      tz = "America/Chicago"
+    )
+  )
+ 
+```
+
+```{r}
+traffic_CPD_24 <- traffic_CPD_24 |> 
+  mutate(date = as.Date(date)) 
+  # rename(date = date_of_stop)
+
+```
+
+```{r}
+
+chicago_lat <- 41.8781
+chicago_lng <- -87.6298
+
+
+chi_sun_times <- getSunlightTimes(
+  date = date_tbl$date,
+  lat = chicago_lat,
+  lon = chicago_lng,
+  tz = "America/Chicago"
+)
+```
+
+```{r}
+chicago_stops <- chicago_stops %>%
+  left_join(chi_sun_times, by = "date")
+```
+
+```{r}
+chi_sun_times <- chi_sun_times %>%
+  mutate(
+      sunrise_time = format(sunrise, "%H:%M"),
+    sunset_time  = format(sunset, "%H:%M"), 
+    dawn_time = format(dawn, "%H:%M"), 
+    dusk_time = format(dusk, "%H:%M")
+  )
+```
+
+```{r}
+chicago_stops <- chicago_stops  %>%
+  mutate(
+    vod = ifelse(datetime >= sunrise.x & datetime <= sunset.x, 1, 0)
+  )
+```
+
+
+```{r}
+## verifying the vod results 
+chicago_stops <- chicago_stops %>%
+  mutate(
+    match = ifelse(is.na(vod) | is.na(vod_check), NA, vod == vod_check)
+  )
+```
+
+```{r}
+## verifying the vod results 
+mean(traffic_24$match, na.rm = TRUE)
+```
+
+```{r}
+chicago_stops |> 
+  select(timestop, sunrise.x, sunset.x, vod)
+```
+
+```{r}
+chi_vod_summary <- chicago_stops %>%
+  group_by(race, vod) %>%
+  summarise(stops = n(), .groups = "drop")
+```
+
+```{r}
+chi_vod_wide <- chi_vod_summary %>%
+  tidyr::pivot_wider(
+    names_from = vod,
+    values_from = stops,
+    values_fill = 0
+  ) %>%
+  mutate(
+    day = `1`,
+    night = `0`,
+    night_share = night / (day + night)
+  )
+```
+
+```{r}
+chi_top5_race <- chicago_stops %>%
+  group_by(race) %>%
+  summarise(
+    total_stops = n(),
+    .groups = "drop"
+  ) %>%
+  arrange(desc(total_stops)) %>%
+  slice_head(n = 5)
+```
+
+
+```{r}
+chi_race_vod_top5 <- chicago_stops %>%
+  group_by(race, vod) %>%
+  summarise(stops = n(), .groups = "drop") %>%
+  tidyr::pivot_wider(
+    names_from = vod,
+    values_from = stops,
+    values_fill = 0
+  ) %>%
+  mutate(
+    day = `1`,
+    night = `0`,
+    total = day + night,
+    night_share = night / total,
+    day_share = day / total
+  )
+```
+
+
+```{r}
+ggplot(chi_race_vod_top5, aes(x = race)) +
+  geom_col(aes(y = day), fill = "grey70") +
+  geom_col(aes(y = night), fill = "#B22222") +
+  coord_flip() +
+  labs(
+    title = "Chicago Traffic Stops by Race: Day vs. Night",
+    x = "Race",
+    y = "Number of Stops"
+  )
+
+```
+
 
 
 
