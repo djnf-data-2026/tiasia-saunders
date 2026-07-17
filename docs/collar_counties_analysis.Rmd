@@ -1,0 +1,6185 @@
+---
+title: "Collar County Analysis"
+author: "Tiasia Saunders"
+date: "2025-07-09"
+output: html_document
+---
+
+
+```{r include=FALSE}
+library(tidyverse)
+library(here)
+library(readxl)
+library(googlesheets4)
+library(googledrive)
+library(janitor)
+library(rio)
+library(data.table)
+library(googledrive)
+library(knitr)
+library(ggplot2)
+library(flourishcharts)
+library(scales)
+library(dplyr)
+library(tidyr)
+library(DT) 
+library(dplyr)
+library(ggrepel)
+library(lubridate)
+library(readxl)
+library(htmlwidgets)
+library(plotly)
+library(tidytext)
+library(tidycensus)
+library(suncalc)
+library(tidygeocoder)
+library(splines)
+library(stringr)
+library(zipcodeR)
+library(lutz)
+library(pdftables)
+library(hms)
+```
+
+
+```{r}
+## bringing in traffic_24 data 
+traffic_24 <- fread("data/traffic_24.txt", sep="~") |> 
+  clean_names()
+
+traffic_CPD_24 <- read_excel("data/traffic_CPD_24.xlsx") |> 
+  clean_names()
+```
+
+```{r include=FALSE}
+## wasnt able to view the traffic_24 data, so i ran the next three code chunks to identify the problem column and fix it 
+char_cols <- names(traffic_24)[sapply(traffic_24, is.character)]
+
+for (col in char_cols) {
+  cat("Checking:", col, "\n")
+  print(try(nchar(traffic_24[[col]]), silent = TRUE))
+}
+```
+
+```{r include=FALSE}
+traffic_24$beat_location_of_stop <-
+  iconv(
+    traffic_24$beat_location_of_stop,
+    from = "",
+    to = "UTF-8",
+    sub = ""
+  )
+```
+
+```{r include=FALSE}
+nchar(traffic_24$beat_location_of_stop)
+```
+
+```{r}
+traffic_24$sex <- dplyr::recode(
+  as.character(traffic_24[["driver_sex"]]),
+  "1" = "Male",
+  "2" = "Female",
+  "3" = "Non-Binary",
+  "9" = "Unknown"
+)
+
+traffic_24$race <- dplyr::recode(
+  as.character(traffic_24[["driver_race"]]),
+  "1" = "White",
+  "2" = "Black",
+  "3" = "American Indian",
+  "4" = "Hispanic",
+  "5" = "Asian",
+  "6" = "NHPI"
+)
+
+traffic_24$vehicle_search_conducted <- dplyr::recode(
+  as.character(traffic_24[["vehicle_search_conducted"]]),
+  "1" = "Yes",
+  "2" = "No"
+)
+
+```
+
+
+#### Collar County Analysis 
+- Goal is to get the racial breakdown of stops that the law enforcement agencies in the five collar counties (DuPage, Kane, Lake, McHenry, Will) made in 2024. Additionally, I will add in the counties population to get the per capita rates of stops and also look at the search rates breakdown by race for each of the law enforcement agencies in the counties 
+- This analysis assumes that each law enforcement agency's traffic stops primarily reflect the population of its primary jurisdiction. Although officers may conduct traffic stops outside their jurisdiction under limited circumstances and traffic stops involve both residents and non-residents, jurisdiction-level population estimates are used as the most appropriate available benchmark.
+
+```{r}
+## gettingt a look at all the agencies within the traffic_24 data 
+traffic_24 %>%
+  count(agency_name) %>%
+  datatable()
+```
+
+
+##### Lake County 
+
+```{r}
+## these are the law enforcement agencies in lake county 
+lake_agencies <- toupper(c(
+  "Antioch Police",
+  "Bannockburn Police",
+  "Barrington Police",
+  "Buffalo Grove Police",
+  "Cary Police",
+  "College of Lake County Police",
+  "Deerfield Police",
+  "Fox Lake Police",
+  "Grayslake Police",
+  "Gurnee Police",
+  "Hawthorn Woods Police",
+  "Highland Park Police",
+  "Highwood Police",
+  "Kildeer Police",
+  "Lake Bluff Police",
+  "Lake County Sheriff",
+  "Lake County Forest Preserve Police",
+  "Lake Forest Police",
+  "Lake Villa Police",
+  "Lake Zurich Police",
+  "Libertyville Police",
+  "Lincolnshire Police",
+  "Lindenhurst Police",
+  "Mundelein Police",
+  "North Chicago Police",
+  "Park City Police",
+  "Riverwoods Police",
+  "Round Lake Police",
+  "Round Lake Beach Police",
+  "Round Lake Heights Police",
+  "Round Lake Park Police",
+  "Tower Lakes Police",
+  "Vernon Hills Police",
+  "Wauconda Police",
+  "Waukegan Police",
+  "Wheeling Police",
+  "Winthrop Harbor Police",
+  "Zion Police"
+))
+```
+
+```{r}
+lake_law <- traffic_24 %>%
+  mutate(agency_name = str_squish(agency_name)) %>%
+  filter(agency_name %in% lake_agencies)
+```
+
+```{r}
+lake_law %>%
+  count(agency_name, sort = TRUE)
+```
+
+```{r}
+## bringing in 2024 population data for lake county
+
+lake_pop <- data.frame( 
+  race = c("White", "Black", "Hispanic", "Asian", "American Indian", "NHPI"),
+  population_pct = c(54.7, 7.9, 26, 10,2.8,0.1)
+)
+
+```
+
+```{r}
+## getting the traffic stop percentage by each race, bringing in lake county population percentage 
+lake_stops <- lake_law %>%
+  count(race, sort = TRUE) |> 
+  mutate(stop_pct = n / sum(n) * 100)
+
+lake_stops <- lake_stops |> 
+  left_join(lake_pop, by ="race")
+
+lake_stops
+```
+
+
+- Black and NHPI residents are overrepresented in stops relative to their share of the population, while White, Asian, and American Indian residents are underrepresented. Hispanic residents appear roughly proportional.
+
+```{r}
+## reformatting it 
+lake_plot <- lake_stops %>%
+  select(race, stop_pct, population_pct) %>%
+  pivot_longer(
+    cols = c(stop_pct, population_pct),
+    names_to = "type",
+    values_to = "percent"
+  )
+
+```
+
+```{r}
+## graphing it 
+ggplot(lake_plot, aes(x = race, y = percent, fill = type)) +
+  geom_col(position = "dodge") +
+  scale_fill_manual(values = c(
+    "stop_pct" = "grey70",
+    "population_pct" = "#B22222"
+  )) +
+  labs(
+    title = "Traffic Stops vs Population in Lake County",
+    x = "Race",
+    y = "Percent",
+    fill = "Category"
+  ) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+```{r}
+### creating a new data table that has the total number of stops by race and then getting the number of searches that was conducted, creating a rate by taking searches divided by total stops and multiplying by 100 to get a percentage
+lake_search_rates <- lake_law |>
+  group_by(race) |> 
+  summarise( 
+    total_stops = n(), 
+    searches = sum(vehicle_search_conducted == "Yes", na.rm = TRUE),
+    search_rate = searches/ total_stops * 100 
+  ) 
+
+
+lake_search_rates
+```
+
+
+- Black drivers experience the highest search rate (about 5.2%), which is roughly 3–4 times higher than White drivers (about 1.4%). Hispanic drivers also experience elevated search rates relative to White drivers, while Asian and American Indian drivers have the lowest search rates.
+- Comparing search rates to population percentages, Black and Hispanic drivers are overrepresented in searches relative to their share of the population, while White, Asian, and American Indian drivers are underrepresented.
+
+```{r}
+ggplot(lake_search_rates, aes(x = race, y = search_rate)) +
+  geom_col(fill = "#B22222") +
+  labs(
+    title = "Vehicle Search Rate by Race (Lake County)",
+    x = "Race",
+    y = "Search Rate (%)"
+  ) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+
+###### Top 3 Lake County Law Enforcement Agencies 
+- WHEELING POLICE	16608			
+- BUFFALO GROVE POLICE	8596			
+- MUNDELEIN POLICE	7460			
+
+###### Wheeling Police Department 
+
+```{r}
+wheeling_pop <- data.frame( 
+  race = c("White", "Black", "Hispanic", "Asian", "American Indian", "NHPI"),
+  population_pct = c(49.1, 4, 28.1, 15.9, 1.2, 0)
+)
+```
+
+
+```{r}
+wheeling_lake <- lake_law |> 
+  filter(agency_name == "WHEELING POLICE") |>
+  count(race) |> 
+  mutate(stop_pct = n/sum(n) * 100)
+
+wheeling_lake <- wheeling_lake |> 
+  left_join(wheeling_pop, by ="race")
+
+wheeling_lake
+```
+
+```{r}
+## graphing it 
+wheeling_lake_plot <- wheeling_lake %>%
+  select(race, stop_pct, population_pct) %>%
+  pivot_longer(
+    cols = c(stop_pct, population_pct),
+    names_to = "type",
+    values_to = "percent"
+  )
+
+```
+
+```{r}
+## graphing it 
+ggplot(wheeling_lake_plot, aes(x = race, y = percent, fill = type)) +
+  geom_col(position = "dodge") +
+  scale_fill_manual(values = c(
+    "stop_pct" = "grey70",
+    "population_pct" = "#B22222"
+  )) +
+  labs(
+    title = "Wheeling Police Traffic Stops vs Population",
+    x = "Race",
+    y = "Percent",
+    fill = "Category"
+  ) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+- White drivers accounted for the largest share of traffic stops (65.3%), followed by Hispanic (17.6%), Asian (9.9%), and Black (6.3%) drivers; compared with the population, White and Black drivers were overrepresented in traffic stops, while Hispanic, Asian, and American Indian drivers were underrepresented.
+
+```{r}
+### creating a new data table that has the total number of stops by race and then getting the number of searches that was conducted, creating a rate by taking searches divided by total stops and multiplying by 100 to get a percentage
+wheeling_search_rates <- lake_law |>
+  filter(agency_name == "WHEELING POLICE") |>
+  group_by(race) |> 
+  summarise( 
+    total_stops = n(), 
+    searches = sum(vehicle_search_conducted == "Yes", na.rm = TRUE),
+    search_rate = searches/ total_stops * 100 
+  ) 
+
+
+wheeling_search_rates
+```
+
+```{r}
+ggplot(wheeling_search_rates, aes(x = race, y = search_rate)) +
+  geom_col(fill = "#B22222") +
+  labs(
+    title = "Wheeling Vehicle Search Rate by Race",
+    x = "Race",
+    y = "Search Rate (%)"
+  ) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+###### Buffalo Grove Police 
+
+```{r}
+buffalo_pop <- data.frame( 
+  race = c("White", "Black", "Hispanic", "Asian", "American Indian", "NHPI"),
+  population_pct = c(58.2, 3.4, 5.8, 29.8, 0.5, 0.1)
+)
+```
+
+
+```{r}
+buffalo_lake <- lake_law |> 
+  filter(agency_name == "BUFFALO GROVE POLICE") |>
+  count(race) |> 
+  mutate(stop_pct = n/sum(n) * 100)
+
+buffalo_lake <- buffalo_lake |> 
+  left_join(buffalo_pop, by ="race")
+
+buffalo_lake
+```
+
+- Black and Hispanic drivers are overrepresented in traffic stops relative to their share of the population, while White, Asian, and American Indian drivers are underrepresented.
+
+```{r}
+## graphing it 
+buffalo_lake_plot <- buffalo_lake %>%
+  select(race, stop_pct, population_pct) %>%
+  pivot_longer(
+    cols = c(stop_pct, population_pct),
+    names_to = "type",
+    values_to = "percent"
+  )
+
+```
+
+```{r}
+## graphing it 
+ggplot(buffalo_lake_plot, aes(x = race, y = percent, fill = type)) +
+  geom_col(position = "dodge") +
+  scale_fill_manual(values = c(
+    "stop_pct" = "grey70",
+    "population_pct" = "#B22222"
+  )) +
+  labs(
+    title = "Buffalo Grove Police Traffic Stops vs Population",
+    x = "Race",
+    y = "Percent",
+    fill = "Category"
+  ) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+
+```{r}
+### creating a new data table that has the total number of stops by race and then getting the number of searches that was conducted, creating a rate by taking searches divided by total stops and multiplying by 100 to get a percentage
+buffalo_search_rates <- lake_law |>
+  filter(agency_name == "BUFFALO GROVE POLICE") |>
+  group_by(race) |> 
+  summarise( 
+    total_stops = n(), 
+    searches = sum(vehicle_search_conducted == "Yes", na.rm = TRUE),
+    search_rate = searches/ total_stops * 100 
+  ) 
+
+
+buffalo_search_rates
+```
+
+- Black drivers have the highest search rate (1.5) followed by Hispanic drivers (1.2). 
+
+```{r}
+ggplot(buffalo_search_rates, aes(x = race, y = search_rate)) +
+  geom_col(fill = "#B22222") +
+  labs(
+    title = "Buffalo Vehicle Search Rate by Race",
+    x = "Race",
+    y = "Search Rate (%)"
+  ) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+###### Mundelein Police
+
+```{r}
+mundelein_pop <- data.frame( 
+  race = c("White", "Black", "Hispanic", "Asian", "American Indian", "NHPI"),
+  population_pct = c(48.5, 3.1, 34.6, 10.1, 2.0, 0.2)
+)
+```
+
+
+```{r}
+mundelein_lake <- lake_law |> 
+  filter(agency_name == "MUNDELEIN POLICE") |>
+  count(race) |> 
+  mutate(stop_pct = n/sum(n) * 100)
+
+mundelein_lake <- mundelein_lake |> 
+  left_join(mundelein_pop, by ="race")
+
+mundelein_lake
+```
+
+- Black and Hispanic drivers are overrepresented in traffic stops relative to their share of the population, while White, Asian, and American Indian drivers are underrepresented.
+
+```{r}
+## graphing it 
+mundelein_lake_plot <- mundelein_lake %>%
+  select(race, stop_pct, population_pct) %>%
+  pivot_longer(
+    cols = c(stop_pct, population_pct),
+    names_to = "type",
+    values_to = "percent"
+  )
+
+```
+
+```{r}
+## graphing it 
+ggplot(mundelein_lake_plot, aes(x = race, y = percent, fill = type)) +
+  geom_col(position = "dodge") +
+  scale_fill_manual(values = c(
+    "stop_pct" = "grey70",
+    "population_pct" = "#B22222"
+  )) +
+  labs(
+    title = "Mundelein Police Traffic Stops vs Population",
+    x = "Race",
+    y = "Percent",
+    fill = "Category"
+  ) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+```{r}
+### creating a new data table that has the total number of stops by race and then getting the number of searches that was conducted, creating a rate by taking searches divided by total stops and multiplying by 100 to get a percentage
+mundelein_search_rates <- lake_law |>
+  filter(agency_name == "MUNDELEIN POLICE") |>
+  group_by(race) |> 
+  summarise( 
+    total_stops = n(), 
+    searches = sum(vehicle_search_conducted == "Yes", na.rm = TRUE),
+    search_rate = searches/ total_stops * 100 
+  ) 
+
+
+mundelein_search_rates
+```
+
+- Black drivers have the highest search rate (9.3), followed by Hispanic drivers (6.5), and then white drivers (2.2). Despite this, white drivers (3501) have the most amount of stops, followed by Hispanic (2869), and then Black (627). 
+
+
+```{r}
+ggplot(mundelein_search_rates, aes(x = race, y = search_rate)) +
+  geom_col(fill = "#B22222") +
+  labs(
+    title = "Mundelein Vehicle Search Rate by Race",
+    x = "Race",
+    y = "Search Rate (%)"
+  ) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+
+###### Gurnee Police 
+
+```{r}
+gurnee_pop <- data.frame( 
+  race = c("White", "Black", "Hispanic", "Asian", "American Indian", "NHPI"),
+  population_pct = c(58.2, 7.8, 17, 13.4, 1.1, 0)
+)
+```
+
+
+```{r}
+gurnee_lake <- lake_law |> 
+  filter(agency_name == "GURNEE POLICE") |>
+  count(race) |> 
+  mutate(stop_pct = n/sum(n) * 100)
+
+gurnee_lake <- gurnee_lake |> 
+  left_join(gurnee_pop, by ="race")
+
+gurnee_lake
+```
+
+```{r}
+gurnee_search_rates <- lake_law |>
+  filter(agency_name == "GURNEE POLICE") |>
+  group_by(race) |> 
+  summarise( 
+    total_stops = n(), 
+    searches = sum(vehicle_search_conducted == "Yes", na.rm = TRUE),
+    search_rate = searches/ total_stops * 100 
+  ) 
+
+
+gurnee_search_rates
+```
+
+###### Libertyville Police 
+
+```{r}
+libertyville_pop <- data.frame( 
+  race = c("White", "Black", "Hispanic", "Asian", "American Indian", "NHPI"),
+  population_pct = c(80.7, 1.1, 8.7, 4.7, 0.5, 0.3)
+)
+```
+
+
+```{r}
+libertyville_lake <- lake_law |> 
+  filter(agency_name == "LIBERTYVILLE POLICE") |>
+  count(race) |> 
+  mutate(stop_pct = n/sum(n) * 100)
+
+libertyville_lake <- libertyville_lake |> 
+  left_join(libertyville_pop, by ="race")
+
+libertyville_lake
+```
+
+```{r}
+libertyville_search_rates <- lake_law |>
+  filter(agency_name == "LIBERTYVILLE POLICE") |>
+  group_by(race) |> 
+  summarise( 
+    total_stops = n(), 
+    searches = sum(vehicle_search_conducted == "Yes", na.rm = TRUE),
+    search_rate = searches/ total_stops * 100 
+  ) 
+
+
+libertyville_search_rates
+```
+
+###### Zion Police 
+
+```{r}
+zion_pop <- data.frame( 
+  race = c("White", "Black", "Hispanic", "Asian", "American Indian", "NHPI"),
+  population_pct = c(24.5, 25.1, 43.7, 3, 2.2, 0)
+)
+```
+
+
+```{r}
+zion_lake <- lake_law |> 
+  filter(agency_name == "ZION POLICE") |>
+  count(race) |> 
+  mutate(stop_pct = n/sum(n) * 100)
+
+zion_lake <- gurnee_lake |> 
+  left_join(zion_pop, by ="race")
+
+zion_lake
+```
+
+```{r}
+zion_search_rates <- lake_law |>
+  filter(agency_name == "ZION POLICE") |>
+  group_by(race) |> 
+  summarise( 
+    total_stops = n(), 
+    searches = sum(vehicle_search_conducted == "Yes", na.rm = TRUE),
+    search_rate = searches/ total_stops * 100 
+  ) 
+
+
+zion_search_rates
+```
+
+###### Waukegan Police 
+
+```{r}
+waukegan_pop <- data.frame( 
+  race = c("White", "Black", "Hispanic", "Asian", "American Indian", "NHPI"),
+  population_pct = c(16.7, 17.3, 57.9, 5.5, 2.1, 0.1)
+)
+```
+
+
+```{r}
+waukegan_lake <- lake_law |> 
+  filter(agency_name == "WAUKEGAN POLICE") |>
+  count(race) |> 
+  mutate(stop_pct = n/sum(n) * 100)
+
+waukegan_lake <- waukegan_lake |> 
+  left_join(waukegan_pop, by ="race")
+
+waukegan_lake
+```
+
+```{r}
+waukegan_search_rates <- lake_law |>
+  filter(agency_name == "WAUKEGAN POLICE") |>
+  group_by(race) |> 
+  summarise( 
+    total_stops = n(), 
+    searches = sum(vehicle_search_conducted == "Yes", na.rm = TRUE),
+    search_rate = searches/ total_stops * 100 
+  ) 
+
+
+waukegan_search_rates
+```
+
+###### Lincolnshire Police 
+
+```{r}
+lincolnshire_pop <- data.frame( 
+  race = c("White", "Black", "Hispanic", "Asian", "American Indian", "NHPI"),
+  population_pct = c(69.3, 1.4, 1.6, 24, 0, 0)
+)
+```
+
+
+```{r}
+lincolnshire_lake <- lake_law |> 
+  filter(agency_name == "LINCOLNSHIRE POLICE") |>
+  count(race) |> 
+  mutate(stop_pct = n/sum(n) * 100)
+
+gurnee_lake <- gurnee_lake |> 
+  left_join(lincolnshire_pop, by ="race")
+
+lincolnshire_lake
+```
+
+```{r}
+lincolnshire_search_rates <- lake_law |>
+  filter(agency_name == "LINCOLNSHIRE POLICE") |>
+  group_by(race) |> 
+  summarise( 
+    total_stops = n(), 
+    searches = sum(vehicle_search_conducted == "Yes", na.rm = TRUE),
+    search_rate = searches/ total_stops * 100 
+  ) 
+
+
+lincolnshire_search_rates
+```
+
+###### Deerfield Police 
+
+```{r}
+deerfield_pop <- data.frame( 
+  race = c("White", "Black", "Hispanic", "Asian", "American Indian", "NHPI"),
+  population_pct = c(86.1, 0.2, 5.4, 5.6, 0, 0)
+)
+```
+
+```{r}
+deerfield_lake <- lake_law |> 
+  filter(agency_name == "DEERFIELD POLICE") |>
+  count(race) |> 
+  mutate(stop_pct = n/sum(n) * 100)
+
+deerfield_lake <- deerfield_lake |> 
+  left_join(deerfield_pop, by ="race")
+
+deerfield_lake
+```
+
+```{r}
+deerfield_search_rates <- lake_law |>
+  filter(agency_name == "DEERFIELD POLICE") |>
+  group_by(race) |> 
+  summarise( 
+    total_stops = n(), 
+    searches = sum(vehicle_search_conducted == "Yes", na.rm = TRUE),
+    search_rate = searches/ total_stops * 100 
+  ) 
+
+
+deerfield_search_rates
+```
+
+###### Round Lake Park Police 
+
+```{r}
+roundlakepark_pop <- data.frame( 
+  race = c("White", "Black", "Hispanic", "Asian", "American Indian", "NHPI"),
+  population_pct = c(43.9, 0.8, 49.5, 0.8, 2.9, 0)
+)
+```
+
+```{r}
+roundlakepark_lake <- lake_law |> 
+  filter(agency_name == "ROUND LAKE PARK POLICE") |>
+  count(race) |> 
+  mutate(stop_pct = n/sum(n) * 100)
+
+roundlakepark_lake <- roundlakepark_lake |> 
+  left_join(gurnee_pop, by ="race")
+
+roundlakepark_lake
+```
+
+```{r}
+roundlakepark_search_rates <- lake_law |>
+  filter(agency_name == "ROUND LAKE PARK POLICE") |>
+  group_by(race) |> 
+  summarise( 
+    total_stops = n(), 
+    searches = sum(vehicle_search_conducted == "Yes", na.rm = TRUE),
+    search_rate = searches/ total_stops * 100 
+  ) 
+
+roundlakepark_search_rates
+```
+
+###### Round Lake Beach Police 
+
+```{r}
+roundlakebeach_pop <- data.frame( 
+  race = c("White", "Black", "Hispanic", "Asian", "American Indian", "NHPI"),
+  population_pct = c(34.5, 4.2, 56.1, 2.2, 0.9, 0.1)
+)
+```
+
+```{r}
+roundlakebeach_lake <- lake_law |> 
+  filter(agency_name == "ROUND LAKE BEACH POLICE") |>
+  count(race) |> 
+  mutate(stop_pct = n/sum(n) * 100)
+
+roundlakebeach_lake <- roundlakebeach_lake |> 
+  left_join(gurnee_pop, by ="race")
+
+roundlakebeach_lake
+```
+
+```{r}
+roundlakebeach_search_rates <- lake_law |>
+  filter(agency_name == "ROUND LAKE BEACH POLICE") |>
+  group_by(race) |> 
+  summarise( 
+    total_stops = n(), 
+    searches = sum(vehicle_search_conducted == "Yes", na.rm = TRUE),
+    search_rate = searches/ total_stops * 100 
+  ) 
+
+
+roundlakebeach_search_rates
+```
+
+###### Barrington Police 
+
+```{r}
+barrington_pop <- data.frame( 
+  race = c("White", "Black", "Hispanic", "Asian", "American Indian", "NHPI"),
+  population_pct = c(81.8, 1.3, 4.1, 7.9, 0, 0)
+)
+```
+
+```{r}
+barrington_lake <- lake_law |> 
+  filter(agency_name == "BARRINGTON POLICE") |>
+  count(race) |> 
+  mutate(stop_pct = n/sum(n) * 100)
+
+barrington_lake <- barrington_lake |> 
+  left_join(gurnee_pop, by ="race")
+
+barrington_lake
+```
+
+```{r}
+barrington_search_rates <- lake_law |>
+  filter(agency_name == "BARRINGTON POLICE") |>
+  group_by(race) |> 
+  summarise( 
+    total_stops = n(), 
+    searches = sum(vehicle_search_conducted == "Yes", na.rm = TRUE),
+    search_rate = searches/ total_stops * 100 
+  ) 
+
+
+barrington_search_rates
+```
+
+###### Lake Zurich Police 
+
+```{r}
+lakezurich_pop <- data.frame( 
+  race = c("White", "Black", "Hispanic", "Asian", "American Indian", "NHPI"),
+  population_pct = c(80.6, 1.0, 6.7, 8.4, 0, 0.1)
+)
+```
+
+```{r}
+lakezurich_lake <- lake_law |> 
+  filter(agency_name == "LAKE ZURICH POLICE") |>
+  count(race) |> 
+  mutate(stop_pct = n/sum(n) * 100)
+
+lakezurich_lake <- lakezurich_lake |> 
+  left_join(lakezurich_pop, by ="race")
+
+lakezurich_lake
+```
+
+```{r}
+lakezurich_search_rates <- lake_law |>
+  filter(agency_name == "LAKE ZURICH POLICE") |>
+  group_by(race) |> 
+  summarise( 
+    total_stops = n(), 
+    searches = sum(vehicle_search_conducted == "Yes", na.rm = TRUE),
+    search_rate = searches/ total_stops * 100 
+  ) 
+
+
+lakezurich_search_rates
+```
+
+###### Fox Lake Police 
+
+```{r}
+foxlake_pop <- data.frame( 
+  race = c("White", "Black", "Hispanic", "Asian", "American Indian", "NHPI"),
+  population_pct = c(74.7, 3.8, 18, 1.9, 0.4, 0.1)
+)
+```
+
+```{r}
+foxlake_lake <- lake_law |> 
+  filter(agency_name == "FOX LAKE POLICE") |>
+  count(race) |> 
+  mutate(stop_pct = n/sum(n) * 100)
+
+foxlake_lake <- foxlake_lake |> 
+  left_join(foxlake_pop, by ="race")
+
+foxlake_lake
+```
+
+```{r}
+foxlake_search_rates <- lake_law |>
+  filter(agency_name == "FOX LAKE POLICE") |>
+  group_by(race) |> 
+  summarise( 
+    total_stops = n(), 
+    searches = sum(vehicle_search_conducted == "Yes", na.rm = TRUE),
+    search_rate = searches/ total_stops * 100 
+  ) 
+
+foxlake_search_rates
+```
+
+###### Cary Police
+
+```{r}
+cary_pop <- data.frame( 
+  race = c("White", "Black", "Hispanic", "Asian", "American Indian", "NHPI"),
+  population_pct = c(79.2, 1.1, 12.9, 1.7, 0.2, 0.1)
+)
+```
+
+```{r}
+cary_lake <- lake_law |> 
+  filter(agency_name == "CARY POLICE") |>
+  count(race) |> 
+  mutate(stop_pct = n/sum(n) * 100)
+
+cary_lake <- cary_lake |> 
+  left_join(cary_pop, by ="race")
+
+cary_lake
+```
+
+```{r}
+cary_search_rates <- lake_law |>
+  filter(agency_name == "CARY POLICE") |>
+  group_by(race) |> 
+  summarise( 
+    total_stops = n(), 
+    searches = sum(vehicle_search_conducted == "Yes", na.rm = TRUE),
+    search_rate = searches/ total_stops * 100 
+  ) 
+
+
+cary_search_rates
+```
+
+###### Lake Forest Police 
+```{r}
+lakeforest_pop <- data.frame( 
+  race = c("White", "Black", "Hispanic", "Asian", "American Indian", "NHPI"),
+  population_pct = c(80.2, 1.0, 6.1, 6.5, 0.3, 0)
+)
+```
+
+```{r}
+lakeforest_lake <- lake_law |> 
+  filter(agency_name == "LAKE FOREST POLICE") |>
+  count(race) |> 
+  mutate(stop_pct = n/sum(n) * 100)
+
+lakeforest_lake <- lakeforest_lake |> 
+  left_join(lakeforest_pop, by ="race")
+
+lakeforest_lake
+```
+
+```{r}
+lakeforest_search_rates <- lake_law |>
+  filter(agency_name == "LAKE FOREST POLICE") |>
+  group_by(race) |> 
+  summarise( 
+    total_stops = n(), 
+    searches = sum(vehicle_search_conducted == "Yes", na.rm = TRUE),
+    search_rate = searches/ total_stops * 100 
+  ) 
+
+
+lakeforest_search_rates
+```
+
+###### Highland Park 
+
+```{r}
+highland_pop <- data.frame( 
+  race = c("White", "Black", "Hispanic", "Asian", "American Indian", "NHPI"),
+  population_pct = c(80.8, 2.0, 11, 2.8, 0.6, 0)
+)
+```
+
+```{r}
+highland_lake <- lake_law |> 
+  filter(agency_name == "HIGHLAND PARK POLICE") |>
+  count(race) |> 
+  mutate(stop_pct = n/sum(n) * 100)
+
+highland_lake <- highland_lake |> 
+  left_join(highland_pop, by ="race")
+
+highland_lake
+```
+
+```{r}
+highland_search_rates <- lake_law |>
+  filter(agency_name == "HIGHLAND PARK POLICE") |>
+  group_by(race) |> 
+  summarise( 
+    total_stops = n(), 
+    searches = sum(vehicle_search_conducted == "Yes", na.rm = TRUE),
+    search_rate = searches/ total_stops * 100 
+  ) 
+
+
+highland_search_rates
+```
+
+###### Hawthorn Woods Police 
+
+```{r}
+hawthorn_pop <- data.frame( 
+  race = c("White", "Black", "Hispanic", "Asian", "American Indian", "NHPI"),
+  population_pct = c(76.5, 1.3, 2.3, 16, 0, 0)
+)
+```
+
+```{r}
+hawthorn_lake <- lake_law |> 
+  filter(agency_name == "HAWTHORN WOODS POLICE") |>
+  count(race) |> 
+  mutate(stop_pct = n/sum(n) * 100)
+
+hawthorn_lake <- hawthorn_lake |> 
+  left_join(gurnee_pop, by ="race")
+
+hawthorn_lake
+```
+
+```{r}
+hawthorn_search_rates <- lake_law |>
+  filter(agency_name == "HAWTHORN WOODS POLICE") |>
+  group_by(race) |> 
+  summarise( 
+    total_stops = n(), 
+    searches = sum(vehicle_search_conducted == "Yes", na.rm = TRUE),
+    search_rate = searches/ total_stops * 100 
+  ) 
+
+
+hawthorn_search_rates
+```
+
+###### Antioch Police 
+
+```{r}
+antioch_pop <- data.frame( 
+  race = c("White", "Black", "Hispanic", "Asian", "American Indian", "NHPI"),
+  population_pct = c(76.6, 4.9, 10.5, 3.9, 0.5, 10.5)
+)
+```
+
+```{r}
+antioch_lake <- lake_law |> 
+  filter(agency_name == "ANTIOCH POLICE") |>
+  count(race) |> 
+  mutate(stop_pct = n/sum(n) * 100)
+
+antioch_lake <- antioch_lake |> 
+  left_join(antioch_pop, by ="race")
+
+antioch_lake
+```
+
+```{r}
+antioch_search_rates <- lake_law |>
+  filter(agency_name == "ANTIOCH POLICE") |>
+  group_by(race) |> 
+  summarise( 
+    total_stops = n(), 
+    searches = sum(vehicle_search_conducted == "Yes", na.rm = TRUE),
+    search_rate = searches/ total_stops * 100 
+  ) 
+
+
+antioch_search_rates
+```
+
+###### Lindenhurst Police 
+
+```{r}
+lindenhurst_pop <- data.frame( 
+  race = c("White", "Black", "Hispanic", "Asian", "American Indian", "NHPI"),
+  population_pct = c(72.5, 4.0, 11.2, 9, 0.6, 0)
+)
+```
+
+```{r}
+lindenhurst_lake <- lake_law |> 
+  filter(agency_name == "LINDENHURST POLICE") |>
+  count(race) |> 
+  mutate(stop_pct = n/sum(n) * 100)
+
+lindenhurst_lake <- lindenhurst_lake |> 
+  left_join(lindenhurst_pop, by ="race")
+
+lindenhurst_lake
+```
+
+```{r}
+lindenhurst_search_rates <- lake_law |>
+  filter(agency_name == "LINDENHURST POLICE") |>
+  group_by(race) |> 
+  summarise( 
+    total_stops = n(), 
+    searches = sum(vehicle_search_conducted == "Yes", na.rm = TRUE),
+    search_rate = searches/ total_stops * 100 
+  ) 
+
+
+lindenhurst_search_rates
+```
+
+###### Round Lake Police 
+
+```{r}
+roundlake_pop <- data.frame( 
+  race = c("White", "Black", "Hispanic", "Asian", "American Indian", "NHPI"),
+  population_pct = c(44.5, 4.1, 35.8, 12.3, 1.2, 0.1)
+)
+```
+
+```{r}
+roundlake_lake <- lake_law |> 
+  filter(agency_name == "ROUND LAKE POLICE") |>
+  count(race) |> 
+  mutate(stop_pct = n/sum(n) * 100)
+
+roundlake_lake <- roundlake_lake |> 
+  left_join(roundlake_pop, by ="race")
+
+roundlake_lake
+```
+
+```{r}
+roundlake_search_rates <- lake_law |>
+  filter(agency_name == "ROUND LAKE POLICE") |>
+  group_by(race) |> 
+  summarise( 
+    total_stops = n(), 
+    searches = sum(vehicle_search_conducted == "Yes", na.rm = TRUE),
+    search_rate = searches/ total_stops * 100 
+  ) 
+
+roundlake_search_rates
+```
+
+###### Park City Police 
+
+```{r}
+parkcity_pop <- data.frame( 
+  race = c("White", "Black", "Hispanic", "Asian", "American Indian", "NHPI"),
+  population_pct = c(10.8, 6.9, 75.1, 6.3, 0.7, 0)
+)
+```
+
+```{r}
+parkcity_lake <- lake_law |> 
+  filter(agency_name == "PARK CITY POLICE") |>
+  count(race) |> 
+  mutate(stop_pct = n/sum(n) * 100)
+
+parkcity_lake <- parkcity_lake |> 
+  left_join(gurnee_pop, by ="race")
+
+parkcity_lake
+```
+
+```{r}
+parkcity_search_rates <- lake_law |>
+  filter(agency_name == "PARK CITY POLICE") |>
+  group_by(race) |> 
+  summarise( 
+    total_stops = n(), 
+    searches = sum(vehicle_search_conducted == "Yes", na.rm = TRUE),
+    search_rate = searches/ total_stops * 100 
+  ) 
+
+
+parkcity_search_rates
+```
+
+###### Riverwoods Police
+
+```{r}
+riverwoods_pop <- data.frame( 
+  race = c("White", "Black", "Hispanic", "Asian", "American Indian", "NHPI"),
+  population_pct = c(84.1, 1.15, 0.07, 9.57, 0, 0)
+)
+```
+
+```{r}
+riverwoods_lake <- lake_law |> 
+  filter(agency_name == "RIVERWOODS POLICE") |>
+  count(race) |> 
+  mutate(stop_pct = n/sum(n) * 100)
+
+riverwoods_lake <- riverwoods_lake |> 
+  left_join(riverwoods_pop, by ="race")
+
+riverwoods_lake
+```
+
+```{r}
+riverwoods_search_rates <- lake_law |>
+  filter(agency_name == "RIVERWOODS POLICE") |>
+  group_by(race) |> 
+  summarise( 
+    total_stops = n(), 
+    searches = sum(vehicle_search_conducted == "Yes", na.rm = TRUE),
+    search_rate = searches/ total_stops * 100 
+  ) 
+
+
+riverwoods_search_rates
+```
+
+###### Bannockburn Police 
+
+```{r}
+bannockburn_pop <- data.frame( 
+  race = c("White", "Black", "Hispanic", "Asian", "American Indian", "NHPI"),
+  population_pct = c(73.8, 4.88, 2.44, 6.71, 0.35, 2.61)
+)
+```
+
+```{r}
+bannockburn_lake <- lake_law |> 
+  filter(agency_name == "BANNOCKBURN POLICE") |>
+  count(race) |> 
+  mutate(stop_pct = n/sum(n) * 100)
+
+bannockburn_lake <- bannockburn_lake |> 
+  left_join(bannockburn_pop, by ="race")
+
+bannockburn_lake
+```
+
+```{r}
+bannockburn_search_rates <- lake_law |>
+  filter(agency_name == "BANNOCKBURN POLICE") |>
+  group_by(race) |> 
+  summarise( 
+    total_stops = n(), 
+    searches = sum(vehicle_search_conducted == "Yes", na.rm = TRUE),
+    search_rate = searches/ total_stops * 100 
+  ) 
+
+
+bannockburn_search_rates
+```
+
+
+###### Vernon Hills Police 
+
+```{r}
+vernonhills_pop <- data.frame( 
+  race = c("White", "Black", "Hispanic", "Asian", "American Indian", "NHPI"),
+  population_pct = c(57.9, 1.9, 11.5, 24.7, 0.1, 0)
+)
+```
+
+```{r}
+vernonhills_lake <- lake_law |> 
+  filter(agency_name == "VERNON HILLS POLICE") |>
+  count(race) |> 
+  mutate(stop_pct = n/sum(n) * 100)
+
+vernonhills_lake <- vernonhills_lake |> 
+  left_join(vernonhills_pop, by ="race")
+
+vernonhills_lake
+```
+
+```{r}
+vernonhills_search_rates <- lake_law |>
+  filter(agency_name == "VERNON HILLS POLICE") |>
+  group_by(race) |> 
+  summarise( 
+    total_stops = n(), 
+    searches = sum(vehicle_search_conducted == "Yes", na.rm = TRUE),
+    search_rate = searches/ total_stops * 100 
+  ) 
+
+vernonhills_search_rates
+```
+
+
+###### Lake County Sheriff
+
+```{r}
+lakecounty_pop <- data.frame( 
+  race = c("White", "Black", "Hispanic", "Asian", "American Indian", "NHPI"),
+  population_pct = c(54.7, 7.9, 26, 10, 2.8, 0.1)
+)
+```
+
+```{r}
+lakecounty_lake <- lake_law |> 
+  filter(agency_name == "LAKE COUNTY SHERIFF") |>
+  count(race) |> 
+  mutate(stop_pct = n/sum(n) * 100)
+
+lakecounty_lake <- lakecounty_lake |> 
+  left_join(lakecounty_pop, by ="race")
+
+lakecounty_lake
+```
+
+```{r}
+lakecounty_search_rates <- lake_law |>
+  filter(agency_name == "LAKE COUNTY SHERIFF") |>
+  group_by(race) |> 
+  summarise( 
+    total_stops = n(), 
+    searches = sum(vehicle_search_conducted == "Yes", na.rm = TRUE),
+    search_rate = searches/ total_stops * 100 
+  ) 
+
+lakecounty_search_rates
+```
+
+####### Wauconda Police 
+
+```{r}
+wauconda_pop <- data.frame( 
+  race = c("White", "Black", "Hispanic", "Asian", "American Indian", "NHPI"),
+  population_pct = c(74.1, 0.4, 18.6, 5.1, 1.1, 0)
+)
+```
+
+```{r}
+wauconda_lake <- lake_law |> 
+  filter(agency_name == "WAUCONDA POLICE") |>
+  count(race) |> 
+  mutate(stop_pct = n/sum(n) * 100)
+
+wauconda_lake <- wauconda_lake |> 
+  left_join(wauconda_pop, by ="race")
+
+wauconda_lake
+```
+
+```{r}
+wauconda_search_rates <- lake_law |>
+  filter(agency_name == "WAUCONDA POLICE") |>
+  group_by(race) |> 
+  summarise( 
+    total_stops = n(), 
+    searches = sum(vehicle_search_conducted == "Yes", na.rm = TRUE),
+    search_rate = searches/ total_stops * 100 
+  ) 
+
+wauconda_search_rates
+```
+
+###### Lake Villa Police 
+
+```{r}
+lakevilla_pop <- data.frame( 
+  race = c("White", "Black", "Hispanic", "Asian", "American Indian", "NHPI"),
+  population_pct = c(68.9, 3.9, 15.3, 8, 0.6, 0.1)
+)
+```
+
+```{r}
+lakevilla_lake <- lake_law |> 
+  filter(agency_name == "LAKE VILLA POLICE") |>
+  count(race) |> 
+  mutate(stop_pct = n/sum(n) * 100)
+
+lakevilla_lake <- lakevilla_lake |> 
+  left_join(lakevilla_pop, by ="race")
+
+lakevilla_lake
+```
+
+```{r}
+lakevilla_search_rates <- lake_law |>
+  filter(agency_name == "LAKE VILLA POLICE") |>
+  group_by(race) |> 
+  summarise( 
+    total_stops = n(), 
+    searches = sum(vehicle_search_conducted == "Yes", na.rm = TRUE),
+    search_rate = searches/ total_stops * 100 
+  ) 
+
+lakevilla_search_rates
+```
+
+###### Lake Bluff Police 
+
+```{r}
+lakebluff_pop <- data.frame( 
+  race = c("White", "Black", "Hispanic", "Asian", "American Indian", "NHPI"),
+  population_pct = c(83.7, 0, 6.2, 6.5, 0.4, 0)
+)
+```
+
+```{r}
+lakebluff_lake <- lake_law |> 
+  filter(agency_name == "LAKE BLUFF POLICE") |>
+  count(race) |> 
+  mutate(stop_pct = n/sum(n) * 100)
+
+lakebluff_lake <- lakebluff_lake |> 
+  left_join(lakebluff_pop, by ="race")
+
+lakebluff_lake
+```
+
+```{r}
+lakebluff_search_rates <- lake_law |>
+  filter(agency_name == "LAKE BLUFF POLICE") |>
+  group_by(race) |> 
+  summarise( 
+    total_stops = n(), 
+    searches = sum(vehicle_search_conducted == "Yes", na.rm = TRUE),
+    search_rate = searches/ total_stops * 100 
+  ) 
+
+lakebluff_search_rates
+```
+
+###### Grayslake Police
+
+```{r}
+grayslake_pop <- data.frame( 
+  race = c("White", "Black", "Hispanic", "Asian", "American Indian", "NHPI"),
+  population_pct = c(71.1, 8.6, 10.2, 5.2, 0.2, 0)
+)
+```
+
+```{r}
+grayslake_lake <- lake_law |> 
+  filter(agency_name == "GRAYSLAKE POLICE") |>
+  count(race) |> 
+  mutate(stop_pct = n/sum(n) * 100)
+
+grayslake_lake <- grayslake_lake |> 
+  left_join(grayslake_pop, by ="race")
+
+grayslake_lake
+```
+
+```{r}
+grayslake_search_rates <- lake_law |>
+  filter(agency_name == "GRAYSLAKE POLICE") |>
+  group_by(race) |> 
+  summarise( 
+    total_stops = n(), 
+    searches = sum(vehicle_search_conducted == "Yes", na.rm = TRUE),
+    search_rate = searches/ total_stops * 100 
+  ) 
+
+grayslake_search_rates
+```
+
+###### Kildeer Police 
+```{r}
+kildeer_pop <- data.frame( 
+  race = c("White", "Black", "Hispanic", "Asian", "American Indian", "NHPI"),
+  population_pct = c(71.4, 0, 5.6, 19.9, 0, 0)
+)
+```
+
+```{r}
+kildeer_lake <- lake_law |> 
+  filter(agency_name == "KILDEER POLICE") |>
+  count(race) |> 
+  mutate(stop_pct = n/sum(n) * 100)
+
+kildeer_lake <- kildeer_lake |> 
+  left_join(kildeer_pop, by ="race")
+
+kildeer_lake
+```
+
+```{r}
+kildeer_search_rates <- lake_law |>
+  filter(agency_name == "KILDEER POLICE") |>
+  group_by(race) |> 
+  summarise( 
+    total_stops = n(), 
+    searches = sum(vehicle_search_conducted == "Yes", na.rm = TRUE),
+    search_rate = searches/ total_stops * 100 
+  ) 
+
+kildeer_search_rates
+```
+
+
+##### DuPage County 
+
+```{r}
+dupage_agencies <- toupper(c(
+  "Addison Police",
+  "Aurora Police",
+  "Bensenville Police",
+  "Bloomingdale Police",
+  "Boilingbrook Police",
+  "Burr Ridge Police",
+  "Bartlett Police",
+  "Carol Stream Police",
+  "Clarendon Hills Police",
+  "College of DuPage Police",
+  "Darien Police",
+  "Downers Grove Police Department",
+  "DuPage County Sheriff",
+  "Elmhurst Police",
+  "Elk Grove Police",
+  "DuPage County Forest Preserve Police",
+  "Glen Ellyn Police",
+  "Glendale Heights Police",
+  "Hanover Park Police",
+  "Hinsdale Police",
+  "Itasca Police",
+  "Lisle Police",
+  "Lombard Police",
+  "Naperville Police",
+  "Oak Brook Police",
+  "Roselle Police",
+  "Villa Park Police",
+  "Warrenville Police",
+  "West Chicago Police",
+  "Wheaton Police",
+  "Winfield Police",
+  "Wood Dale Police",
+  "Woodridge Police", 
+  "Willowbrook Police", 
+  "Westmont Police", 
+  "Wayne Police", 
+  "Naperville Police", 
+  "Oak Brook Terrace Police", 
+  "Schaumburg Police",
+  "St.Charles Police",
+  "Wayne Police"
+
+ )) 
+```
+
+```{r}
+dupage_law <- traffic_24 %>%
+  mutate(agency_name = str_squish(agency_name)) %>%
+  filter(agency_name %in% dupage_agencies)
+```
+
+```{r}
+dupage_law %>%
+  count(agency_name, sort = TRUE)
+```
+
+
+```{r}
+## bringing in 2024 population data for lake county
+
+dupage_pop <- data.frame( 
+  race = c("White", "Black", "Hispanic", "Asian", "American Indian", "NHPI"),
+  population_pct = c(60.7, 5.6, 17, 14.6,1.4,0.1)
+)
+
+```
+
+```{r}
+## getting the traffic stop percentage by each race, bringing in lake county population percentage 
+dupage_stops <- dupage_law %>%
+  count(race, sort = TRUE) |> 
+  mutate(stop_pct = n / sum(n) * 100)
+
+dupage_stops <- dupage_stops |> 
+  left_join(dupage_pop, by ="race")
+
+dupage_stops
+```
+
+- Black and Hispanic drivers are overrepresented in traffic stops relative to their share of the population. White, Asian, American Indian and NHPI drivers are underrepresented in traffic stops relative to their share of the population.
+
+
+```{r}
+## reformatting it 
+dupage_plot <- dupage_stops %>%
+  select(race, stop_pct, population_pct) %>%
+  pivot_longer(
+    cols = c(stop_pct, population_pct),
+    names_to = "type",
+    values_to = "percent"
+  )
+
+```
+
+```{r}
+## graphing it 
+ggplot(dupage_plot, aes(x = race, y = percent, fill = type)) +
+  geom_col(position = "dodge") +
+  scale_fill_manual(values = c(
+    "stop_pct" = "grey70",
+    "population_pct" = "#B22222"
+  )) +
+  labs(
+    title = "Traffic Stops vs Population in DuPage County",
+    x = "Race",
+    y = "Percent",
+    fill = "Category"
+  ) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+```{r}
+### creating a new data table that has the total number of stops by race and then getting the number of searches that was conducted, creating a rate by taking searches divided by total stops and multiplying by 100 to get a percentage
+dupage_search_rates <- dupage_law |>
+  group_by(race) |> 
+  summarise( 
+    total_stops = n(), 
+    searches = sum(vehicle_search_conducted == "Yes", na.rm = TRUE),
+    search_rate = searches/ total_stops * 100 
+  ) 
+
+
+dupage_search_rates
+```
+
+- Black drivers have the highest search rates (5.2), followed by Hispanic drivers (3.3) and then NHPI drivers (2.4). 
+
+```{r}
+ggplot(dupage_search_rates, aes(x = race, y = search_rate)) +
+  geom_col(fill = "#B22222") +
+  labs(
+    title = "Vehicle Search Rate by Race (DuPage County)",
+    x = "Race",
+    y = "Search Rate (%)"
+  ) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+###### Top 3 DuPage County Law Enforcement Agencies
+- SCHAUMBURG POLICE	23916			
+- AURORA POLICE	17657			
+- NAPERVILLE POLICE	14817	
+
+
+###### Schaumburg Police Department 
+
+```{r}
+schaumburg_pop <- data.frame( 
+  race = c("White", "Black", "Hispanic", "Asian", "American Indian", "NHPI"),
+  population_pct = c(53.7, 5.8, 12.7, 23.9, 0.5, 0)
+)
+```
+
+```{r}
+schaumburg_dupage <- dupage_law |> 
+  filter(agency_name == "SCHAUMBURG POLICE") |>
+  count(race) |> 
+  mutate(stop_pct = n/sum(n) * 100)
+
+schaumburg_dupage <- schaumburg_dupage|> 
+  left_join(schaumburg_pop, by ="race")
+
+schaumburg_dupage
+```
+
+- Black and Hispanic drivers are overrepresented in traffic stops relative to their share of the population, while White, Asian, and  American Indian, drivers are underrepresented.
+
+```{r}
+## graphing it 
+schaumburg_dupage_plot <- schaumburg_dupage %>%
+  select(race, stop_pct, population_pct) %>%
+  pivot_longer(
+    cols = c(stop_pct, population_pct),
+    names_to = "type",
+    values_to = "percent"
+  )
+
+```
+
+```{r}
+## graphing it 
+ggplot(schaumburg_dupage_plot, aes(x = race, y = percent, fill = type)) +
+  geom_col(position = "dodge") +
+  scale_fill_manual(values = c(
+    "stop_pct" = "grey70",
+    "population_pct" = "#B22222"
+  )) +
+  labs(
+    title = "Schaumburg Police Traffic Stops vs Population",
+    x = "Race",
+    y = "Percent",
+    fill = "Category"
+  ) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+
+```{r}
+### creating a new data table that has the total number of stops by race and then getting the number of searches that was conducted, creating a rate by taking searches divided by total stops and multiplying by 100 to get a percentage
+schaumburg_search_rates <- dupage_law |>
+  filter(agency_name == "SCHAUMBURG POLICE") |>
+  group_by(race) |> 
+  summarise( 
+    total_stops = n(), 
+    searches = sum(vehicle_search_conducted == "Yes", na.rm = TRUE),
+    search_rate = searches/ total_stops * 100 
+  ) 
+
+schaumburg_search_rates 
+```
+
+- Black drivers have the highest search rates (1.7), followed by Hispanic drivers (0.96), and then NHPI (0.93). 
+
+```{r}
+ggplot(schaumburg_search_rates, aes(x = race, y = search_rate)) +
+  geom_col(fill = "#B22222") +
+  labs(
+    title = "Schaumburg Vehicle Search Rate by Race",
+    x = "Race",
+    y = "Search Rate (%)"
+  ) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+
+###### Aurora Police Department 
+
+```{r}
+aurora_pop <- data.frame( 
+  race = c("White", "Black", "Hispanic", "Asian", "American Indian", "NHPI"),
+  population_pct = c(32.2, 11, 41.6, 12.4, 1.5, 0.1)
+)
+```
+
+
+```{r}
+aurora_dupage <- dupage_law |> 
+  filter(agency_name == "AURORA POLICE") |>
+  count(race) |> 
+  mutate(stop_pct = n/sum(n) * 100)
+
+aurora_dupage <- aurora_dupage |> 
+  left_join(aurora_pop, by ="race")
+
+aurora_dupage
+```
+
+- Black, Hispanic, and NHPI drivers are overrepresented in traffic stops relative to their share of the population, while White, Asian, and American Indian drivers are underrepresented.
+
+```{r}
+## graphing it 
+aurora_dupage_plot <- aurora_dupage %>%
+  select(race, stop_pct, population_pct) %>%
+  pivot_longer(
+    cols = c(stop_pct, population_pct),
+    names_to = "type",
+    values_to = "percent"
+  )
+
+```
+
+```{r}
+## graphing it 
+ggplot(aurora_dupage_plot, aes(x = race, y = percent, fill = type)) +
+  geom_col(position = "dodge") +
+  scale_fill_manual(values = c(
+    "stop_pct" = "grey70",
+    "population_pct" = "#B22222"
+  )) +
+  labs(
+    title = "Aurora Police Traffic Stops vs Population",
+    x = "Race",
+    y = "Percent",
+    fill = "Category"
+  ) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+
+```{r}
+### creating a new data table that has the total number of stops by race and then getting the number of searches that was conducted, creating a rate by taking searches divided by total stops and multiplying by 100 to get a percentage
+aurora_search_rates <- dupage_law |>
+  filter(agency_name == "AURORA POLICE") |>
+  group_by(race) |> 
+  summarise( 
+    total_stops = n(), 
+    searches = sum(vehicle_search_conducted == "Yes", na.rm = TRUE),
+    search_rate = searches/ total_stops * 100 
+  ) 
+
+aurora_search_rates
+```
+
+- Black drivers have the highest search rates (10.6), followed by Hispanic drivers (6.3) and then white drivers (4.3).
+
+
+```{r}
+ggplot(aurora_search_rates, aes(x = race, y = search_rate)) +
+  geom_col(fill = "#B22222") +
+  labs(
+    title = "Aurora Vehicle Search Rate by Race",
+    x = "Race",
+    y = "Search Rate (%)"
+  ) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+
+###### Naperville Police Department 
+
+```{r}
+naperville_pop <- data.frame( 
+  race = c("White", "Black", "Hispanic", "Asian", "American Indian", "NHPI"),
+  population_pct = c(61, 4.3, 7.6, 22.5, 0.2, 0)
+)
+```
+
+
+```{r}
+naperville_dupage <- dupage_law |> 
+  filter(agency_name == "NAPERVILLE POLICE") |>
+  count(race) |> 
+  mutate(stop_pct = n/sum(n) * 100)
+
+naperville_dupage <- naperville_dupage |> 
+  left_join(naperville_pop, by ="race")
+
+naperville_dupage
+```
+
+- Black and Hispanic drivers are overrepresented in traffic stops relative to their share of the population, while White, Asian, and American Indian drivers are underrepresented.
+
+```{r}
+## graphing it 
+naperville_dupage_plot <- naperville_dupage %>%
+  select(race, stop_pct, population_pct) %>%
+  pivot_longer(
+    cols = c(stop_pct, population_pct),
+    names_to = "type",
+    values_to = "percent"
+  )
+
+```
+
+```{r}
+## graphing it 
+ggplot(naperville_dupage_plot, aes(x = race, y = percent, fill = type)) +
+  geom_col(position = "dodge") +
+  scale_fill_manual(values = c(
+    "stop_pct" = "grey70",
+    "population_pct" = "#B22222"
+  )) +
+  labs(
+    title = "Aurora Police Traffic Stops vs Population",
+    x = "Race",
+    y = "Percent",
+    fill = "Category"
+  ) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+
+```{r}
+### creating a new data table that has the total number of stops by race and then getting the number of searches that was conducted, creating a rate by taking searches divided by total stops and multiplying by 100 to get a percentage
+naperville_search_rates <- dupage_law |>
+  filter(agency_name == "NAPERVILLE POLICE") |>
+  group_by(race) |> 
+  summarise( 
+    total_stops = n(), 
+    searches = sum(vehicle_search_conducted == "Yes", na.rm = TRUE),
+    search_rate = searches/ total_stops * 100 
+  ) 
+
+naperville_search_rates
+```
+
+- NHPI due to the small numbers have the highest search rates (33.3), followed by Black drivers have the highest search rates (10.7), followed by Hispanic drivers (4.1), 
+
+
+```{r}
+ggplot(naperville_search_rates, aes(x = race, y = search_rate)) +
+  geom_col(fill = "#B22222") +
+  labs(
+    title = "Aurora Vehicle Search Rate by Race",
+    x = "Race",
+    y = "Search Rate (%)"
+  ) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+
+###### Lombard Police 
+
+```{r}
+lombard_pop <- data.frame( 
+  race = c("White", "Black", "Hispanic", "Asian", "American Indian", "NHPI"),
+  population_pct = c(66, 5.2, 14.4, 10.7, 0.3, 0.1)
+)
+```
+
+```{r}
+lombard_dupage <- dupage_law |> 
+  filter(agency_name == "LOMBARD POLICE") |>
+  count(race) |> 
+  mutate(stop_pct = n/sum(n) * 100)
+
+lombard_dupage <- lombard_dupage |> 
+  left_join(lombard_pop, by ="race")
+
+lombard_dupage
+```
+
+```{r}
+lombard_search_rates <- dupage_law |>
+  filter(agency_name == "LOMBARD POLICE") |>
+  group_by(race) |> 
+  summarise( 
+    total_stops = n(), 
+    searches = sum(vehicle_search_conducted == "Yes", na.rm = TRUE),
+    search_rate = searches/ total_stops * 100 
+  ) 
+
+lombard_search_rates
+```
+
+###### Hanover Park Police 
+
+```{r}
+hanoverpark_pop <- data.frame( 
+  race = c("White", "Black", "Hispanic", "Asian", "American Indian", "NHPI"),
+  population_pct = c(30.2, 7.3, 40.5, 18.7, 1.1, 0.1)
+)
+```
+
+```{r}
+hanoverpark_dupage <- dupage_law |> 
+  filter(agency_name == "HANOVER PARK POLICE") |>
+  count(race) |> 
+  mutate(stop_pct = n/sum(n) * 100)
+
+hanoverpark_dupage <- hanoverpark_dupage |> 
+  left_join(hanoverpark_pop, by ="race")
+
+hanoverpark_dupage
+```
+
+```{r}
+hanoverpark_search_rates <- dupage_law |>
+  filter(agency_name == "HANOVER PARK POLICE") |>
+  group_by(race) |> 
+  summarise( 
+    total_stops = n(), 
+    searches = sum(vehicle_search_conducted == "Yes", na.rm = TRUE),
+    search_rate = searches/ total_stops * 100 
+  ) 
+
+hanoverpark_search_rates
+```
+
+###### Elmhurst Police 
+
+```{r}
+elmhurst_pop <- data.frame( 
+  race = c("White", "Black", "Hispanic", "Asian", "American Indian", "NHPI"),
+  population_pct = c(76, 1.9, 10.4, 7.8, 0.3, 0)
+)
+```
+
+```{r}
+elmhurst_dupage <- dupage_law |> 
+  filter(agency_name == "ELMHURST POLICE") |>
+  count(race) |> 
+  mutate(stop_pct = n/sum(n) * 100)
+
+elmhurst_dupage <- elmhurst_dupage |> 
+  left_join(elmhurst_pop, by ="race")
+
+elmhurst_dupage
+```
+
+```{r}
+elmhurst_search_rates <- dupage_law |>
+  filter(agency_name == "ELMHURST POLICE") |>
+  group_by(race) |> 
+  summarise( 
+    total_stops = n(), 
+    searches = sum(vehicle_search_conducted == "Yes", na.rm = TRUE),
+    search_rate = searches/ total_stops * 100 
+  ) 
+
+elmhurst_search_rates
+```
+
+###### West Chicago Police 
+
+```{r}
+westchicago_pop <- data.frame( 
+  race = c("White", "Black", "Hispanic", "Asian", "American Indian", "NHPI"),
+  population_pct = c(35.3, 3.2, 47.8, 10.4, 1.1, 0)
+)
+```
+
+```{r}
+westchicago_dupage <- dupage_law |> 
+  filter(agency_name == "WEST CHICAGO POLICE") |>
+  count(race) |> 
+  mutate(stop_pct = n/sum(n) * 100)
+
+westchicago_dupage <- westchicago_dupage |> 
+  left_join(westchicago_pop, by ="race")
+
+westchicago_dupage
+```
+
+```{r}
+westchicago_search_rates <- dupage_law |>
+  filter(agency_name == "WEST CHICAGO POLICE") |>
+  group_by(race) |> 
+  summarise( 
+    total_stops = n(), 
+    searches = sum(vehicle_search_conducted == "Yes", na.rm = TRUE),
+    search_rate = searches/ total_stops * 100 
+  ) 
+
+westchicago_search_rates
+```
+
+###### Bloomingdale Police 
+
+```{r}
+bloomingdale_pop <- data.frame( 
+  race = c("White", "Black", "Hispanic", "Asian", "American Indian", "NHPI"),
+  population_pct = c(68.6, 3.1, 12.8, 14.5, 0.2, 0)
+)
+```
+
+```{r}
+bloomingdale_dupage <- dupage_law |> 
+  filter(agency_name == "BLOOMINGDALE POLICE") |>
+  count(race) |> 
+  mutate(stop_pct = n/sum(n) * 100)
+
+bloomingdale_dupage <- bloomingdale_dupage |> 
+  left_join(bloomingdale_pop, by ="race")
+
+bloomingdale_dupage
+```
+
+```{r}
+bloomingdale_search_rates <- dupage_law |>
+  filter(agency_name == "BLOOMINGDALE POLICE") |>
+  group_by(race) |> 
+  summarise( 
+    total_stops = n(), 
+    searches = sum(vehicle_search_conducted == "Yes", na.rm = TRUE),
+    search_rate = searches/ total_stops * 100 
+  ) 
+
+bloomingdale_search_rates
+```
+
+###### Glen Ellyn Police 
+
+```{r}
+glenellyn_pop <- data.frame( 
+  race = c("White", "Black", "Hispanic", "Asian", "American Indian", "NHPI"),
+  population_pct = c(75.1, 3, 6.9, 10.8, 0, 0.1)
+)
+```
+
+```{r}
+glenellyn_dupage <- dupage_law |> 
+  filter(agency_name == "GLEN ELLYN POLICE") |>
+  count(race) |> 
+  mutate(stop_pct = n/sum(n) * 100)
+
+glenellyn_dupage <- glenellyn_dupage |> 
+  left_join(glenellyn_pop, by ="race")
+
+glenellyn_dupage
+```
+
+```{r}
+glenellyn_search_rates <- dupage_law |>
+  filter(agency_name == "GLEN ELLYN POLICE") |>
+  group_by(race) |> 
+  summarise( 
+    total_stops = n(), 
+    searches = sum(vehicle_search_conducted == "Yes", na.rm = TRUE),
+    search_rate = searches/ total_stops * 100 
+  ) 
+
+glenellyn_search_rates
+```
+
+###### Carol Stream Police 
+
+```{r}
+carolstream_pop <- data.frame( 
+  race = c("White", "Black", "Hispanic", "Asian", "American Indian", "NHPI"),
+  population_pct = c(50.1, 6.3, 18.5, 19.4, 0.7, 0.2)
+)
+```
+
+```{r}
+carolstream_dupage <- dupage_law |> 
+  filter(agency_name == "CAROL STREAM POLICE") |>
+  count(race) |> 
+  mutate(stop_pct = n/sum(n) * 100)
+
+carolstream_dupage <- carolstream_dupage |> 
+  left_join(carolstream_pop, by ="race")
+
+carolstream_dupage
+```
+
+```{r}
+carolstream_search_rates <- dupage_law |>
+  filter(agency_name == "CAROL STREAM POLICE") |>
+  group_by(race) |> 
+  summarise( 
+    total_stops = n(), 
+    searches = sum(vehicle_search_conducted == "Yes", na.rm = TRUE),
+    search_rate = searches/ total_stops * 100 
+  ) 
+
+carolstream_search_rates
+```
+
+###### Addison Police 
+
+```{r}
+addison_pop <- data.frame( 
+  race = c("White", "Black", "Hispanic", "Asian", "American Indian", "NHPI"),
+  population_pct = c(40.8, 3.4, 46, 8.6, 1.5, 0)
+)
+```
+
+```{r}
+addison_dupage <- dupage_law |> 
+  filter(agency_name == "ADDISON POLICE") |>
+  count(race) |> 
+  mutate(stop_pct = n/sum(n) * 100)
+
+addison_dupage <- addison_dupage |> 
+  left_join(addison_pop, by ="race")
+
+addison_dupage
+```
+
+```{r}
+addison_search_rates <- dupage_law |>
+  filter(agency_name == "ADDISON POLICE") |>
+  group_by(race) |> 
+  summarise( 
+    total_stops = n(), 
+    searches = sum(vehicle_search_conducted == "Yes", na.rm = TRUE),
+    search_rate = searches/ total_stops * 100 
+  ) 
+
+addison_search_rates
+```
+
+##### Bartlett Police 
+
+```{r}
+bartlett_pop <- data.frame( 
+  race = c("White", "Black", "Hispanic", "Asian", "American Indian", "NHPI"),
+  population_pct = c(59, 4.4, 15, 19.7, 1.4, 0.1)
+)
+```
+
+```{r}
+bartlett_dupage <- dupage_law |> 
+  filter(agency_name == "BARTLETT POLICE") |>
+  count(race) |> 
+  mutate(stop_pct = n/sum(n) * 100)
+
+bartlett_dupage  <- bartlett_dupage  |> 
+  left_join(bartlett_pop, by ="race")
+
+bartlett_dupage 
+```
+
+```{r}
+bartlett_search_rates <- dupage_law |>
+  filter(agency_name == "BARTLETT POLICE") |>
+  group_by(race) |> 
+  summarise( 
+    total_stops = n(), 
+    searches = sum(vehicle_search_conducted == "Yes", na.rm = TRUE),
+    search_rate = searches/ total_stops * 100 
+  ) 
+
+bartlett_search_rates
+```
+
+###### Warrenville Police 
+
+```{r}
+warrenville_pop <- data.frame( 
+  race = c("White", "Black", "Hispanic", "Asian", "American Indian", "NHPI"),
+  population_pct = c(61.4, 5.2, 25.6, 6.7, 1.4, 0.1)
+)
+```
+
+```{r}
+warrenville_dupage <- dupage_law |> 
+  filter(agency_name == "WARRENVILLE POLICE") |>
+  count(race) |> 
+  mutate(stop_pct = n/sum(n) * 100)
+
+warrenville_dupage <- warrenville_dupage |> 
+  left_join(warrenville_pop, by ="race")
+
+warrenville_dupage
+```
+
+```{r}
+warrenville_search_rates <- dupage_law |>
+  filter(agency_name == "WARRENVILLE POLICE") |>
+  group_by(race) |> 
+  summarise( 
+    total_stops = n(), 
+    searches = sum(vehicle_search_conducted == "Yes", na.rm = TRUE),
+    search_rate = searches/ total_stops * 100 
+  ) 
+
+warrenville_search_rates
+```
+
+###### Wheaton Police 
+
+```{r}
+wheaton_pop <- data.frame( 
+  race = c("White", "Black", "Hispanic", "Asian", "American Indian", "NHPI"),
+  population_pct = c(76.3, 4.2, 8.9, 5.8, 0, 0)
+)
+```
+
+```{r}
+wheaton_dupage <- dupage_law |> 
+  filter(agency_name == "WHEATON POLICE") |>
+  count(race) |> 
+  mutate(stop_pct = n/sum(n) * 100)
+
+wheaton_dupage <- wheaton_dupage |> 
+  left_join(wheaton_pop, by ="race")
+
+wheaton_dupage
+```
+
+```{r}
+wheaton_search_rates <- dupage_law |>
+  filter(agency_name == "WHEATON POLICE") |>
+  group_by(race) |> 
+  summarise( 
+    total_stops = n(), 
+    searches = sum(vehicle_search_conducted == "Yes", na.rm = TRUE),
+    search_rate = searches/ total_stops * 100 
+  ) 
+
+wheaton_search_rates
+```
+
+###### Glendale Heights Police 
+
+```{r}
+glendale_pop <- data.frame( 
+  race = c("White", "Black", "Hispanic", "Asian", "American Indian", "NHPI"),
+  population_pct = c(27.8, 10.1, 33.2, 25.6, 2.1, 0)
+)
+```
+
+```{r}
+glendale_dupage <- dupage_law |> 
+  filter(agency_name == "GLENDALE HEIGHTS POLICE") |>
+  count(race) |> 
+  mutate(stop_pct = n/sum(n) * 100)
+
+glendale_dupage  <- glendale_dupage  |> 
+  left_join(glendale_pop, by ="race")
+
+glendale_dupage 
+```
+
+```{r}
+glendale_search_rates <- dupage_law  |>
+  filter(agency_name == "GLENDALE HEIGHTS POLICE") |>
+  group_by(race) |> 
+  summarise( 
+    total_stops = n(), 
+    searches = sum(vehicle_search_conducted == "Yes", na.rm = TRUE),
+    search_rate = searches/ total_stops * 100 
+  ) 
+
+glendale_search_rates
+```
+
+###### Westmont Police 
+
+```{r}
+westmont_pop <- data.frame( 
+  race = c("White", "Black", "Hispanic", "Asian", "American Indian", "NHPI"),
+  population_pct = c(61.7, 5.9, 14.2, 14.9, 1.1, 0)
+)
+```
+
+```{r}
+westmont_dupage <- dupage_law |> 
+  filter(agency_name == "WESTMONT POLICE") |>
+  count(race) |> 
+  mutate(stop_pct = n/sum(n) * 100)
+
+westmont_dupage <- westmont_dupage |> 
+  left_join(westmont_pop, by ="race")
+
+westmont_dupage
+```
+
+```{r}
+westmont_search_rates <- dupage_law |>
+  filter(agency_name == "WESTMONT POLICE") |>
+  group_by(race) |> 
+  summarise( 
+    total_stops = n(), 
+    searches = sum(vehicle_search_conducted == "Yes", na.rm = TRUE),
+    search_rate = searches/ total_stops * 100 
+  ) 
+
+westmont_search_rates
+```
+
+###### Lisle Police 
+
+```{r}
+lisle_pop <- data.frame( 
+  race = c("White", "Black", "Hispanic", "Asian", "American Indian", "NHPI"),
+  population_pct = c(65.1, 4.7, 8.9, 17.4, 0, 0)
+)
+```
+
+```{r}
+lisle_dupage <- dupage_law |> 
+  filter(agency_name == "LISLE POLICE") |>
+  count(race) |> 
+  mutate(stop_pct = n/sum(n) * 100)
+
+lisle_dupage  <- lisle_dupage  |> 
+  left_join(lisle_pop, by ="race")
+
+lisle_dupage 
+```
+
+```{r}
+lisle_search_rates <- dupage_law |>
+  filter(agency_name == "LISLE POLICE") |>
+  group_by(race) |> 
+  summarise( 
+    total_stops = n(), 
+    searches = sum(vehicle_search_conducted == "Yes", na.rm = TRUE),
+    search_rate = searches/ total_stops * 100 
+  ) 
+
+lisle_search_rates
+```
+
+###### Wood Dale Police 
+
+```{r}
+wooddale_pop <- data.frame( 
+  race = c("White", "Black", "Hispanic", "Asian", "American Indian", "NHPI"),
+  population_pct = c(59.1, 3, 31.8, 5.1, 1.2, 0)
+)
+```
+
+```{r}
+wooddale_dupage <- dupage_law |> 
+  filter(agency_name == "WOOD DALE POLICE") |>
+  count(race) |> 
+  mutate(stop_pct = n/sum(n) * 100)
+
+wooddale_dupage <- wooddale_dupage |> 
+  left_join(wooddale_pop, by ="race")
+
+wooddale_dupage
+```
+
+```{r}
+wooddale_search_rates <- dupage_law |>
+  filter(agency_name == "WOOD DALE POLICE") |>
+  group_by(race) |> 
+  summarise( 
+    total_stops = n(), 
+    searches = sum(vehicle_search_conducted == "Yes", na.rm = TRUE),
+    search_rate = searches/ total_stops * 100 
+  ) 
+
+wooddale_search_rates
+```
+
+###### Hindsdale Police 
+
+```{r}
+hinsdale_pop <- data.frame( 
+  race = c("White", "Black", "Hispanic", "Asian", "American Indian", "NHPI"),
+  population_pct = c(72.7, 1.7, 5.9, 13.9, 0.2, 0.1)
+)
+```
+
+```{r}
+hinsdale_dupage <- dupage_law |> 
+  filter(agency_name == "HINSDALE POLICE") |>
+  count(race) |> 
+  mutate(stop_pct = n/sum(n) * 100)
+
+hinsdale_dupage  <- hinsdale_dupage  |> 
+  left_join(hinsdale_pop, by ="race")
+
+hinsdale_dupage 
+```
+
+```{r}
+hinsdale_search_rates <- dupage_law |>
+  filter(agency_name == "HINSDALE POLICE") |>
+  group_by(race) |> 
+  summarise( 
+    total_stops = n(), 
+    searches = sum(vehicle_search_conducted == "Yes", na.rm = TRUE),
+    search_rate = searches/ total_stops * 100 
+  ) 
+
+hinsdale_search_rates
+```
+
+###### Darien Police
+
+```{r}
+darien_pop <- data.frame( 
+  race = c("White", "Black", "Hispanic", "Asian", "American Indian", "NHPI"),
+  population_pct = c(73.2, 2.9, 9.3, 12.1, 0.2, 0)
+)
+```
+
+```{r}
+darien_dupage <- dupage_law |> 
+  filter(agency_name == "DARIEN POLICE") |>
+  count(race) |> 
+  mutate(stop_pct = n/sum(n) * 100)
+
+darien_dupage <- darien_dupage |> 
+  left_join(darien_pop, by ="race")
+
+darien_dupage
+```
+
+```{r}
+darien_search_rates <- dupage_law |>
+  filter(agency_name == "DARIEN POLICE") |>
+  group_by(race) |> 
+  summarise( 
+    total_stops = n(), 
+    searches = sum(vehicle_search_conducted == "Yes", na.rm = TRUE),
+    search_rate = searches/ total_stops * 100 
+  ) 
+
+darien_search_rates
+```
+
+###### Woodridge Police
+
+```{r}
+woodridge_pop <- data.frame( 
+  race = c("White", "Black", "Hispanic", "Asian", "American Indian", "NHPI"),
+  population_pct = c(56.8, 10.6, 16, 12.1, 0.1, 0)
+)
+```
+
+```{r}
+woodridge_dupage <- dupage_law |> 
+  filter(agency_name == "WOODRIDGE POLICE") |>
+  count(race) |> 
+  mutate(stop_pct = n/sum(n) * 100)
+
+woodridge_dupage |> 
+  left_join(woodridge_pop, by ="race")
+
+woodridge_dupage
+```
+
+```{r}
+woodridge_search_rates <- dupage_law |>
+  filter(agency_name == "WOODRIDGE POLICE") |>
+  group_by(race) |> 
+  summarise( 
+    total_stops = n(), 
+    searches = sum(vehicle_search_conducted == "Yes", na.rm = TRUE),
+    search_rate = searches/ total_stops * 100 
+  ) 
+
+woodridge_search_rates
+```
+
+###### Burr Ridge Police
+
+```{r}
+burrridge_pop <- data.frame( 
+  race = c("White", "Black", "Hispanic", "Asian", "American Indian", "NHPI"),
+  population_pct = c(72.5, 0.3, 5, 14.5, 0, 0)
+)
+```
+
+```{r}
+burrridge_dupage <- dupage_law |> 
+  filter(agency_name == "BURR RIDGE POLICE") |>
+  count(race) |> 
+  mutate(stop_pct = n/sum(n) * 100)
+
+burrridge_dupage <- burrridge_dupage |> 
+  left_join(burrridge_pop, by ="race")
+
+burrridge_dupage
+```
+
+```{r}
+burrridge_search_rates <- dupage_law |>
+  filter(agency_name == "BURR RIDGE POLICE") |>
+  group_by(race) |> 
+  summarise( 
+    total_stops = n(), 
+    searches = sum(vehicle_search_conducted == "Yes", na.rm = TRUE),
+    search_rate = searches/ total_stops * 100 
+  ) 
+
+burrridge_search_rates
+```
+
+###### Dupage County Sheriff 
+
+```{r}
+dupagecounty_pop <- data.frame( 
+  race = c("White", "Black", "Hispanic", "Asian", "American Indian", "NHPI"),
+  population_pct = c(60.7, 5.6, 17, 14.6, 1.4, 0.1) 
+)
+```
+
+```{r}
+dupagecounty_dupage <- dupage_law |> 
+  filter(agency_name == "DUPAGE COUNTY SHERIFF") |>
+  count(race) |> 
+  mutate(stop_pct = n/sum(n) * 100)
+
+dupagecounty_dupage <- dupagecounty_dupage |> 
+  left_join(dupagecounty_pop, by ="race")
+
+dupagecounty_dupage
+```
+
+```{r}
+dupagecounty_search_rates <- dupage_law |>
+  filter(agency_name == "DUPAGE COUNTY SHERIFF") |>
+  group_by(race) |> 
+  summarise( 
+    total_stops = n(), 
+    searches = sum(vehicle_search_conducted == "Yes", na.rm = TRUE),
+    search_rate = searches/ total_stops * 100 
+  ) 
+
+dupagecounty_search_rates
+```
+
+###### Itasca Police 
+
+```{r}
+itasca_pop <- data.frame( 
+  race = c("White", "Black", "Hispanic", "Asian", "American Indian", "NHPI"),
+  population_pct = c(67.1, 0.4, 13.7, 13.3, 0, 0)
+)
+```
+
+```{r}
+itasca_dupage <- dupage_law |> 
+  filter(agency_name == "ITASCA POLICE") |>
+  count(race) |> 
+  mutate(stop_pct = n/sum(n) * 100)
+
+itasca_dupage <- itasca_dupage |> 
+  left_join(itasca_pop, by ="race")
+
+itasca_dupage
+```
+
+```{r}
+itasca_search_rates <- dupage_law |>
+  filter(agency_name == "ITASCA POLICE") |>
+  group_by(race) |> 
+  summarise( 
+    total_stops = n(), 
+    searches = sum(vehicle_search_conducted == "Yes", na.rm = TRUE),
+    search_rate = searches/ total_stops * 100 
+  ) 
+
+itasca_search_rates
+```
+
+###### Roselie Police 
+
+```{r}
+roselle_pop <- data.frame( 
+  race = c("White", "Black", "Hispanic", "Asian", "American Indian", "NHPI"),
+  population_pct = c(76.1, 1.1, 10.2, 9.3, 0.2, 0)
+)
+```
+
+```{r}
+roselle_dupage <- dupage_law |> 
+  filter(agency_name == "ROSELLE POLICE") |>
+  count(race) |> 
+  mutate(stop_pct = n/sum(n) * 100)
+
+roselle_dupage <- roselle_dupage |> 
+  left_join(roselle_pop, by ="race")
+
+roselle_dupage
+```
+
+```{r}
+roselle_search_rates <- dupage_law |>
+  filter(agency_name == "ROSELLE POLICE") |>
+  group_by(race) |> 
+  summarise( 
+    total_stops = n(), 
+    searches = sum(vehicle_search_conducted == "Yes", na.rm = TRUE),
+    search_rate = searches/ total_stops * 100 
+  ) 
+
+roselle_search_rates
+```
+
+###### Oak Brook Police 
+
+
+```{r}
+oakbrook_pop <- data.frame( 
+  race = c("White", "Black", "Hispanic", "Asian", "American Indian", "NHPI"),
+  population_pct = c(59.3, 0.3, 5.7, 33.1, 0, 0)
+)
+```
+
+```{r}
+oakbrook_dupage <- dupage_law |> 
+  filter(agency_name == "OAK BROOK POLICE") |>
+  count(race) |> 
+  mutate(stop_pct = n/sum(n) * 100)
+
+oakbrook_dupage <- oakbrook_dupage |> 
+  left_join(oakbrook_pop, by ="race")
+
+oakbrook_dupage
+```
+
+```{r}
+oakbrook_search_rates <- dupage_law |>
+  filter(agency_name == "OAK BROOK POLICE") |>
+  group_by(race) |> 
+  summarise( 
+    total_stops = n(), 
+    searches = sum(vehicle_search_conducted == "Yes", na.rm = TRUE),
+    search_rate = searches/ total_stops * 100 
+  ) 
+
+oakbrook_search_rates
+```
+
+###### Winfield Police 
+
+```{r}
+winfield_pop <- data.frame( 
+  race = c("White", "Black", "Hispanic", "Asian", "American Indian", "NHPI"),
+  population_pct = c(78.4, 1.4, 11.5, 5.1, 0, 0)
+)
+```
+
+```{r}
+winfield_dupage <- dupage_law |> 
+  filter(agency_name == "WINFIELD POLICE") |>
+  count(race) |> 
+  mutate(stop_pct = n/sum(n) * 100)
+
+winfield_dupage <- winfield_dupage |> 
+  left_join(winfield_pop, by ="race")
+
+winfield_dupage
+```
+
+```{r}
+winfield_search_rates <- dupage_law |>
+  filter(agency_name == "WINFIELD POLICE") |>
+  group_by(race) |> 
+  summarise( 
+    total_stops = n(), 
+    searches = sum(vehicle_search_conducted == "Yes", na.rm = TRUE),
+    search_rate = searches/ total_stops * 100 
+  ) 
+
+winfield_search_rates
+```
+
+###### Clarendon Hills Police 
+
+```{r}
+clarendonhills_pop <- data.frame( 
+  race = c("White", "Black", "Hispanic", "Asian", "American Indian", "NHPI"),
+  population_pct = c(78.8, 0.4, 6.7, 9.8, 0, 0)
+)
+```
+
+```{r}
+clarendonhills_dupage <- dupage_law |> 
+  filter(agency_name == "CLARENDON HILLS POLICE") |>
+  count(race) |> 
+  mutate(stop_pct = n/sum(n) * 100)
+
+clarendonhills_dupage <- clarendonhills_dupage |> 
+  left_join(clarendonhills_pop, by ="race")
+
+clarendonhills_dupage
+```
+
+```{r}
+clarendonhills_search_rates <- dupage_law |>
+  filter(agency_name == "CLARENDON HILLS POLICE") |>
+  group_by(race) |> 
+  summarise( 
+    total_stops = n(), 
+    searches = sum(vehicle_search_conducted == "Yes", na.rm = TRUE),
+    search_rate = searches/ total_stops * 100 
+  ) 
+
+clarendonhills_search_rates
+```
+
+###### Villa Park Police 
+
+```{r}
+villapark_pop <- data.frame( 
+  race = c("White", "Black", "Hispanic", "Asian", "American Indian", "NHPI"),
+  population_pct = c(63.9, 3.5, 24.9, 3.3, 0.5, 0)
+)
+```
+
+```{r}
+villapark_dupage <- dupage_law |> 
+  filter(agency_name == "VILLA PARK POLICE") |>
+  count(race) |> 
+  mutate(stop_pct = n/sum(n) * 100)
+
+villapark_dupage <- villapark_dupage |> 
+  left_join(villapark_pop, by ="race")
+
+villapark_dupage
+```
+
+```{r}
+villapark_search_rates <- dupage_law |>
+  filter(agency_name == "VILLA PARK POLICE") |>
+  group_by(race) |> 
+  summarise( 
+    total_stops = n(), 
+    searches = sum(vehicle_search_conducted == "Yes", na.rm = TRUE),
+    search_rate = searches/ total_stops * 100 
+  ) 
+
+villapark_search_rates
+```
+
+###### Bensenville Police 
+
+```{r}
+bensenville_pop <- data.frame( 
+  race = c("White", "Black", "Hispanic", "Asian", "American Indian", "NHPI"),
+  population_pct = c(40.6, 6.6, 48.5, 2.9, 1.5, 0)
+)
+```
+
+```{r}
+bensenville_dupage <- dupage_law |> 
+  filter(agency_name == "BENSENVILLE POLICE") |>
+  count(race) |> 
+  mutate(stop_pct = n/sum(n) * 100)
+
+bensenville_dupage <- bensenville_dupage |> 
+  left_join(bensenville_pop, by ="race")
+
+bensenville_dupage
+```
+
+```{r}
+bensenville_search_rates <- dupage_law |>
+  filter(agency_name == "BENSENVILLE POLICE") |>
+  group_by(race) |> 
+  summarise( 
+    total_stops = n(), 
+    searches = sum(vehicle_search_conducted == "Yes", na.rm = TRUE),
+    search_rate = searches/ total_stops * 100 
+  ) 
+
+bensenville_search_rates
+```
+
+###### Willowbrook Police 
+
+```{r}
+willowbrook_pop <- data.frame( 
+  race = c("White", "Black", "Hispanic", "Asian", "American Indian", "NHPI"),
+  population_pct = c(64.9, 3.7, 9.7, 18.9, 0, 0)
+)
+```
+
+```{r}
+willowbrook_dupage <- dupage_law |> 
+  filter(agency_name == "WILLOWBROOK POLICE") |>
+  count(race) |> 
+  mutate(stop_pct = n/sum(n) * 100)
+
+willowbrook_dupage <- willowbrook_dupage |> 
+  left_join(willowbrook_pop, by ="race")
+
+willowbrook_dupage
+```
+
+```{r}
+willowbrook_search_rates <- dupage_law |>
+  filter(agency_name == "WILLOWBROOK POLICE") |>
+  group_by(race) |> 
+  summarise( 
+    total_stops = n(), 
+    searches = sum(vehicle_search_conducted == "Yes", na.rm = TRUE),
+    search_rate = searches/ total_stops * 100 
+  ) 
+
+willowbrook_search_rates
+```
+
+
+##### Kane County 
+
+```{r}
+kane_agencies <- toupper(c(
+  "Algonquin Police",
+  "Aurora Police",
+  "Batavia Police",
+  "Carpentersville Police",
+  "East Dundee Police",
+  "Elburn Police",
+  "Elgin Police",
+  "Geneva Police",
+  "Gilberts Police",
+  "Hampshire Police",
+  "Huntley Police",
+  "Kane County Forest Preserve Police",
+  "Maple Park Police",
+  "Montgomery Police",
+  "North Aurora Police",
+  "St. Charles Police",
+  "South Elgin Police",
+  "Sleepy Hollow Police",
+  "Sugar Grove Police",
+  "Wayne Police",
+  "West Dundee Police",
+  "Kane County Sheriff"
+
+  
+))
+```
+
+
+```{r}
+kane_law <- traffic_24 %>%
+  mutate(agency_name = str_squish(agency_name)) %>%
+  filter(agency_name %in% kane_agencies)
+```
+
+```{r}
+kane_law %>%
+  count(agency_name, sort = TRUE)
+```
+
+```{r}
+## bringing in 2024 population data for lake county
+
+kane_pop <- data.frame( 
+  race = c("White", "Black", "Hispanic", "Asian", "American Indian", "NHPI"),
+  population_pct = c(80.3, 6.3, 34.6, 5.6 ,3.,0.1)
+)
+
+```
+
+```{r}
+## getting the traffic stop percentage by each race, bringing in lake county population percentage 
+kane_stops <- kane_law %>%
+  count(race, sort = TRUE) |> 
+  mutate(stop_pct = n / sum(n) * 100)
+
+kane_stops <- kane_stops |> 
+  left_join(kane_pop, by ="race")
+
+kane_stops
+```
+
+- Black and Hispanic drivers are overrepresented in traffic stops relative to their share of the population. White, Asian, American Indian and NHPI drivers are underrepresented in traffic stops relative to their share of the population.
+
+
+```{r}
+## reformatting it 
+kane_plot <- kane_stops %>%
+  select(race, stop_pct, population_pct) %>%
+  pivot_longer(
+    cols = c(stop_pct, population_pct),
+    names_to = "type",
+    values_to = "percent"
+  )
+
+```
+
+```{r}
+## graphing it 
+ggplot(kane_plot, aes(x = race, y = percent, fill = type)) +
+  geom_col(position = "dodge") +
+  scale_fill_manual(values = c(
+    "stop_pct" = "grey70",
+    "population_pct" = "#B22222"
+  )) +
+  labs(
+    title = "Traffic Stops vs Population in Kane County",
+    x = "Race",
+    y = "Percent",
+    fill = "Category"
+  ) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+```{r}
+### creating a new data table that has the total number of stops by race and then getting the number of searches that was conducted, creating a rate by taking searches divided by total stops and multiplying by 100 to get a percentage
+kane_search_rates <- kane_law |>
+  group_by(race) |> 
+  summarise( 
+    total_stops = n(), 
+    searches = sum(vehicle_search_conducted == "Yes", na.rm = TRUE),
+    search_rate = searches/ total_stops * 100 
+  ) 
+
+
+kane_search_rates
+```
+
+- Black drivers have the highest search rates (7.1), followed by Hispanic drivers (4.4) and then NHPI drivers (1.6), and than white drivers (1.5). 
+
+```{r}
+ggplot(kane_search_rates, aes(x = race, y = search_rate)) +
+  geom_col(fill = "#B22222") +
+  labs(
+    title = "Vehicle Search Rate by Race (Kane County)",
+    x = "Race",
+    y = "Search Rate (%)"
+  ) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+###### Top 3 Kane County Law Enforcment Agencies 
+
+- AURORA POLICE	17657			
+- ELGIN POLICE	10707			
+- GENEVA POLICE	7083	
+
+###### Aurora Police 
+
+```{r}
+aurora_pop <- data.frame( 
+  race = c("White", "Black", "Hispanic", "Asian", "American Indian", "NHPI"),
+  population_pct = c(36.7, 11, 41.6, 12.4, 1.5, 0.1)
+)
+```
+
+
+```{r}
+aurora_kane <- kane_law |> 
+  filter(agency_name == "AURORA POLICE") |>
+  count(race) |> 
+  mutate(stop_pct = n/sum(n) * 100)
+
+aurora_kane <- aurora_kane |> 
+  left_join(aurora_pop, by ="race")
+
+aurora_kane
+```
+
+- Black, and Hispanic drivers are overrepresented in traffic stops relative to their share of the population, while White, Asian, and American Indian drivers are underrepresented.
+
+```{r}
+## graphing it 
+aurora_kane_plot <- aurora_kane %>%
+  select(race, stop_pct, population_pct) %>%
+  pivot_longer(
+    cols = c(stop_pct, population_pct),
+    names_to = "type",
+    values_to = "percent"
+  )
+
+```
+
+```{r}
+## graphing it 
+ggplot(aurora_kane_plot, aes(x = race, y = percent, fill = type)) +
+  geom_col(position = "dodge") +
+  scale_fill_manual(values = c(
+    "stop_pct" = "grey70",
+    "population_pct" = "#B22222"
+  )) +
+  labs(
+    title = "Aurora Police (Kane County) Traffic Stops vs Population",
+    x = "Race",
+    y = "Percent",
+    fill = "Category"
+  ) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+
+```{r}
+### creating a new data table that has the total number of stops by race and then getting the number of searches that was conducted, creating a rate by taking searches divided by total stops and multiplying by 100 to get a percentage
+aurora_kane_search_rates <- kane_law |>
+  filter(agency_name == "AURORA POLICE") |>
+  group_by(race) |> 
+  summarise( 
+    total_stops = n(), 
+    searches = sum(vehicle_search_conducted == "Yes", na.rm = TRUE),
+    search_rate = searches/ total_stops * 100 
+  ) 
+
+aurora_kane_search_rates
+```
+
+- Black drivers have the highest search rates (10.6), followed by Hispanic drivers (6.3) and then white drivers (4.3).
+
+
+```{r}
+ggplot(aurora_kane_search_rates, aes(x = race, y = search_rate)) +
+  geom_col(fill = "#B22222") +
+  labs(
+    title = "Aurora (Kane County) Vehicle Search Rate by Race",
+    x = "Race",
+    y = "Search Rate (%)"
+  ) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+###### Elgin Police 
+
+```{r}
+elgin_pop <- data.frame( 
+  race = c("White", "Black", "Hispanic", "Asian", "American Indian", "NHPI"),
+  population_pct = c(40.6, 5.4, 48.7, 6.7, 2.3, 0.2)
+)
+```
+
+
+```{r}
+elgin_kane <- kane_law |> 
+  filter(agency_name == "ELGIN POLICE") |>
+  count(race) |> 
+  mutate(stop_pct = n/sum(n) * 100)
+
+elgin_kane <- elgin_kane |> 
+  left_join(elgin_pop, by ="race")
+elgin_kane
+```
+
+- Black and Hispanic drivers are overrepresented in traffic stops relative to their share of the population, while White and Asian drivers are underrepresented. 
+
+```{r}
+## graphing it 
+elgin_kane_plot <- elgin_kane %>%
+  select(race, stop_pct, population_pct) %>%
+  pivot_longer(
+    cols = c(stop_pct, population_pct),
+    names_to = "type",
+    values_to = "percent"
+  )
+
+```
+
+```{r}
+## graphing it 
+ggplot(elgin_kane_plot, aes(x = race, y = percent, fill = type)) +
+  geom_col(position = "dodge") +
+  scale_fill_manual(values = c(
+    "stop_pct" = "grey70",
+    "population_pct" = "#B22222"
+  )) +
+  labs(
+    title = "Elgin Police Traffic Stops vs Population",
+    x = "Race",
+    y = "Percent",
+    fill = "Category"
+  ) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+
+```{r}
+### creating a new data table that has the total number of stops by race and then getting the number of searches that was conducted, creating a rate by taking searches divided by total stops and multiplying by 100 to get a percentage
+elgin_search_rates <- kane_law |>
+  filter(agency_name == "ELGIN POLICE") |>
+  group_by(race) |> 
+  summarise( 
+    total_stops = n(), 
+    searches = sum(vehicle_search_conducted == "Yes", na.rm = TRUE),
+    search_rate = searches/ total_stops * 100 
+  ) 
+
+elgin_search_rates
+```
+
+- Black drivers have the highest search rates (10.8), followed by Hispanic drivers (7.2) and then white drivers (3).  
+
+
+```{r}
+ggplot(elgin_search_rates, aes(x = race, y = search_rate)) +
+  geom_col(fill = "#B22222") +
+  labs(
+    title = "Elgin Vehicle Search Rate by Race",
+    x = "Race",
+    y = "Search Rate (%)"
+  ) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+###### Geneva Police
+
+```{r}
+geneva_pop <- data.frame( 
+  race = c("White", "Black", "Hispanic", "Asian", "American Indian", "NHPI"),
+  population_pct = c(84.6, 1.5, 7.5, 2.5, 0.3, 0)
+)
+```
+
+
+```{r}
+geneva_kane <- kane_law |> 
+  filter(agency_name == "GENEVA POLICE") |>
+  count(race) |> 
+  mutate(stop_pct = n/sum(n) * 100)
+
+geneva_kane <- geneva_kane |> 
+  left_join(geneva_pop, by ="race")
+
+geneva_kane
+```
+
+- Black, Hispanic, Asian, and NHPI drivers are overrepresented in traffic stops relative to their share of the population, while White and American Indian drivers are underrepresented.
+
+```{r}
+## graphing it 
+geneva_kane_plot <- geneva_kane %>%
+  select(race, stop_pct, population_pct) %>%
+  pivot_longer(
+    cols = c(stop_pct, population_pct),
+    names_to = "type",
+    values_to = "percent"
+  )
+
+```
+
+```{r}
+## graphing it 
+ggplot(geneva_kane_plot, aes(x = race, y = percent, fill = type)) +
+  geom_col(position = "dodge") +
+  scale_fill_manual(values = c(
+    "stop_pct" = "grey70",
+    "population_pct" = "#B22222"
+  )) +
+  labs(
+    title = "Geneva Traffic Stops vs Population",
+    x = "Race",
+    y = "Percent",
+    fill = "Category"
+  ) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+
+```{r}
+### creating a new data table that has the total number of stops by race and then getting the number of searches that was conducted, creating a rate by taking searches divided by total stops and multiplying by 100 to get a percentage
+geneva_kane_search_rates <- kane_law |>
+  filter(agency_name == "GENEVA POLICE") |>
+  group_by(race) |> 
+  summarise( 
+    total_stops = n(), 
+    searches = sum(vehicle_search_conducted == "Yes", na.rm = TRUE),
+    search_rate = searches/ total_stops * 100 
+  ) 
+
+geneva_kane_search_rates
+```
+
+- Black drivers have the highest search rates (0.9), followed by Hispanic drivers (0.4) and then white drivers (0.06).
+
+
+```{r}
+ggplot(geneva_kane_search_rates, aes(x = race, y = search_rate)) +
+  geom_col(fill = "#B22222") +
+  labs(
+    title = "Geneva Vehicle Search Rate by Race",
+    x = "Race",
+    y = "Search Rate (%)"
+  ) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+
+###### Kane County Sheriff 
+
+```{r}
+kane_pop <- data.frame( 
+  race = c("White", "Black", "Hispanic", "Asian", "American Indian", "NHPI"),
+  population_pct = c(52.6, 6.3, 34.6, 5.6, 3.8, 0.1)
+)
+```
+
+
+```{r}
+kanecounty_kane <- kane_law |> 
+  filter(agency_name == "KANE COUNTY SHERIFF") |>
+  count(race) |> 
+  mutate(stop_pct = n/sum(n) * 100)
+
+kanecounty_kane <- kanecounty_kane |> 
+  left_join(kane_pop, by ="race")
+
+kanecounty_kane
+```
+
+```{r}
+kanecounty_kane_search_rates <- kane_law |>
+  filter(agency_name == "KANE COUNTY SHERIFF") |>
+  group_by(race) |> 
+  summarise( 
+    total_stops = n(), 
+    searches = sum(vehicle_search_conducted == "Yes", na.rm = TRUE),
+    search_rate = searches/ total_stops * 100 
+  ) 
+
+kanecounty_kane_search_rates
+```
+
+###### South Elgin Police 
+
+```{r}
+southelgin_pop <- data.frame( 
+  race = c("White", "Black", "Hispanic", "Asian", "American Indian", "NHPI"),
+  population_pct = c(57.4, 4.7, 20.3, 10.9, 0.6, 0.6)
+)
+```
+
+
+```{r}
+southelgin_kane <- kane_law |> 
+  filter(agency_name == "SOUTH ELGIN POLICE") |>
+  count(race) |> 
+  mutate(stop_pct = n/sum(n) * 100)
+
+southelgin_kane <- southelgin_kane |> 
+  left_join(southelgin_pop, by ="race")
+
+southelgin_kane
+```
+
+```{r}
+southelgin_kane_search_rates <- kane_law |>
+  filter(agency_name == "SOUTH ELGIN POLICE") |>
+  group_by(race) |> 
+  summarise( 
+    total_stops = n(), 
+    searches = sum(vehicle_search_conducted == "Yes", na.rm = TRUE),
+    search_rate = searches/ total_stops * 100 
+  ) 
+
+southelgin_kane_search_rates
+```
+
+###### Carpentersville Police 
+
+```{r}
+carpentersville_pop <- data.frame( 
+  race = c("White", "Black", "Hispanic", "Asian", "American Indian", "NHPI"),
+  population_pct = c(30, 5.1, 57.4, 4.1, 1.4, 0.1)
+)
+```
+
+
+```{r}
+carpentersville_kane <- kane_law |> 
+  filter(agency_name == "CARPENTERSVILLE POLICE") |>
+  count(race) |> 
+  mutate(stop_pct = n/sum(n) * 100)
+
+carpentersville_kane <- carpentersville_kane |> 
+  left_join(carpentersville_pop, by ="race")
+
+carpentersville_kane
+```
+
+```{r}
+carpentersville_kane_search_rates <- kane_law |>
+  filter(agency_name == "CARPENTERSVILLE POLICE") |>
+  group_by(race) |> 
+  summarise( 
+    total_stops = n(), 
+    searches = sum(vehicle_search_conducted == "Yes", na.rm = TRUE),
+    search_rate = searches/ total_stops * 100 
+  ) 
+
+carpentersville_kane_search_rates
+```
+
+###### Algonquin Police 
+
+```{r}
+algonquin_pop <- data.frame( 
+  race = c("White", "Black", "Hispanic", "Asian", "American Indian", "NHPI"),
+  population_pct = c(72.7, 2.8, 15.6, 5.3, 0.8, 0)
+)
+```
+
+
+```{r}
+algonquin_kane <- kane_law |> 
+  filter(agency_name == "ALGONQUIN POLICE") |>
+  count(race) |> 
+  mutate(stop_pct = n/sum(n) * 100)
+
+algonquin_kane <- algonquin_kane |> 
+  left_join(algonquin_pop, by ="race")
+
+algonquin_kane
+```
+
+```{r}
+algonquin_kane_search_rates <- kane_law |>
+  filter(agency_name == "ALGONQUIN POLICE") |>
+  group_by(race) |> 
+  summarise( 
+    total_stops = n(), 
+    searches = sum(vehicle_search_conducted == "Yes", na.rm = TRUE),
+    search_rate = searches/ total_stops * 100 
+  ) 
+
+algonquin_kane_search_rates
+```
+
+###### St.Charles Police 
+
+```{r}
+stcharles_pop <- data.frame( 
+  race = c("White", "Black", "Hispanic", "Asian", "American Indian", "NHPI"),
+  population_pct = c(74.7, 2.9, 12.3, 5, 1.1, 0)
+)
+```
+
+
+```{r}
+stcharles_kane <- kane_law |> 
+  filter(agency_name == "ST. CHARLES POLICE") |>
+  count(race) |> 
+  mutate(stop_pct = n/sum(n) * 100)
+
+stcharles_kane <- stcharles_kane |> 
+  left_join(stcharles_pop, by ="race")
+
+stcharles_kane
+```
+
+```{r}
+stcharles_kane_search_rates <- kane_law |>
+  filter(agency_name == "ST. CHARLES POLICE") |>
+  group_by(race) |> 
+  summarise( 
+    total_stops = n(), 
+    searches = sum(vehicle_search_conducted == "Yes", na.rm = TRUE),
+    search_rate = searches/ total_stops * 100 
+  ) 
+
+stcharles_kane_search_rates
+```
+
+###### Batavia Police 
+
+```{r}
+batavia_pop <- data.frame( 
+  race = c("White", "Black", "Hispanic", "Asian", "American Indian", "NHPI"),
+  population_pct = c(81.8, 2.5, 8.9, 1.7, 0.2, 0)
+)
+```
+
+
+```{r}
+batavia_kane <- kane_law |> 
+  filter(agency_name == "BATAVIA POLICE") |>
+  count(race) |> 
+  mutate(stop_pct = n/sum(n) * 100)
+
+batavia_kane <- batavia_kane |> 
+  left_join(batavia_pop, by ="race")
+
+batavia_kane
+```
+
+```{r}
+batavia_kane_search_rates <- kane_law |>
+  filter(agency_name == "BATAVIA POLICE") |>
+  group_by(race) |> 
+  summarise( 
+    total_stops = n(), 
+    searches = sum(vehicle_search_conducted == "Yes", na.rm = TRUE),
+    search_rate = searches/ total_stops * 100 
+  ) 
+
+batavia_kane_search_rates
+```
+
+###### Montgomery Police 
+
+```{r}
+montgomery_pop <- data.frame( 
+  race = c("White", "Black", "Hispanic", "Asian", "American Indian", "NHPI"),
+  population_pct = c(53.8, 8, 32.1, 2.3, 0.6, 0)
+)
+```
+
+
+```{r}
+montgomery_kane <- kane_law |> 
+  filter(agency_name == "MONTGOMERY POLICE") |>
+  count(race) |> 
+  mutate(stop_pct = n/sum(n) * 100)
+
+montgomery_kane <- montgomery_kane |> 
+  left_join(montgomery_pop, by ="race")
+
+montgomery_kane
+```
+
+```{r}
+montgomery_kane_search_rates <- kane_law |>
+  filter(agency_name == "MONTGOMERY POLICE") |>
+  group_by(race) |> 
+  summarise( 
+    total_stops = n(), 
+    searches = sum(vehicle_search_conducted == "Yes", na.rm = TRUE),
+    search_rate = searches/ total_stops * 100 
+  ) 
+
+montgomery_kane_search_rates
+```
+
+###### North Aurora Police 
+
+```{r}
+northaurora_pop <- data.frame( 
+  race = c("White", "Black", "Hispanic", "Asian", "American Indian", "NHPI"),
+  population_pct = c(66.8, 8.7, 20.5, 1.9, 0.2, 0)
+)
+```
+
+
+```{r}
+northaurora_kane <- kane_law |> 
+  filter(agency_name == "NORTH AURORA POLICE") |>
+  count(race) |> 
+  mutate(stop_pct = n/sum(n) * 100)
+
+northaurora_kane <- northaurora_kane |> 
+  left_join(northaurora_pop, by ="race")
+
+northaurora_kane
+```
+
+```{r}
+northaurora_kane_search_rates <- kane_law |>
+  filter(agency_name == "NORTH AURORA POLICE") |>
+  group_by(race) |> 
+  summarise( 
+    total_stops = n(), 
+    searches = sum(vehicle_search_conducted == "Yes", na.rm = TRUE),
+    search_rate = searches/ total_stops * 100 
+  ) 
+
+northaurora_kane_search_rates
+```
+
+###### Huntley Police 
+
+```{r}
+huntley_pop <- data.frame( 
+  race = c("White", "Black", "Hispanic", "Asian", "American Indian", "NHPI"),
+  population_pct = c(77.8, 4.2, 11.1, 5.1, 0.2, 0)
+)
+```
+
+
+```{r}
+huntley_kane <- kane_law |> 
+  filter(agency_name == "HUNTLEY POLICE") |>
+  count(race) |> 
+  mutate(stop_pct = n/sum(n) * 100)
+
+huntley_kane <- huntley_kane |> 
+  left_join(huntley_pop, by ="race")
+
+huntley_kane
+```
+
+```{r}
+huntley_kane_search_rates <- kane_law |>
+  filter(agency_name == "HUNTLEY POLICE") |>
+  group_by(race) |> 
+  summarise( 
+    total_stops = n(), 
+    searches = sum(vehicle_search_conducted == "Yes", na.rm = TRUE),
+    search_rate = searches/ total_stops * 100 
+  ) 
+
+huntley_kane_search_rates
+```
+
+###### Elburn Police 
+
+```{r}
+elburn_pop <- data.frame( 
+  race = c("White", "Black", "Hispanic", "Asian", "American Indian", "NHPI"),
+  population_pct = c(86.2, 0, 10.9, 2.6, 0, 0)
+)
+```
+
+
+```{r}
+elburn_kane <- kane_law |> 
+  filter(agency_name == "ELBURN POLICE") |>
+  count(race) |> 
+  mutate(stop_pct = n/sum(n) * 100)
+
+elburn_kane <- elburn_kane |> 
+  left_join(elburn_pop, by ="race")
+
+elburn_kane
+```
+
+```{r}
+elburn_kane_search_rates <- kane_law |>
+  filter(agency_name == "ELBURN POLICE") |>
+  group_by(race) |> 
+  summarise( 
+    total_stops = n(), 
+    searches = sum(vehicle_search_conducted == "Yes", na.rm = TRUE),
+    search_rate = searches/ total_stops * 100 
+  ) 
+
+elburn_kane_search_rates
+```
+
+###### East Dundee Police 
+
+```{r}
+eastdundee_pop <- data.frame( 
+  race = c("White", "Black", "Hispanic", "Asian", "American Indian", "NHPI"),
+  population_pct = c(68.6, 7.12, 6.2, 2.13, 0, 0)
+)
+```
+
+
+```{r}
+eastdundee_kane <- kane_law |> 
+  filter(agency_name == "EAST DUNDEE POLICE") |>
+  count(race) |> 
+  mutate(stop_pct = n/sum(n) * 100)
+
+eastdundee_kane <- eastdundee_kane |> 
+  left_join(eastdundee_pop, by ="race")
+
+eastdundee_kane
+```
+
+```{r}
+eastdundee_kane_search_rates <- kane_law |>
+  filter(agency_name == "EAST DUNDEE POLICE") |>
+  group_by(race) |> 
+  summarise( 
+    total_stops = n(), 
+    searches = sum(vehicle_search_conducted == "Yes", na.rm = TRUE),
+    search_rate = searches/ total_stops * 100 
+  ) 
+
+eastdundee_kane_search_rates
+```
+
+###### Sugar Grove Police 
+
+```{r}
+sugargrove_pop <- data.frame( 
+  race = c("White", "Black", "Hispanic", "Asian", "American Indian", "NHPI"),
+  population_pct = c(87.7, 0.5, 6.4, 2.7, 0.1, 0)
+)
+```
+
+```{r}
+sugargrove_kane <- kane_law |> 
+  filter(agency_name == "SUGAR GROVE POLICE") |>
+  count(race) |> 
+  mutate(stop_pct = n/sum(n) * 100)
+
+sugargrove_kane <- sugargrove_kane |> 
+  left_join(sugargrove_pop, by ="race")
+
+sugargrove_kane
+```
+
+```{r}
+sugargrove_kane_search_rates <- kane_law |>
+  filter(agency_name == "SUGAR GROVE POLICE") |>
+  group_by(race) |> 
+  summarise( 
+    total_stops = n(), 
+    searches = sum(vehicle_search_conducted == "Yes", na.rm = TRUE),
+    search_rate = searches/ total_stops * 100 
+  )
+
+sugargrove_kane_search_rates
+```
+
+###### Hampshire Police 
+
+```{r}
+hampshire_pop <- data.frame( 
+  race = c("White", "Black", "Hispanic", "Asian", "American Indian", "NHPI"),
+  population_pct = c(74.6, 0.1, 14.6, 7.1, 0, 0)
+)
+```
+
+
+```{r}
+hampshire_kane <- kane_law |> 
+  filter(agency_name == "HAMPSHIRE POLICE") |>
+  count(race) |> 
+  mutate(stop_pct = n/sum(n) * 100)
+
+hampshire_kane <- hampshire_kane |> 
+  left_join(hampshire_pop, by ="race")
+
+hampshire_kane
+```
+
+```{r}
+hampshire_kane_search_rates <- kane_law |>
+  filter(agency_name == "HAMPSHIRE POLICE") |>
+  group_by(race) |> 
+  summarise( 
+    total_stops = n(), 
+    searches = sum(vehicle_search_conducted == "Yes", na.rm = TRUE),
+    search_rate = searches/ total_stops * 100 
+  ) 
+
+hampshire_kane_search_rates
+```
+
+###### West Dundee Police 
+
+```{r}
+westdundee_pop <- data.frame( 
+  race = c("White", "Black", "Hispanic", "Asian", "American Indian", "NHPI"),
+  population_pct = c(77.8, 3, 11.3, 5.8, 0.5, 0)
+)
+```
+
+
+```{r}
+westdundee_kane <- kane_law |> 
+  filter(agency_name == "WEST DUNDEE POLICE") |>
+  count(race) |> 
+  mutate(stop_pct = n/sum(n) * 100)
+
+westdundee_kane <- westdundee_kane |> 
+  left_join(westdundee_pop, by ="race")
+
+westdundee_kane
+```
+
+```{r}
+westdundee_kane_search_rates <- kane_law |>
+  filter(agency_name == "WEST DUNDEE POLICE") |>
+  group_by(race) |> 
+  summarise( 
+    total_stops = n(), 
+    searches = sum(vehicle_search_conducted == "Yes", na.rm = TRUE),
+    search_rate = searches/ total_stops * 100 
+  ) 
+
+westdundee_kane_search_rates
+```
+
+
+#####  McHenry County 
+
+```{r}
+mchenry_agencies <- toupper(c(
+  "Algonquin Police",
+  "Barrington Hills Police",
+  "Bull Valle Policey",
+  "Cary Police",
+  "Crystal Lake Police",
+  "Fox Lake Police",
+  "Fox River Grove Police",
+  "Harvard Police",
+  "Hebron Police",
+  "Holiday Hills Police",
+  "Huntley Police",
+  "Island Lake Police",
+  "Johnsburg Police",
+  "Lake in the Hills Police",
+  "Lakemoor Police",
+  "Marengo Police",
+  "McHenry Police",
+  "McHenry County Sheriff",
+  "McHenry County Conservation District Police",
+  "McHenry County College Police",
+  "Oakwood Hills Police",
+  "Prairie Grove Police",
+  "Richmond Police",
+  "Ringwood Police",
+  "Spring Grove Police",
+  "Wonder Lake Police",
+  "Woodstock Police"
+))
+
+```
+
+
+```{r}
+mchenry_law <- traffic_24 %>%
+  mutate(agency_name = str_squish(agency_name)) %>%
+  filter(agency_name %in% mchenry_agencies)
+```
+
+```{r}
+mchenry_law %>%
+  count(agency_name, sort = TRUE)
+```
+
+```{r}
+mchenry_pop <- data.frame( 
+  race = c("White", "Black", "Hispanic", "Asian", "American Indian", "NHPI"),
+  population_pct = c(89.2, 2.2, 17.4, 3.6, 1.4, 0.1)
+)
+```
+
+```{r}
+## getting the traffic stop percentage by each race, bringing in lake county population percentage 
+mchenry_stops <- mchenry_law %>%
+  count(race, sort = TRUE) |> 
+  mutate(stop_pct = n / sum(n) * 100)
+
+mchenry_stops <- mchenry_stops |> 
+  left_join(mchenry_pop, by ="race")
+
+mchenry_stops
+```
+
+- Black and Hispanic and Asian drivers are overrepresented in traffic stops relative to their share of the population. White drivers are underrepresented in traffic stops relative to their share of the population.
+
+
+```{r}
+## reformatting it 
+mchenry_plot <- mchenry_stops %>%
+  select(race, stop_pct, population_pct) %>%
+  pivot_longer(
+    cols = c(stop_pct, population_pct),
+    names_to = "type",
+    values_to = "percent"
+  )
+
+```
+
+```{r}
+## graphing it 
+ggplot(mchenry_plot, aes(x = race, y = percent, fill = type)) +
+  geom_col(position = "dodge") +
+  scale_fill_manual(values = c(
+    "stop_pct" = "grey70",
+    "population_pct" = "#B22222"
+  )) +
+  labs(
+    title = "Traffic Stops vs Population in McHenry County",
+    x = "Race",
+    y = "Percent",
+    fill = "Category"
+  ) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+```{r}
+### creating a new data table that has the total number of stops by race and then getting the number of searches that was conducted, creating a rate by taking searches divided by total stops and multiplying by 100 to get a percentage
+mchenry_search_rates <- mchenry_law |>
+  group_by(race) |> 
+  summarise( 
+    total_stops = n(), 
+    searches = sum(vehicle_search_conducted == "Yes", na.rm = TRUE),
+    search_rate = searches/ total_stops * 100 
+  ) 
+
+
+mchenry_search_rates
+```
+
+- Black drivers have the highest search rates (4.8), followed by NHPI drivers (small numbers, but 3.2) and then Hispanic drivers (2.7) and , and than white drivers (1.7). 
+
+```{r}
+ggplot(mchenry_search_rates, aes(x = race, y = search_rate)) +
+  geom_col(fill = "#B22222") +
+  labs(
+    title = "Vehicle Search Rate by Race (Kane County)",
+    x = "Race",
+    y = "Search Rate (%)"
+  ) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+###### Top 3 McHenry County Law Enforcment Agencies
+
+- CRYSTAL LAKE POLICE	8676			
+- MCHENRY COUNTY SHERIFF	8232			
+- MCHENRY POLICE	6666	
+
+###### Crystal Lake Police 
+
+```{r}
+crystal_lake_pop <- data.frame( 
+  race = c("White", "Black", "Hispanic", "Asian", "American Indian", "NHPI"),
+  population_pct = c(81, 0.6, 13.8, 3.9, 0.3, 0)
+)
+```
+
+
+```{r}
+crystal_lake_mchenry <- mchenry_law |> 
+  filter(agency_name == "CRYSTAL LAKE POLICE") |>
+  count(race) |> 
+  mutate(stop_pct = n/sum(n) * 100)
+
+crystal_lake_mchenry <- crystal_lake_mchenry |> 
+  left_join(crystal_lake_pop, by ="race")
+
+crystal_lake_mchenry
+```
+
+- Black and Hispanic drivers are overrepresented in traffic stops relative to their share of the population, while White and Asian drivers are underrepresented. 
+
+```{r}
+## graphing it 
+crystal_lake_mchenry_plot <- crystal_lake_mchenry %>%
+  select(race, stop_pct, population_pct) %>%
+  pivot_longer(
+    cols = c(stop_pct, population_pct),
+    names_to = "type",
+    values_to = "percent"
+  )
+
+```
+
+```{r}
+## graphing it 
+ggplot(crystal_lake_mchenry_plot, aes(x = race, y = percent, fill = type)) +
+  geom_col(position = "dodge") +
+  scale_fill_manual(values = c(
+    "stop_pct" = "grey70",
+    "population_pct" = "#B22222"
+  )) +
+  labs(
+    title = "Crystal Lake Police Traffic Stops vs Population",
+    x = "Race",
+    y = "Percent",
+    fill = "Category"
+  ) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+
+```{r}
+### creating a new data table that has the total number of stops by race and then getting the number of searches that was conducted, creating a rate by taking searches divided by total stops and multiplying by 100 to get a percentage
+crystal_lake_search_rates <- mchenry_law |>
+  filter(agency_name == "CRYSTAL LAKE POLICE") |>
+  group_by(race) |> 
+  summarise( 
+    total_stops = n(), 
+    searches = sum(vehicle_search_conducted == "Yes", na.rm = TRUE),
+    search_rate = searches/ total_stops * 100 
+  ) 
+
+crystal_lake_search_rates
+```
+
+- Black drivers have the highest search rates (5.7), followed by Hispanic drivers (2.7) and then white drivers (1.3).  
+
+
+```{r}
+ggplot(crystal_lake_search_rates, aes(x = race, y = search_rate)) +
+  geom_col(fill = "#B22222") +
+  labs(
+    title = "Crystal Lake Vehicle Search Rate by Race",
+    x = "Race",
+    y = "Search Rate (%)"
+  ) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+###### McHenry County Sheriff
+
+```{r}
+mchenry_pop <- data.frame( 
+  race = c("White", "Black", "Hispanic", "Asian", "American Indian", "NHPI"),
+  population_pct = c(89.2, 2.2, 17.4, 3.6, 1.4, 0.1)
+)
+```
+
+
+```{r}
+mchenry_county <- mchenry_law |> 
+  filter(agency_name == "MCHENRY COUNTY SHERIFF") |>
+  count(race) |> 
+  mutate(stop_pct = n/sum(n) * 100)
+
+mchenry_county <- mchenry_county |> 
+  left_join(mchenry_pop, by ="race")
+
+mchenry_county
+```
+
+- Black and Hispanic drivers are overrepresented in traffic stops relative to their share of the population, while White and Asian drivers are underrepresented. 
+
+```{r}
+## graphing it 
+mchenry_county_plot <- mchenry_county %>%
+  select(race, stop_pct, population_pct) %>%
+  pivot_longer(
+    cols = c(stop_pct, population_pct),
+    names_to = "type",
+    values_to = "percent"
+  )
+
+```
+
+```{r}
+## graphing it 
+ggplot(mchenry_county_plot, aes(x = race, y = percent, fill = type)) +
+  geom_col(position = "dodge") +
+  scale_fill_manual(values = c(
+    "stop_pct" = "grey70",
+    "population_pct" = "#B22222"
+  )) +
+  labs(
+    title = "McHenry County Sheriff Traffic Stops vs Population",
+    x = "Race",
+    y = "Percent",
+    fill = "Category"
+  ) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+
+```{r}
+### creating a new data table that has the total number of stops by race and then getting the number of searches that was conducted, creating a rate by taking searches divided by total stops and multiplying by 100 to get a percentage
+mchenry_county_search_rates <- mchenry_law |>
+  filter(agency_name == "MCHENRY COUNTY SHERIFF") |>
+  group_by(race) |> 
+  summarise( 
+    total_stops = n(), 
+    searches = sum(vehicle_search_conducted == "Yes", na.rm = TRUE),
+    search_rate = searches/ total_stops * 100 
+  ) 
+
+mchenry_county_search_rates
+```
+
+- Black drivers have the highest search rates (8.3), followed by NHPI (small numbers (6.7), then white drivers (5) and then Hispanic drivers (4.9). 
+
+```{r}
+ggplot(mchenry_county_search_rates, aes(x = race, y = search_rate)) +
+  geom_col(fill = "#B22222") +
+  labs(
+    title = "McHenry County Vehicle Search Rate by Race",
+    x = "Race",
+    y = "Search Rate (%)"
+  ) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+###### McHenry Police 
+
+```{r}
+## bringing in McHenry City data 
+mchenry_city_pop <- data.frame( 
+  race = c("White", "Black", "Hispanic", "Asian", "American Indian", "NHPI"),
+  population_pct = c(83.7, 0.6, 15.8, 1.7, 0.3, 0.1)
+)
+```
+
+
+```{r}
+mchenry_city <- mchenry_law |> 
+  filter(agency_name == "MCHENRY POLICE") |>
+  count(race) |> 
+  mutate(stop_pct = n/sum(n) * 100)
+
+mchenry_city <- mchenry_city |> 
+  left_join(mchenry_city_pop, by ="race")
+
+mchenry_city
+```
+
+- Black and Hispanic drivers are overrepresented in traffic stops relative to their share of the population, while White and Asian drivers are underrepresented. 
+
+```{r}
+## graphing it 
+mchenry_city_plot <- mchenry_city %>%
+  select(race, stop_pct, population_pct) %>%
+  pivot_longer(
+    cols = c(stop_pct, population_pct),
+    names_to = "type",
+    values_to = "percent"
+  )
+
+```
+
+```{r}
+## graphing it 
+ggplot(mchenry_city_plot, aes(x = race, y = percent, fill = type)) +
+  geom_col(position = "dodge") +
+  scale_fill_manual(values = c(
+    "stop_pct" = "grey70",
+    "population_pct" = "#B22222"
+  )) +
+  labs(
+    title = "McHenry Police Traffic Stops vs Population",
+    x = "Race",
+    y = "Percent",
+    fill = "Category"
+  ) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+
+```{r}
+### creating a new data table that has the total number of stops by race and then getting the number of searches that was conducted, creating a rate by taking searches divided by total stops and multiplying by 100 to get a percentage
+mchenry_city_search_rates <- mchenry_law |>
+  filter(agency_name == "MCHENRY POLICE") |>
+  group_by(race) |> 
+  summarise( 
+    total_stops = n(), 
+    searches = sum(vehicle_search_conducted == "Yes", na.rm = TRUE),
+    search_rate = searches/ total_stops * 100 
+  ) 
+
+mchenry_city_search_rates
+```
+
+- NHPI has the highest search rate  (small numbers (20), followed by Black drivers have the highest search rates (1.8), then white drivers (0.8) and then Hispanic drivers (0.7). 
+
+```{r}
+ggplot(mchenry_city_search_rates, aes(x = race, y = search_rate)) +
+  geom_col(fill = "#B22222") +
+  labs(
+    title = "McHenry Police Vehicle Search Rate by Race",
+    x = "Race",
+    y = "Search Rate (%)"
+  ) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+##### Will County 
+
+```{r}
+will_agencies <- toupper(c( 
+  "Will County Sheriff",
+  "Woodridge Police",
+  "Wilmington Police",
+  "University Park Police",
+  "Tinley Park Police",
+  "Steger Police",
+  "Shorewood Police",
+  "Romeoville Police",
+  "Rockdale Police",
+  "Plainfield Police",
+  "Peotone Police",
+  "Orland Park Police",
+  "New Lenox Police",
+  "Monee Police",
+  "Mokena Police",
+  "Manhattan Police",
+  "Lockport Police",
+  "Lemont Police",
+  "Joliet Police",
+  "Homer Glen Police",
+  "Frankfort Police",
+  "Elwood Police",
+  "Coal City Police",
+  "Channahon Police",
+  "Braidwood Police",
+  "Bolingbrook Police",
+  "Beecher Police",
+  "Crest Hill Police"
+  
+  
+  
+  
+  ))
+```
+
+```{r}
+will_law <- traffic_24 %>%
+  mutate(agency_name = str_squish(agency_name)) %>%
+  filter(agency_name %in% will_agencies)
+```
+
+```{r}
+will_law %>%
+  count(agency_name, sort = TRUE)
+```
+
+```{r}
+will_pop <- data.frame( 
+  race = c("White", "Black", "Hispanic", "Asian", "American Indian", "NHPI"),
+  population_pct = c(74, 12.9, 21.1, 7.8, 1.6, 0.1)
+)
+```
+
+```{r}
+## getting the traffic stop percentage by each race, bringing in lake county population percentage 
+will_stops <- will_law %>%
+  count(race, sort = TRUE) |> 
+  mutate(stop_pct = n / sum(n) * 100)
+
+will_stops <- will_stops |> 
+  left_join(will_pop, by ="race")
+
+will_stops
+```
+
+- Black and Hispanic drivers are overrepresented in traffic stops relative to their share of the population. Whiteand Asian drivers are underrepresented in traffic stops relative to their share of the population.
+
+
+```{r}
+## reformatting it 
+will_plot <- will_stops %>%
+  select(race, stop_pct, population_pct) %>%
+  pivot_longer(
+    cols = c(stop_pct, population_pct),
+    names_to = "type",
+    values_to = "percent"
+  )
+
+```
+
+```{r}
+## graphing it 
+ggplot(will_plot, aes(x = race, y = percent, fill = type)) +
+  geom_col(position = "dodge") +
+  scale_fill_manual(values = c(
+    "stop_pct" = "grey70",
+    "population_pct" = "#B22222"
+  )) +
+  labs(
+    title = "Traffic Stops vs Population in Will County",
+    x = "Race",
+    y = "Percent",
+    fill = "Category"
+  ) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+```{r}
+### creating a new data table that has the total number of stops by race and then getting the number of searches that was conducted, creating a rate by taking searches divided by total stops and multiplying by 100 to get a percentage
+will_search_rates <- will_law |>
+  group_by(race) |> 
+  summarise( 
+    total_stops = n(), 
+    searches = sum(vehicle_search_conducted == "Yes", na.rm = TRUE),
+    search_rate = searches/ total_stops * 100 
+  ) 
+
+
+will_search_rates
+```
+
+- Black drivers have the highest search rates (5.3), followed by NHPI drivers (small numbers, but 4.9) and then Hispanic drivers (3.5) and , and than white drivers (1.7).
+
+```{r}
+ggplot(will_search_rates, aes(x = race, y = search_rate)) +
+  geom_col(fill = "#B22222") +
+  labs(
+    title = "Vehicle Search Rate by Race (Will County)",
+    x = "Race",
+    y = "Search Rate (%)"
+  ) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+###### Top 3 Will County Law Enforcment Agencies
+
+- BOLINGBROOK POLICE	19289			
+- JOLIET POLICE	11050			
+- ROMEOVILLE POLICE	9933	
+
+###### Bolingbrook Police 
+
+```{r}
+## bringing in McHenry City data 
+bolingbrook_pop <- data.frame( 
+  race = c("White", "Black", "Hispanic", "Asian", "American Indian", "NHPI"),
+  population_pct = c(39.1, 16, 28.9, 14.3, 1, 0)
+)
+```
+
+
+```{r}
+bolingbrook_city <- will_law |> 
+  filter(agency_name == "BOLINGBROOK POLICE") |>
+  count(race) |> 
+  mutate(stop_pct = n/sum(n) * 100)
+
+bolingbrook_city <- bolingbrook_city|> 
+  left_join(bolingbrook_pop, by ="race")
+
+bolingbrook_city
+```
+
+- Black and Hispanic drivers are overrepresented in traffic stops relative to their share of the population, while White and Asian drivers are underrepresented. 
+
+```{r}
+## graphing it 
+bolingbrook_city_plot <- bolingbrook_city %>%
+  select(race, stop_pct, population_pct) %>%
+  pivot_longer(
+    cols = c(stop_pct, population_pct),
+    names_to = "type",
+    values_to = "percent"
+  )
+
+```
+
+```{r}
+## graphing it 
+ggplot(bolingbrook_city_plot, aes(x = race, y = percent, fill = type)) +
+  geom_col(position = "dodge") +
+  scale_fill_manual(values = c(
+    "stop_pct" = "grey70",
+    "population_pct" = "#B22222"
+  )) +
+  labs(
+    title = "Bolingbrook Police Traffic Stops vs Population",
+    x = "Race",
+    y = "Percent",
+    fill = "Category"
+  ) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+
+```{r}
+### creating a new data table that has the total number of stops by race and then getting the number of searches that was conducted, creating a rate by taking searches divided by total stops and multiplying by 100 to get a percentage
+bolingbrook_search_rates <- will_law |>
+  filter(agency_name == "BOLINGBROOK POLICE") |>
+  group_by(race) |> 
+  summarise( 
+    total_stops = n(), 
+    searches = sum(vehicle_search_conducted == "Yes", na.rm = TRUE),
+    search_rate = searches/ total_stops * 100 
+  ) 
+
+bolingbrook_search_rates
+```
+
+- NHPI has the highest search rate  (small numbers (7.7), followed by Black drivers have the highest search rates (5.4), then Hispanic drivers (3) and then white drivers (1.4). 
+
+```{r}
+ggplot(bolingbrook_search_rates, aes(x = race, y = search_rate)) +
+  geom_col(fill = "#B22222") +
+  labs(
+    title = "Bolingbrook Police Vehicle Search Rate by Race",
+    x = "Race",
+    y = "Search Rate (%)"
+  ) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+
+###### Joliet Police 
+
+```{r}
+## bringing in McHenry City data 
+joliet_pop <- data.frame( 
+  race = c("White", "Black", "Hispanic", "Asian", "American Indian", "NHPI"),
+  population_pct = c(49.9, 16.3, 34.2, 2.5, 0.0, 0)
+)
+```
+
+
+```{r}
+joliet_city <- will_law |> 
+  filter(agency_name == "JOLIET POLICE") |>
+  count(race) |> 
+  mutate(stop_pct = n/sum(n) * 100)
+
+joliet_city <- joliet_city |> 
+  left_join(joliet_pop, by ="race")
+
+joliet_city
+```
+
+- Black and Hispanic drivers are overrepresented in traffic stops relative to their share of the population, while White and Asian drivers are underrepresented. 
+
+```{r}
+## graphing it 
+joliet_plot <- joliet_city %>%
+  select(race, stop_pct, population_pct) %>%
+  pivot_longer(
+    cols = c(stop_pct, population_pct),
+    names_to = "type",
+    values_to = "percent"
+  )
+
+```
+
+```{r}
+## graphing it 
+ggplot(joliet_plot, aes(x = race, y = percent, fill = type)) +
+  geom_col(position = "dodge") +
+  scale_fill_manual(values = c(
+    "stop_pct" = "grey70",
+    "population_pct" = "#B22222"
+  )) +
+  labs(
+    title = "Joliet Police Traffic Stops vs Population",
+    x = "Race",
+    y = "Percent",
+    fill = "Category"
+  ) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+
+```{r}
+### creating a new data table that has the total number of stops by race and then getting the number of searches that was conducted, creating a rate by taking searches divided by total stops and multiplying by 100 to get a percentage
+joliet_search_rates <- will_law |>
+  filter(agency_name == "JOLIET POLICE") |>
+  group_by(race) |> 
+  summarise( 
+    total_stops = n(), 
+    searches = sum(vehicle_search_conducted == "Yes", na.rm = TRUE),
+    search_rate = searches/ total_stops * 100 
+  ) 
+
+joliet_search_rates
+```
+
+- Black drivers have the highest search rate (11.7), followed by NHPI  (small numbers 10.5), then American Indian (small numbers 10), and then Hispanic (7.4), and then white drivers (3.4). 
+
+```{r}
+ggplot(joliet_search_rates, aes(x = race, y = search_rate)) +
+  geom_col(fill = "#B22222") +
+  labs(
+    title = "Joliet Police Vehicle Search Rate by Race",
+    x = "Race",
+    y = "Search Rate (%)"
+  ) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+###### Romeoville Police 
+
+```{r}
+## bringing in McHenry City data 
+romeoville_pop <- data.frame( 
+  race = c("White", "Black", "Hispanic", "Asian", "American Indian", "NHPI"),
+  population_pct = c(44.9, 14.3, 35.7, 6.5, 1, 0)
+)
+```
+
+
+```{r}
+romeoville_city <- will_law |> 
+  filter(agency_name == "ROMEOVILLE POLICE") |>
+  count(race) |> 
+  mutate(stop_pct = n/sum(n) * 100)
+
+romeoville_city <- romeoville_city |> 
+  left_join(romeoville_pop, by ="race")
+
+romeoville_city
+```
+
+- Black and Hispanic drivers are overrepresented in traffic stops relative to their share of the population, while White and Asian drivers are underrepresented. 
+
+```{r}
+## graphing it 
+romeoville_plot <- romeoville_city %>%
+  select(race, stop_pct, population_pct) %>%
+  pivot_longer(
+    cols = c(stop_pct, population_pct),
+    names_to = "type",
+    values_to = "percent"
+  )
+
+```
+
+```{r}
+## graphing it 
+ggplot(romeoville_plot, aes(x = race, y = percent, fill = type)) +
+  geom_col(position = "dodge") +
+  scale_fill_manual(values = c(
+    "stop_pct" = "grey70",
+    "population_pct" = "#B22222"
+  )) +
+  labs(
+    title = "Romeoville Police Traffic Stops vs Population",
+    x = "Race",
+    y = "Percent",
+    fill = "Category"
+  ) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+
+```{r}
+### creating a new data table that has the total number of stops by race and then getting the number of searches that was conducted, creating a rate by taking searches divided by total stops and multiplying by 100 to get a percentage
+romeoville_search_rates <- will_law |>
+  filter(agency_name == "ROMEOVILLE POLICE") |>
+  group_by(race) |> 
+  summarise( 
+    total_stops = n(), 
+    searches = sum(vehicle_search_conducted == "Yes", na.rm = TRUE),
+    search_rate = searches/ total_stops * 100 
+  ) 
+
+romeoville_search_rates
+```
+
+- American Indian has the highest search rate (small numbers 2.4), followed by Black drivers (2.38), and then Hispanic drivers (1.8), and then Asian drivers (0.95), and then white drivers (0.94). 
+
+
+```{r}
+ggplot(romeoville_search_rates, aes(x = race, y = search_rate)) +
+  geom_col(fill = "#B22222") +
+  labs(
+    title = "Romeoville Vehicle Search Rate by Race",
+    x = "Race",
+    y = "Search Rate (%)"
+  ) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+###### Rockdale Police (row 118 in sheets)
+
+```{r}
+## bringing in McHenry City data 
+rockdale_pop <- data.frame( 
+  race = c("White", "Black", "Hispanic", "Asian", "American Indian", "NHPI"),
+  population_pct = c(39.5, 3.25, 13.1, 1.84, 5.6, 0)
+)
+```
+
+
+```{r}
+rockdale_city <- will_law |> 
+  filter(agency_name == "ROCKDALE POLICE") |>
+  count(race) |> 
+  mutate(stop_pct = n/sum(n) * 100)
+
+rockdale_city <- rockdale_city |> 
+  left_join(rockdale_pop, by ="race")
+
+rockdale_city
+```
+
+```{r}
+### creating a new data table that has the total number of stops by race and then getting the number of searches that was conducted, creating a rate by taking searches divided by total stops and multiplying by 100 to get a percentage
+rockdale_search_rates <- will_law |>
+  filter(agency_name == "ROCKDALE POLICE") |>
+  group_by(race) |> 
+  summarise( 
+    total_stops = n(), 
+    searches = sum(vehicle_search_conducted == "Yes", na.rm = TRUE),
+    search_rate = searches/ total_stops * 100 
+  ) 
+
+rockdale_search_rates
+```
+
+##### Cook County 
+
+```{r}
+cook_agencies <- toupper(c(
+  "Alsip Police",
+  "Arlington Heights Police",
+  "Barrington Police",
+  "Bedford Park Police",
+  "Bellwood Police",
+  "Berkeley Police",
+  "Berwyn Police",
+  "Blue Island Police",
+  "Bridgeview Police",
+  "Broadview Police",
+  "Brookfield Police",
+  "Buffalo Grove Police",
+  "Burbank Police",
+  "Burnham Police",
+  "Calumet City Police",
+  "Chicago Police",
+  "Chicago Heights Police",
+  "Chicago Ridge Police",
+  "Cicero Police",
+  "Country Club Hills Police",
+  "Countryside Police",
+  "Crestwood Police",
+  "Des Plaines Police",
+  "Dolton Police",
+  "East Dundee Police",
+  "Elk Grove Village Police",
+  "Elmwood Park Police",
+  "Evanston Police",
+  "Evergreen Park Police",
+  "Flossmoor Police",
+  "Forest Park Police",
+  "Franklin Park Police",
+  "Glencoe Police",
+  "Glenview Police",
+  "Golf Police",
+  "Harvey Police",
+  "Harwood Heights Police",
+  "Hazel Crest Police",
+  "Hickory Hills Police",
+  "Hillside Police",
+  "Hines Police",
+  "Hodgkins Police",
+  "Hoffman Estates Police",
+  "Hometown Police",
+  "Homewood Police",
+  "Indian Head Park Police",
+  "Justice Police",
+  "Kenilworth Police",
+  "La Grange Police",
+  "La Grange Park Police",
+  "Lansing Police",
+  "Lincolnwood Police",
+  "Lyons Police",
+  "Markham Police",
+  "Maywood Police",
+  "McCook Police",
+  "Melrose Park Police",
+  "Midlothian Police",
+  "Morton Grove Police",
+  "Mount Prospect Police",
+  "Niles Police",
+  "Norridge Police",
+  "Northbrook Police",
+  "Northfield Police",
+  "Oak Forest Police",
+  "Oak Lawn Police",
+  "Oak Park Police",
+  "Olympia Fields Police",
+  "Orland Park Police",
+  "Palatine Police",
+  "Palos Heights Police",
+  "Palos Hills Police",
+  "Palos Park Police",
+  "Park Forest Police",
+  "Park Ridge Police",
+  "Phoenix Police",
+  "Posen Police",
+  "Prospect Heights Police",
+  "Richton Park Police",
+  "River Forest Police",
+  "River Grove Police",
+  "Riverdale Police",
+  "Riverside Police",
+  "Robbins Police",
+  "Rolling Meadows Police",
+  "Rosemont Police",
+  "Schaumburg Police",
+  "Schiller Park Police",
+  "Skokie Police",
+  "South Barrington Police",
+  "South Chicago Heights Police",
+  "South Holland Police",
+  "Stickney Police",
+  "Stone Park Police",
+  "Streamwood Police",
+  "Summit Police",
+  "Thornton Police",
+  "Tinley Park Police",
+  "Westchester Police",
+  "Western Springs Police",
+  "Westmont Police",
+  "Wheeling Police",
+  "Willow Springs Police",
+  "Wilmette Police",
+  "Winnetka Police",
+  "Worth Police",
+  "Cook County Sheriff",
+  "Cook County Forest Preserve Police"
+))
+```
+
+
+```{r}
+cook_law <- traffic_24 %>%
+  mutate(agency_name = str_squish(agency_name)) %>%
+  filter(agency_name %in% cook_agencies)
+```
+
+```{r}
+cook_law %>%
+  count(agency_name, sort = TRUE)
+```
+
+```{r}
+cook_pop <- data.frame( 
+  race = c("White", "Black", "Hispanic", "Asian", "American Indian", "NHPI"),
+  population_pct = c(61.2, 22.8, 27.8, 9.1, 3, 0.1)
+)
+```
+
+```{r}
+## getting the traffic stop percentage by each race, bringing in lake county population percentage 
+cook_stops <- cook_law %>%
+  count(race, sort = TRUE) |> 
+  mutate(stop_pct = n / sum(n) * 100)
+
+cook_stops <- cook_stops |> 
+  left_join(cook_pop, by ="race")
+
+cook_stops
+```
+
+- Black drivers are overrepresented in traffic stops relative to their share of the population. White, Hispanic, American Indian NHPI and Asian drivers are underrepresented in traffic stops relative to their share of the population.
+
+
+```{r}
+## reformatting it 
+cook_plot <- cook_stops %>%
+  select(race, stop_pct, population_pct) %>%
+  pivot_longer(
+    cols = c(stop_pct, population_pct),
+    names_to = "type",
+    values_to = "percent"
+  )
+
+```
+
+```{r}
+## graphing it 
+ggplot(cook_plot, aes(x = race, y = percent, fill = type)) +
+  geom_col(position = "dodge") +
+  scale_fill_manual(values = c(
+    "stop_pct" = "grey70",
+    "population_pct" = "#B22222"
+  )) +
+  labs(
+    title = "Traffic Stops vs Population in Cook County",
+    x = "Race",
+    y = "Percent",
+    fill = "Category"
+  ) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+```{r}
+### creating a new data table that has the total number of stops by race and then getting the number of searches that was conducted, creating a rate by taking searches divided by total stops and multiplying by 100 to get a percentage
+cook_search_rates <- cook_law |>
+  group_by(race) |> 
+  summarise( 
+    total_stops = n(), 
+    searches = sum(vehicle_search_conducted == "Yes", na.rm = TRUE),
+    search_rate = searches/ total_stops * 100 
+  ) 
+
+
+cook_search_rates
+```
+
+- Black drivers have the highest search rates (5.2), followed by Hispanic drivers (3.8), followed by NHPI drivers (small numbers, but 2.4), and than white drivers (1.1).
+
+```{r}
+ggplot(cook_search_rates, aes(x = race, y = search_rate)) +
+  geom_col(fill = "#B22222") +
+  labs(
+    title = "Vehicle Search Rate by Race (Cook County)",
+    x = "Race",
+    y = "Search Rate (%)"
+  ) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+###### Top 3 Cook County Law Enforcment Agencies
+
+- COOK COUNTY SHERIFF	56095			
+- SCHAUMBURG POLICE	23916			
+- PALATINE POLICE	19314	
+
+###### Cook County Sheriff 
+
+```{r}
+cook_pop <- data.frame( 
+  race = c("White", "Black", "Hispanic", "Asian", "American Indian", "NHPI"),
+  population_pct = c(61.2, 22.8, 27.8, 9.1, 3, 0.1)
+)
+```
+
+
+```{r}
+cook_sheriff <- cook_law |> 
+  filter(agency_name == "COOK COUNTY SHERIFF") |>
+  count(race) |> 
+  mutate(stop_pct = n/sum(n) * 100)
+
+cook_sheriff <- cook_sheriff|> 
+  left_join(cook_pop, by ="race")
+
+cook_sheriff
+```
+
+- Black and Hispanic drivers are overrepresented in traffic stops relative to their share of the population, while White and Asian drivers are underrepresented. 
+
+```{r}
+## graphing it 
+cook_sheriff_plot <- cook_sheriff %>%
+  select(race, stop_pct, population_pct) %>%
+  pivot_longer(
+    cols = c(stop_pct, population_pct),
+    names_to = "type",
+    values_to = "percent"
+  )
+
+```
+
+```{r}
+## graphing it 
+ggplot(cook_sheriff_plot, aes(x = race, y = percent, fill = type)) +
+  geom_col(position = "dodge") +
+  scale_fill_manual(values = c(
+    "stop_pct" = "grey70",
+    "population_pct" = "#B22222"
+  )) +
+  labs(
+    title = "Cook County Sheriff Traffic Stops vs Population",
+    x = "Race",
+    y = "Percent",
+    fill = "Category"
+  ) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+
+```{r}
+### creating a new data table that has the total number of stops by race and then getting the number of searches that was conducted, creating a rate by taking searches divided by total stops and multiplying by 100 to get a percentage
+cook_sheriff_search_rates <- cook_law |>
+  filter(agency_name == "COOK COUNTY SHERIFF") |>
+  group_by(race) |> 
+  summarise( 
+    total_stops = n(), 
+    searches = sum(vehicle_search_conducted == "Yes", na.rm = TRUE),
+    search_rate = searches/ total_stops * 100 
+  ) 
+
+cook_sheriff_search_rates
+```
+
+- Black drivers have the highest search rate (14) followed by NHPI drivers (small numbers 6.1), and then Hispanic drivers (4.5) and then American Indian (small numbers 2.2), and then White (1.1) 
+
+
+```{r}
+ggplot(cook_sheriff_search_rates, aes(x = race, y = search_rate)) +
+  geom_col(fill = "#B22222") +
+  labs(
+    title = "Cook County Sheriff Vehicle Search Rate by Race",
+    x = "Race",
+    y = "Search Rate (%)"
+  ) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+
+###### Schaumburg Police 
+
+```{r}
+schaumburg_pop <- data.frame( 
+  race = c("White", "Black", "Hispanic", "Asian", "American Indian", "NHPI"),
+  population_pct = c(53.7, 5.8, 12.7, 23.9, 0.5, 0)
+)
+```
+
+
+```{r}
+schaumburg_police_cook <- cook_law |> 
+  filter(agency_name == "SCHAUMBURG POLICE") |>
+  count(race) |> 
+  mutate(stop_pct = n/sum(n) * 100)
+
+schaumburg_police_cook <- schaumburg_police_cook |> 
+  left_join(schaumburg_pop, by ="race")
+
+schaumburg_police_cook
+```
+
+
+```{r}
+schaumburg_police_cook_search_rates <- cook_law |>
+  filter(agency_name == "SCHAUMBURG POLICE") |>
+  group_by(race) |> 
+  summarise( 
+    total_stops = n(), 
+    searches = sum(vehicle_search_conducted == "Yes", na.rm = TRUE),
+    search_rate = searches/ total_stops * 100 
+  ) 
+
+schaumburg_police_cook_search_rates 
+
+
+
+```
+
+
+###### Palatine Police 
+
+
+```{r}
+palatine_pop <- data.frame( 
+  race = c("White", "Black", "Hispanic", "Asian", "American Indian", "NHPI"),
+  population_pct = c(60.7, 4.6, 19.2, 12.7, 0.7, 0.4)
+)
+```
+
+
+```{r}
+palatine_police <- cook_law |> 
+  filter(agency_name == "PALATINE POLICE") |>
+  count(race) |> 
+  mutate(stop_pct = n/sum(n) * 100)
+
+palatine_police <- palatine_police |> 
+  left_join(palatine_pop, by ="race")
+
+palatine_police
+```
+
+```{r}
+palatine_police_search_rates <- cook_law |>
+  filter(agency_name == "PALATINE POLICE") |>
+  group_by(race) |> 
+  summarise( 
+    total_stops = n(), 
+    searches = sum(vehicle_search_conducted == "Yes", na.rm = TRUE),
+    search_rate = searches/ total_stops * 100 
+  ) 
+
+palatine_police_search_rates 
+
+```
+
+
+###### Wheeling Police 
+
+```{r}
+wheeling_pop <- data.frame( 
+  race = c("White", "Black", "Hispanic", "Asian", "American Indian", "NHPI"),
+  population_pct = c(49.1, 4, 28.1, 15.9, 1.2, 0)
+)
+```
+
+```{r}
+wheeling_police <- cook_law |> 
+  filter(agency_name == "WHEELING POLICE") |>
+  count(race) |> 
+  mutate(stop_pct = n/sum(n) * 100)
+
+wheeling_police <- wheeling_police |> 
+  left_join(wheeling_pop, by ="race")
+
+wheeling_police
+```
+
+```{r}
+wheeling_police_search_rates <- cook_law |>
+  filter(agency_name == "WHEELING POLICE") |>
+  group_by(race) |> 
+  summarise( 
+    total_stops = n(), 
+    searches = sum(vehicle_search_conducted == "Yes", na.rm = TRUE),
+    search_rate = searches/ total_stops * 100 
+  ) 
+
+wheeling_police_search_rates 
+
+```
+
+###### Evergreen Park Police 
+
+```{r}
+evergreenpark_pop <- data.frame( 
+  race = c("White", "Black", "Hispanic", "Asian", "American Indian", "NHPI"),
+  population_pct = c(49.8, 25.6, 17.6, 2.5, 0.6, 0)
+)
+```
+
+
+```{r}
+evergreenpark__police <- cook_law |> 
+  filter(agency_name == "EVERGREEN PARK POLICE") |>
+  count(race) |> 
+  mutate(stop_pct = n/sum(n) * 100)
+
+evergreenpark__police <- evergreenpark__police |> 
+  left_join(evergreenpark_pop, by ="race")
+
+evergreenpark__police
+```
+
+```{r}
+evergreenpark_police_search_rates <- cook_law |>
+  filter(agency_name == "EVERGREEN PARK POLICE") |>
+  group_by(race) |> 
+  summarise( 
+    total_stops = n(), 
+    searches = sum(vehicle_search_conducted == "Yes", na.rm = TRUE),
+    search_rate = searches/ total_stops * 100 
+  ) 
+
+evergreenpark_police_search_rates 
+
+```
+
+###### Oak Lawn Police 
+
+```{r}
+oaklawn_pop <- data.frame( 
+  race = c("White", "Black", "Hispanic", "Asian", "American Indian", "NHPI"),
+  population_pct = c(63.1, 8.9, 24, 1.7, 0.5, 0)
+)
+```
+
+
+```{r}
+oaklawn_police <- cook_law |> 
+  filter(agency_name == "OAK LAWN POLICE") |>
+  count(race) |> 
+  mutate(stop_pct = n/sum(n) * 100)
+
+oaklawn_police <- oaklawn_police |> 
+  left_join(oaklawn_pop, by ="race")
+
+oaklawn_police
+```
+
+```{r}
+oaklawn_police_search_rates <- cook_law |>
+  filter(agency_name == "OAK LAWN POLICE") |>
+  group_by(race) |> 
+  summarise( 
+    total_stops = n(), 
+    searches = sum(vehicle_search_conducted == "Yes", na.rm = TRUE),
+    search_rate = searches/ total_stops * 100 
+  ) 
+
+oaklawn_police_search_rates 
+
+```
+
+###### Mount Prospect Police 
+
+```{r}
+mountprospect_pop <- data.frame( 
+  race = c("White", "Black", "Hispanic", "Asian", "American Indian", "NHPI"),
+  population_pct = c(61, 2.5, 18.1, 15.5, 0.4, 0)
+)
+```
+
+
+```{r}
+mountprospect_police <- cook_law |> 
+  filter(agency_name == "MOUNT PROSPECT POLICE") |>
+  count(race) |> 
+  mutate(stop_pct = n/sum(n) * 100)
+
+mountprospect_police <- mountprospect_police |> 
+  left_join(mountprospect_pop, by ="race")
+
+mountprospect_police
+```
+
+```{r}
+mountprospect_police_search_rates <- cook_law |>
+  filter(agency_name == "MOUNT PROSPECT POLICE") |>
+  group_by(race) |> 
+  summarise( 
+    total_stops = n(), 
+    searches = sum(vehicle_search_conducted == "Yes", na.rm = TRUE),
+    search_rate = searches/ total_stops * 100 
+  ) 
+
+mountprospect_police_search_rates 
+
+```
+###### Elk Grove Village Police 
+
+```{r}
+elkgrove_pop <- data.frame( 
+  race = c("White", "Black", "Hispanic", "Asian", "American Indian", "NHPI"),
+  population_pct = c(67.9, 3, 14.9, 12.1, 0.4, 0)
+)
+```
+
+```{r}
+elkgrove_police <- cook_law |> 
+  filter(agency_name == "ELK GROVE VILLAGE POLICE") |>
+  count(race) |> 
+  mutate(stop_pct = n/sum(n) * 100)
+
+elkgrove_police <- elkgrove_police |> 
+  left_join(elkgrove_pop, by ="race")
+
+elkgrove_police
+```
+
+```{r}
+elkgrove_police_search_rates <- cook_law |>
+  filter(agency_name == "ELK GROVE VILLAGE POLICE") |>
+  group_by(race) |> 
+  summarise( 
+    total_stops = n(), 
+    searches = sum(vehicle_search_conducted == "Yes", na.rm = TRUE),
+    search_rate = searches/ total_stops * 100 
+  ) 
+
+elkgrove_police_search_rates 
+
+```
+
+###### Alsip Police 
+
+```{r}
+alsip_pop <- data.frame( 
+  race = c("White", "Black", "Hispanic", "Asian", "American Indian", "NHPI"),
+  population_pct = c(40, 24.3, 28.6, 2.3, 1.5, 0)
+)
+```
+
+
+```{r}
+alsip_police <- cook_law |> 
+  filter(agency_name == "ALSIP POLICE") |>
+  count(race) |> 
+  mutate(stop_pct = n/sum(n) * 100)
+
+alsip_police <- alsip_police |> 
+  left_join(alsip_pop, by ="race")
+
+alsip_police
+```
+
+```{r}
+alsip_police_search_rates <- cook_law |>
+  filter(agency_name == "ALSIP POLICE") |>
+  group_by(race) |> 
+  summarise( 
+    total_stops = n(), 
+    searches = sum(vehicle_search_conducted == "Yes", na.rm = TRUE),
+    search_rate = searches/ total_stops * 100 
+  ) 
+
+alsip_police_search_rates 
+
+```
+
+###### Buffalo Grove Police 
+
+```{r}
+buffalo_pop <- data.frame( 
+  race = c("White", "Black", "Hispanic", "Asian", "American Indian", "NHPI"),
+  population_pct = c(58.2, 3.4, 5.8, 29.8, 0.5, 0.1)
+)
+```
+
+
+```{r}
+buffalo_police_cook <- cook_law |> 
+  filter(agency_name == "BUFFALO GROVE POLICE") |>
+  count(race) |> 
+  mutate(stop_pct = n/sum(n) * 100)
+
+buffalo_police_cook <- buffalo_police_cook |> 
+  left_join(buffalo_pop, by ="race")
+
+buffalo_police_cook
+```
+
+```{r}
+buffalo_cook_police_search_rates <- cook_law |>
+  filter(agency_name == "BUFFALO GROVE POLICE") |>
+  group_by(race) |> 
+  summarise( 
+    total_stops = n(), 
+    searches = sum(vehicle_search_conducted == "Yes", na.rm = TRUE),
+    search_rate = searches/ total_stops * 100 
+  ) 
+
+buffalo_cook_police_search_rates 
+
+```
+
+##### Hoffman Estates Police 
+
+```{r}
+hoffmanestates_pop <- data.frame( 
+  race = c("White", "Black", "Hispanic", "Asian", "American Indian", "NHPI"),
+  population_pct = c(47.9, 6.1, 17, 25.2, 0.4, 0)
+)
+```
+
+
+```{r}
+hoffmanestates_police <- cook_law |> 
+  filter(agency_name == "HOFFMAN ESTATES POLICE") |>
+  count(race) |> 
+  mutate(stop_pct = n/sum(n) * 100)
+
+hoffmanestates_police <- hoffmanestates_police |> 
+  left_join(hoffmanestates_pop, by ="race")
+
+hoffmanestates_police
+```
+
+```{r}
+hoffmanestates_police_search_rates <- cook_law |>
+  filter(agency_name == "HOFFMAN ESTATES POLICE") |>
+  group_by(race) |> 
+  summarise( 
+    total_stops = n(), 
+    searches = sum(vehicle_search_conducted == "Yes", na.rm = TRUE),
+    search_rate = searches/ total_stops * 100 
+  ) 
+
+hoffmanestates_police_search_rates 
+
+```
+
+###### Berwyn Police 
+
+```{r}
+berwyn_pop <- data.frame( 
+  race = c("White", "Black", "Hispanic", "Asian", "American Indian", "NHPI"),
+  population_pct = c(24.9, 7.7, 62.8, 3.9, 3.1, 0)
+)
+```
+
+
+```{r}
+berwyn_police <- cook_law |> 
+  filter(agency_name == "BERWYN POLICE") |>
+  count(race) |> 
+  mutate(stop_pct = n/sum(n) * 100)
+
+berwyn_police <- berwyn_police |> 
+  left_join(berwyn_pop, by ="race")
+
+berwyn_police
+```
+
+```{r}
+berwyn_police_search_rates <- cook_law |>
+  filter(agency_name == "BERWYN POLICE") |>
+  group_by(race) |> 
+  summarise( 
+    total_stops = n(), 
+    searches = sum(vehicle_search_conducted == "Yes", na.rm = TRUE),
+    search_rate = searches/ total_stops * 100 
+  ) 
+
+berwyn_police_search_rates 
+
+```
+
+##### Blue Island Police 
+
+```{r}
+blueisland_pop <- data.frame( 
+  race = c("White", "Black", "Hispanic", "Asian", "American Indian", "NHPI"),
+  population_pct = c(18, 30.8, 47.5, 0.8, 0.3, 0.3)
+)
+```
+
+
+```{r}
+blueisland_police <- cook_law |> 
+  filter(agency_name == "BLUE ISLAND POLICE") |>
+  count(race) |> 
+  mutate(stop_pct = n/sum(n) * 100)
+
+blueisland_police <- blueisland_police |> 
+  left_join(blueisland_pop, by ="race")
+
+blueisland_police
+```
+
+```{r}
+blueisland_police_search_rates <- cook_law |>
+  filter(agency_name == "BLUE ISLAND POLICE") |>
+  group_by(race) |> 
+  summarise( 
+    total_stops = n(), 
+    searches = sum(vehicle_search_conducted == "Yes", na.rm = TRUE),
+    search_rate = searches/ total_stops * 100 
+  ) 
+
+blueisland_police_search_rates 
+
+```
+
+###### Orland Park Police 
+
+```{r}
+orlandpark_pop <- data.frame( 
+  race = c("White", "Black", "Hispanic", "Asian", "American Indian", "NHPI"),
+  population_pct = c(77.3, 4, 10.7, 6.2, 0.2, 0.2)
+)
+```
+
+
+```{r}
+orlandpark_police <- cook_law |> 
+  filter(agency_name == "ORLAND PARK POLICE") |>
+  count(race) |> 
+  mutate(stop_pct = n/sum(n) * 100)
+
+orlandpark_police <- orlandpark_police |> 
+  left_join(orlandpark_pop, by ="race")
+
+orlandpark_police
+```
+
+```{r}
+orlandpark_police_search_rates <- cook_law |>
+  filter(agency_name == "ORLAND PARK POLICE") |>
+  group_by(race) |> 
+  summarise( 
+    total_stops = n(), 
+    searches = sum(vehicle_search_conducted == "Yes", na.rm = TRUE),
+    search_rate = searches/ total_stops * 100 
+  ) 
+
+orlandpark_police_search_rates 
+
+```
+
+###### Lansing Police 
+
+```{r}
+lansing_pop <- data.frame( 
+  race = c("White", "Black", "Hispanic", "Asian", "American Indian", "NHPI"),
+  population_pct = c(25.2, 51.9, 17.9, 2.2, 0.8, 0.1)
+)
+```
+
+
+```{r}
+lansing_police <- cook_law |> 
+  filter(agency_name == "LANSING POLICE") |>
+  count(race) |> 
+  mutate(stop_pct = n/sum(n) * 100)
+
+lansing_police <- lansing_police |> 
+  left_join(lansing_pop, by ="race")
+
+lansing_police
+```
+
+```{r}
+lansing_police_search_rates <- cook_law |>
+  filter(agency_name == "LANSING POLICE") |>
+  group_by(race) |> 
+  summarise( 
+    total_stops = n(), 
+    searches = sum(vehicle_search_conducted == "Yes", na.rm = TRUE),
+    search_rate = searches/ total_stops * 100 
+  ) 
+
+lansing_police_search_rates 
+
+```
+
+###### Bellwood Police 
+
+```{r}
+bellwood_pop <- data.frame( 
+  race = c("White", "Black", "Hispanic", "Asian", "American Indian", "NHPI"),
+  population_pct = c(2.6, 69.5, 27, 1, 0.5, 0)
+)
+```
+
+
+```{r}
+bellwood_police <- cook_law |> 
+  filter(agency_name == "BELLWOOD POLICE") |>
+  count(race) |> 
+  mutate(stop_pct = n/sum(n) * 100)
+
+bellwood_police <- bellwood_police |> 
+  left_join(bellwood_pop, by ="race")
+
+bellwood_police
+```
+
+```{r}
+bellwood_police_search_rates <- cook_law |>
+  filter(agency_name == "BELLWOOD POLICE") |>
+  group_by(race) |> 
+  summarise( 
+    total_stops = n(), 
+    searches = sum(vehicle_search_conducted == "Yes", na.rm = TRUE),
+    search_rate = searches/ total_stops * 100 
+  ) 
+
+bellwood_police_search_rates 
+
+```
+
+###### Skokie Police 
+
+```{r}
+skokie_pop <- data.frame( 
+  race = c("White", "Black", "Hispanic", "Asian", "American Indian", "NHPI"),
+  population_pct = c(48.6, 10.1, 11, 25.4, 0.3, 0)
+)
+```
+
+
+```{r}
+skokie_police <- cook_law |> 
+  filter(agency_name == "SKOKIE POLICE") |>
+  count(race) |> 
+  mutate(stop_pct = n/sum(n) * 100)
+
+skokie_police <- skokie_police |> 
+  left_join(skokie_pop, by ="race")
+
+skokie_police
+```
+
+```{r}
+skokie_police_search_rates <- cook_law |>
+  filter(agency_name == "SKOKIE POLICE") |>
+  group_by(race) |> 
+  summarise( 
+    total_stops = n(), 
+    searches = sum(vehicle_search_conducted == "Yes", na.rm = TRUE),
+    search_rate = searches/ total_stops * 100 
+  ) 
+
+skokie_police_search_rates 
+
+```
+
+###### Calumet City Police 
+
+```{r}
+calumetcity_pop <- data.frame( 
+  race = c("White", "Black", "Hispanic", "Asian", "American Indian", "NHPI"),
+  population_pct = c(5.6, 75.2, 16.3, 0.2, 0.1, 0.2)
+)
+```
+
+```{r}
+calumetcity_police <- cook_law |> 
+  filter(agency_name == "CALUMET CITY POLICE") |>
+  count(race) |> 
+  mutate(stop_pct = n/sum(n) * 100)
+
+calumetcity_police <- calumetcity_police |> 
+  left_join(calumetcity_pop, by ="race")
+
+calumetcity_police
+```
+
+```{r}
+calumetcity_police_search_rates <- cook_law |>
+  filter(agency_name == "CALUMET CITY POLICE") |>
+  group_by(race) |> 
+  summarise( 
+    total_stops = n(), 
+    searches = sum(vehicle_search_conducted == "Yes", na.rm = TRUE),
+    search_rate = searches/ total_stops * 100 
+  ) 
+
+calumetcity_police_search_rates 
+
+```
+
+###### Arlington Heights Police 
+
+```{r}
+arligtonheights_pop <- data.frame( 
+  race = c("White", "Black", "Hispanic", "Asian", "American Indian", "NHPI"),
+  population_pct = c(75, 2.4, 8.5, 10.4, 0.2, 0)
+)
+```
+
+```{r}
+arligtonheights_police <- cook_law |> 
+  filter(agency_name == "ARLINGTON HEIGHTS POLICE") |>
+  count(race) |> 
+  mutate(stop_pct = n/sum(n) * 100)
+
+arligtonheights_police <- arligtonheights_police |> 
+  left_join(arligtonheights_pop, by ="race")
+
+arligtonheights_police
+```
+
+```{r}
+arligtonheights_police_search_rates <- cook_law |>
+  filter(agency_name == "ARLINGTON HEIGHTS POLICE") |>
+  group_by(race) |> 
+  summarise( 
+    total_stops = n(), 
+    searches = sum(vehicle_search_conducted == "Yes", na.rm = TRUE),
+    search_rate = searches/ total_stops * 100 
+  ) 
+
+arligtonheights_police_search_rates 
+
+```
+
+###### Franklin Park Police 
+
+```{r}
+franklinpark_pop <- data.frame( 
+  race = c("White", "Black", "Hispanic", "Asian", "American Indian", "NHPI"),
+  population_pct = c(33.4, 0.8, 62.2, 2.3, 1.6, 0)
+)
+```
+
+```{r}
+franklinpark_police <- cook_law |> 
+  filter(agency_name == "FRANKLIN PARK POLICE") |>
+  count(race) |> 
+  mutate(stop_pct = n/sum(n) * 100)
+
+franklinpark_police <- franklinpark_police |> 
+  left_join(franklinpark_pop, by ="race")
+
+franklinpark_police
+```
+
+```{r}
+franklinpark_police_search_rates <- cook_law |>
+  filter(agency_name == "FRANKLIN PARK POLICE") |>
+  group_by(race) |> 
+  summarise( 
+    total_stops = n(), 
+    searches = sum(vehicle_search_conducted == "Yes", na.rm = TRUE),
+    search_rate = searches/ total_stops * 100 
+  ) 
+
+franklinpark_police_search_rates 
+
+```
+
+##### South Holland Police 
+
+```{r}
+southholland_pop <- data.frame( 
+  race = c("White", "Black", "Hispanic", "Asian", "American Indian", "NHPI"),
+  population_pct = c(10.2, 75.1, 10.4, 1, 0, 0)
+)
+```
+
+```{r}
+southholland_police <- cook_law |> 
+  filter(agency_name == "SOUTH HOLLAND POLICE") |>
+  count(race) |> 
+  mutate(stop_pct = n/sum(n) * 100)
+
+southholland_police <- southholland_police |> 
+  left_join(southholland_pop, by ="race")
+
+southholland_police
+```
+
+```{r}
+southholland_police_search_rates <- cook_law |>
+  filter(agency_name == "SOUTH HOLLAND POLICE") |>
+  group_by(race) |> 
+  summarise( 
+    total_stops = n(), 
+    searches = sum(vehicle_search_conducted == "Yes", na.rm = TRUE),
+    search_rate = searches/ total_stops * 100 
+  ) 
+
+southholland_police_search_rates 
+
+```
+
+###### Homewood Police 
+
+```{r}
+homewood_pop <- data.frame( 
+  race = c("White", "Black", "Hispanic", "Asian", "American Indian", "NHPI"),
+  population_pct = c(44.3, 43.3, 6.4, 1.4, 0.4, 0.4)
+)
+```
+
+```{r}
+homewood_police <- cook_law |> 
+  filter(agency_name == "HOMEWOOD POLICE") |>
+  count(race) |> 
+  mutate(stop_pct = n/sum(n) * 100)
+
+homewood_police <- homewood_police |> 
+  left_join(homewood_pop, by ="race")
+
+homewood_police
+```
+
+```{r}
+homewood_police_search_rates <- cook_law |>
+  filter(agency_name == "HOMEWOOD POLICE") |>
+  group_by(race) |> 
+  summarise( 
+    total_stops = n(), 
+    searches = sum(vehicle_search_conducted == "Yes", na.rm = TRUE),
+    search_rate = searches/ total_stops * 100 
+  ) 
+
+homewood_police_search_rates 
+
+```
+
+###### Hometown Police 
+
+```{r}
+hometown_pop <- data.frame( 
+  race = c("White", "Black", "Hispanic", "Asian", "American Indian", "NHPI"),
+  population_pct = c(60.2, 0.64, 18.4, 0, 0, 0)
+)
+```
+
+```{r}
+hometown_police <- cook_law |> 
+  filter(agency_name == "HOMETOWN POLICE") |>
+  count(race) |> 
+  mutate(stop_pct = n/sum(n) * 100)
+
+hometown_police <- hometown_police |> 
+  left_join(hometown_pop, by ="race")
+
+hometown_police
+```
+
+```{r}
+hometown_police_search_rates <- cook_law |>
+  filter(agency_name == "HOMETOWN POLICE") |>
+  group_by(race) |> 
+  summarise( 
+    total_stops = n(), 
+    searches = sum(vehicle_search_conducted == "Yes", na.rm = TRUE),
+    search_rate = searches/ total_stops * 100 
+  ) 
+
+hometown_police_search_rates 
+
+```
+
+###### Evanston Police 
+
+```{r}
+evanston_pop <- data.frame( 
+  race = c("White", "Black", "Hispanic", "Asian", "American Indian", "NHPI"),
+  population_pct = c(58, 14.4, 12.3, 9.4, 0.4, 0)
+)
+```
+
+```{r}
+evanston_police <- cook_law |> 
+  filter(agency_name == "EVANSTON POLICE") |>
+  count(race) |> 
+  mutate(stop_pct = n/sum(n) * 100)
+
+evanston_police <- evanston_police |> 
+  left_join(evanston_pop, by ="race")
+
+evanston_police
+```
+
+```{r}
+evanston_police_search_rates <- cook_law |>
+  filter(agency_name == "EVANSTON POLICE") |>
+  group_by(race) |> 
+  summarise( 
+    total_stops = n(), 
+    searches = sum(vehicle_search_conducted == "Yes", na.rm = TRUE),
+    search_rate = searches/ total_stops * 100 
+  ) 
+
+evanston_police_search_rates 
+
+```
+
+###### Tinley Park Police 
+
+```{r}
+tinleypark_pop <- data.frame( 
+  race = c("White", "Black", "Hispanic", "Asian", "American Indian", "NHPI"),
+  population_pct = c(76.2, 6.7, 10.9, 3.7, 0, 0)
+)
+```
+
+```{r}
+tinleypark_police <- cook_law |> 
+  filter(agency_name == "TINLEY PARK POLICE") |>
+  count(race) |> 
+  mutate(stop_pct = n/sum(n) * 100)
+
+tinleypark_police <- tinleypark_police |> 
+  left_join(tinleypark_pop, by ="race")
+
+tinleypark_police
+```
+
+```{r}
+tinleypark_police_search_rates <- cook_law |>
+  filter(agency_name == "TINLEY PARK POLICE") |>
+  group_by(race) |> 
+  summarise( 
+    total_stops = n(), 
+    searches = sum(vehicle_search_conducted == "Yes", na.rm = TRUE),
+    search_rate = searches/ total_stops * 100 
+  ) 
+
+tinleypark_police_search_rates 
+
+```
+
+###### Oak Park Police 
+
+```{r}
+oakpark_pop <- data.frame( 
+  race = c("White", "Black", "Hispanic", "Asian", "American Indian", "NHPI"),
+  population_pct = c(61.5, 17.9, 9.3, 5.4, 0.5, 0)
+)
+```
+
+```{r}
+oakpark_police <- cook_law |> 
+  filter(agency_name == "OAK PARK POLICE") |>
+  count(race) |> 
+  mutate(stop_pct = n/sum(n) * 100)
+
+oakpark_police <- oakpark_police |> 
+  left_join(oakpark_pop, by ="race")
+
+oakpark_police
+```
+
+```{r}
+oakpark_police_search_rates <- cook_law |>
+  filter(agency_name == "OAK PARK POLICE") |>
+  group_by(race) |> 
+  summarise( 
+    total_stops = n(), 
+    searches = sum(vehicle_search_conducted == "Yes", na.rm = TRUE),
+    search_rate = searches/ total_stops * 100 
+  ) 
+
+oakpark_police_search_rates 
+
+```
+
+
+###### Westmont Police 
+
+```{r}
+westmont_pop <- data.frame( 
+  race = c("White", "Black", "Hispanic", "Asian", "American Indian", "NHPI"),
+  population_pct = c(61.7, 5.9, 14.2, 14.9, 1.1, 0)
+)
+```
+
+```{r}
+westmont_police <- cook_law |> 
+  filter(agency_name == "WESTMONT POLICE") |>
+  count(race) |> 
+  mutate(stop_pct = n/sum(n) * 100)
+
+westmont_police <- westmont_police |> 
+  left_join(westmont_pop, by ="race")
+
+westmont_police
+```
+
+```{r}
+westmont_police_search_rates <- cook_law |>
+  filter(agency_name == "WESTMONT POLICE") |>
+  group_by(race) |> 
+  summarise( 
+    total_stops = n(), 
+    searches = sum(vehicle_search_conducted == "Yes", na.rm = TRUE),
+    search_rate = searches/ total_stops * 100 
+  ) 
+
+westmont_police_search_rates 
+
+```
+
+
+###### Wilmette Police 
+
+```{r}
+wilmette_pop <- data.frame( 
+  race = c("White", "Black", "Hispanic", "Asian", "American Indian", "NHPI"),
+  population_pct = c(76.3, 1, 4.9, 12.3, 0, 0)
+)
+```
+
+```{r}
+wilmette_police <- cook_law |> 
+  filter(agency_name == "WILMETTE POLICE") |>
+  count(race) |> 
+  mutate(stop_pct = n/sum(n) * 100)
+
+wilmette_police <- wilmette_police |> 
+  left_join(wilmette_pop, by ="race")
+
+wilmette_police
+```
+
+```{r}
+wilmette_police_search_rates <- cook_law |>
+  filter(agency_name == "WILMETTE POLICE") |>
+  group_by(race) |> 
+  summarise( 
+    total_stops = n(), 
+    searches = sum(vehicle_search_conducted == "Yes", na.rm = TRUE),
+    search_rate = searches/ total_stops * 100 
+  ) 
+
+wilmette_police_search_rates 
+
+```
+
+###### Hickory Hills Police 
+
+```{r}
+hickoryhills_pop <- data.frame( 
+  race = c("White", "Black", "Hispanic", "Asian", "American Indian", "NHPI"),
+  population_pct = c(74.5, 2.3, 14.7, 5.5, 1.1, 0)
+)
+```
+
+```{r}
+hickoryhills_police <- cook_law |> 
+  filter(agency_name == "HICKORY HILLS POLICE") |>
+  count(race) |> 
+  mutate(stop_pct = n/sum(n) * 100)
+
+hickoryhills_police <- hickoryhills_police |> 
+  left_join(hickoryhills_pop, by ="race")
+
+hickoryhills_police
+```
+
+```{r}
+hickoryhills_police_search_rates <- cook_law |>
+  filter(agency_name == "HICKORY HILLS POLICE") |>
+  group_by(race) |> 
+  summarise( 
+    total_stops = n(), 
+    searches = sum(vehicle_search_conducted == "Yes", na.rm = TRUE),
+    search_rate = searches/ total_stops * 100 
+  ) 
+
+hickoryhills_police_search_rates 
+
+```
+
+
+###### Palos Hills Police 
+
+```{r}
+paloshills_pop <- data.frame( 
+  race = c("White", "Black", "Hispanic", "Asian", "American Indian", "NHPI"),
+  population_pct = c(79.3, 6.2, 10.4, 1.9, 0.1, 0)
+)
+```
+
+```{r}
+paloshills_police <- cook_law |> 
+  filter(agency_name == "PALOS HILLS POLICE") |>
+  count(race) |> 
+  mutate(stop_pct = n/sum(n) * 100)
+
+paloshills_police <- paloshills_police |> 
+  left_join(paloshills_pop, by ="race")
+
+paloshills_police
+```
+
+```{r}
+paloshills_police_search_rates <- cook_law |>
+  filter(agency_name == "PALOS HILLS POLICE") |>
+  group_by(race) |> 
+  summarise( 
+    total_stops = n(), 
+    searches = sum(vehicle_search_conducted == "Yes", na.rm = TRUE),
+    search_rate = searches/ total_stops * 100 
+  ) 
+
+paloshills_police_search_rates 
+
+```
+
+
+###### River Grove Police 
+
+```{r}
+rivergrove_pop <- data.frame( 
+  race = c("White", "Black", "Hispanic", "Asian", "American Indian", "NHPI"),
+  population_pct = c(52.5, 2.1, 40, 4.7, 4.4, 0)
+)
+```
+
+```{r}
+rivergrove_police <- cook_law |> 
+  filter(agency_name == "RIVER GROVE POLICE") |>
+  count(race) |> 
+  mutate(stop_pct = n/sum(n) * 100)
+
+rivergrove_police <- rivergrove_police |> 
+  left_join(rivergrove_pop, by ="race")
+
+rivergrove_police
+```
+
+```{r}
+rivergrove_police_search_rates <- cook_law |>
+  filter(agency_name == "RIVER GROVE POLICE") |>
+  group_by(race) |> 
+  summarise( 
+    total_stops = n(), 
+    searches = sum(vehicle_search_conducted == "Yes", na.rm = TRUE),
+    search_rate = searches/ total_stops * 100 
+  ) 
+
+rivergrove_police_search_rates 
+
+```
+
+
+####### Park Ridge Police 
+
+```{r}
+parkridge_pop <- data.frame( 
+  race = c("White", "Black", "Hispanic", "Asian", "American Indian", "NHPI"),
+  population_pct = c(82.3, 1, 7.5, 6.3, 0.1, 0)
+)
+```
+
+```{r}
+parkridge_police <- cook_law |> 
+  filter(agency_name == "PARK RIDGE POLICE") |>
+  count(race) |> 
+  mutate(stop_pct = n/sum(n) * 100)
+
+parkridge_police <- parkridge_police |> 
+  left_join(parkridge_pop, by ="race")
+
+parkridge_police
+```
+
+```{r}
+parkridge_police_search_rates <- cook_law |>
+  filter(agency_name == "PARK RIDGE POLICE") |>
+  group_by(race) |> 
+  summarise( 
+    total_stops = n(), 
+    searches = sum(vehicle_search_conducted == "Yes", na.rm = TRUE),
+    search_rate = searches/ total_stops * 100 
+  ) 
+
+parkridge_police_search_rates 
+
+```
+
+
+###### Chicago Ridge Police 
+
+```{r}
+chicagoridge_pop <- data.frame( 
+  race = c("White", "Black", "Hispanic", "Asian", "American Indian", "NHPI"),
+  population_pct = c(54.4, 9.5, 21, 3.1, 0, 0)
+)
+```
+
+```{r}
+chicagoridge_police <- cook_law |> 
+  filter(agency_name == "CHICAGO RIDGE POLICE") |>
+  count(race) |> 
+  mutate(stop_pct = n/sum(n) * 100)
+
+chicagoridge_police <- chicagoridge_police |> 
+  left_join(chicagoridge_pop, by ="race")
+
+chicagoridge_police
+```
+
+```{r}
+chicagoridge_police_search_rates <- cook_law |>
+  filter(agency_name =="CHICAGO RIDGE POLICE") |>
+  group_by(race) |> 
+  summarise( 
+    total_stops = n(), 
+    searches = sum(vehicle_search_conducted == "Yes", na.rm = TRUE),
+    search_rate = searches/ total_stops * 100 
+  ) 
+
+chicagoridge_police_search_rates 
+
+```
+
+
+###### Streamwood Police 
+
+```{r}
+streamwood_pop <- data.frame( 
+  race = c("White", "Black", "Hispanic", "Asian", "American Indian", "NHPI"),
+  population_pct = c(36.1, 5.1, 40.7, 14.5, 1.7, 0)
+)
+```
+
+```{r}
+streamwood_police <- cook_law |> 
+  filter(agency_name == "STREAMWOOD POLICE") |>
+  count(race) |> 
+  mutate(stop_pct = n/sum(n) * 100)
+
+streamwood_police <- streamwood_police |> 
+  left_join(streamwood_pop, by ="race")
+
+streamwood_police
+```
+
+```{r}
+streamwood_police_search_rates <- cook_law |>
+  filter(agency_name == "STREAMWOOD POLICE") |>
+  group_by(race) |> 
+  summarise( 
+    total_stops = n(), 
+    searches = sum(vehicle_search_conducted == "Yes", na.rm = TRUE),
+    search_rate = searches/ total_stops * 100 
+  ) 
+
+streamwood_police_search_rates 
+
+```
+
+###### Stickney Police 
+
+
+```{r}
+stickney_pop <- data.frame( 
+  race = c("White", "Black", "Hispanic", "Asian", "American Indian", "NHPI"),
+  population_pct = c(22.1, 0.7, 75.3, 1, 0.3, 0)
+)
+```
+
+```{r}
+stickney_police <- cook_law |> 
+  filter(agency_name == "STICKNEY POLICE") |>
+  count(race) |> 
+  mutate(stop_pct = n/sum(n) * 100)
+
+stickney_police <- stickney_police |> 
+  left_join(stickney_pop, by ="race")
+
+stickney_police
+```
+
+```{r}
+stickney_police_search_rates <- cook_law |>
+  filter(agency_name == "STICKNEY POLICE") |>
+  group_by(race) |> 
+  summarise( 
+    total_stops = n(), 
+    searches = sum(vehicle_search_conducted == "Yes", na.rm = TRUE),
+    search_rate = searches/ total_stops * 100 
+  ) 
+
+stickney_police_search_rates 
+
+```
+
+
+###### Countryside Police 
+
+```{r}
+countryside_pop <- data.frame( 
+  race = c("White", "Black", "Hispanic", "Asian", "American Indian", "NHPI"),
+  population_pct = c(70.2, 2.5, 18.8, 5.4, 0, 0)
+)
+```
+
+```{r}
+countryside_police <- cook_law |> 
+  filter(agency_name == "COUNTRYSIDE POLICE") |>
+  count(race) |> 
+  mutate(stop_pct = n/sum(n) * 100)
+
+countryside_police <- countryside_police |> 
+  left_join(countryside_pop, by ="race")
+
+countryside_police
+```
+
+```{r}
+countryside_police_search_rates <- cook_law |>
+  filter(agency_name == "COUNTRYSIDE POLICE") |>
+  group_by(race) |> 
+  summarise( 
+    total_stops = n(), 
+    searches = sum(vehicle_search_conducted == "Yes", na.rm = TRUE),
+    search_rate = searches/ total_stops * 100 
+  ) 
+
+countryside_police_search_rates 
+
+```
+
+
+###### Prospect Heights Police 
+
+```{r}
+prospectheights_pop <- data.frame( 
+  race = c("White", "Black", "Hispanic", "Asian", "American Indian", "NHPI"),
+  population_pct = c(62.4, 0.6, 25.8, 9, 0.1, 0)
+)
+```
+
+```{r}
+prospectheights_police <- cook_law |> 
+  filter(agency_name == "PROSPECT HEIGHTS POLICE") |>
+  count(race) |> 
+  mutate(stop_pct = n/sum(n) * 100)
+
+prospectheights_police <- prospectheights_police |> 
+  left_join(prospectheights_pop, by ="race")
+
+prospectheights_police
+```
+
+```{r}
+prospectheights_police_search_rates <- cook_law |>
+  filter(agency_name == "PROSPECT HEIGHTS POLICE") |>
+  group_by(race) |> 
+  summarise( 
+    total_stops = n(), 
+    searches = sum(vehicle_search_conducted == "Yes", na.rm = TRUE),
+    search_rate = searches/ total_stops * 100 
+  ) 
+
+prospectheights_police_search_rates 
+
+```
+
+
+###### Burbank Police 
+
+```{r}
+southholland_pop <- data.frame( 
+  race = c("White", "Black", "Hispanic", "Asian", "American Indian", "NHPI"),
+  population_pct = c(10.2, 75.1, 10.4, 1, 0, 0)
+)
+```
+
+```{r}
+southholland_police <- cook_law |> 
+  filter(agency_name == "SOUTH HOLLAND POLICE") |>
+  count(race) |> 
+  mutate(stop_pct = n/sum(n) * 100)
+
+southholland_police <- southholland_police |> 
+  left_join(southholland_pop, by ="race")
+
+southholland_police
+```
+
+```{r}
+southholland_police_search_rates <- cook_law |>
+  filter(agency_name == "SOUTH HOLLAND POLICE") |>
+  group_by(race) |> 
+  summarise( 
+    total_stops = n(), 
+    searches = sum(vehicle_search_conducted == "Yes", na.rm = TRUE),
+    search_rate = searches/ total_stops * 100 
+  ) 
+
+southholland_police_search_rates 
+
+```
+
+
+
+
+Resources: 
+- List of Lake County law enforcement agencies: https://www.lakecountychiefs.org/links-member-agencies
+- Racial breakdown of lake county: https://datausa.io/profile/geo/lake-county-il
+- Wheeling Racial Breakdown: https://www.census.gov/quickfacts/fact/table/wheelingvillageillinois/PST045224
+- Buffalo Racial Breakdown: https://www.census.gov/quickfacts/fact/table/buffalogrovevillageillinois
+- Mundelein Racial Breakdown: https://www.census.gov/quickfacts/fact/table/mundeleinvillageillinois/PST045223
+- List of Dupage County Law enforcement agencies: https://www.dupagecounty.gov/elected_officials/state_s_attorney/criminal_justice_/county_police_departments.php
+- Racial breakdown of Dupage County: https://www.census.gov/quickfacts/fact/table/dupagecountyillinois/PST045225
+- Schaumburg Racial Breakdown: https://www.census.gov/quickfacts/fact/table/schaumburgvillageillinois/PST045224
+- Aurora Racial Breakdown: https://www.census.gov/quickfacts/fact/table/auroracityillinois/PST045225
+- Naperville Racial Breakdown: https://www.census.gov/quickfacts/fact/table/napervillecityillinois/PST045225
+- List of Kane County Law enforcement agencies: https://sao.kanecountyil.gov/Pages/Links.aspx
+- Kane County Racial Breakdown: https://www.census.gov/quickfacts/fact/table/kanecountyillinois/PST045225
+- Elgin Racial Breakdown: https://www.census.gov/quickfacts/fact/table/elgincityillinois/PST045225
+- List of McHenry Law Enforcement Agencies: https://www.mchenrycircuitclerk.org/arresting-agency-local-prosecutor-list/?utm_source=chatgpt.com
+- McHenry County Racial Breakdown: https://www.census.gov/quickfacts/fact/table/mchenrycityillinois/PST045225
+- Crystal Lake Racial Breakdown: https://www.census.gov/quickfacts/fact/table/crystallakecityillinois/PST045225
+- McHenery City Racial Breakdown: https://www.census.gov/quickfacts/fact/table/mchenrycityillinois/PST045225
+- BolingBrook City Racial Breakdown: https://www.census.gov/quickfacts/fact/table/bolingbrookvillageillinois/PST045224
+- Joliet City Racial Breakdown: https://www.census.gov/quickfacts/fact/table/jolietcityillinois/PST045225
+- List of Cook County law enforcement agencies: https://www.ileas.org/_CoMap/MapQuery.php?county=%27Cook%27
+- Cook County Racial Breakdown: https://www.census.gov/quickfacts/fact/table/cookcountyillinois/PST045225
+
+
+
+
